@@ -1,3 +1,0 @@
-title: "tboy1337's GitHub Page"
-description: "My projects, contributions, and more."
-theme: jekyll-theme-cayman
