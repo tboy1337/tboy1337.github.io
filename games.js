@@ -187,9 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
     isGameActive = false;
     lockBoard = true;
     
-    // Show final score
-    alert(`Game Over! Your score: ${score}`);
-    
     startButton.disabled = false;
     resetButton.disabled = true;
   }
