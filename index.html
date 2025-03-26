@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tboy1337 | Developer & Innovator</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Game styles -->
+    <link rel="stylesheet" href="games.css">
     <style>
         body {
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
@@ -72,6 +76,34 @@
             </div>
         </section>
 
+        <!-- Memory Card Game Section -->
+        <section class="mt-8">
+            <h2 class="text-3xl font-bold text-center mb-6">🎮 Play a Game</h2>
+            <div class="game-container">
+                <div class="game-header">
+                    <div class="game-stats">
+                        <div class="stat-box">
+                            <strong>Score:</strong> <span id="score">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong>Time:</strong> <span id="time">60</span>s
+                        </div>
+                    </div>
+                    <div class="game-controls">
+                        <button id="start-game" class="game-btn">Start Game</button>
+                        <button id="reset-game" class="game-btn" disabled>Reset</button>
+                    </div>
+                </div>
+                <div id="memory-game" class="mt-4">
+                    <div class="bg-black/60 p-8 text-center rounded-lg">
+                        <p class="text-xl mb-4">Memory Card Game</p>
+                        <p>Test your memory by matching pairs of tech icons!</p>
+                        <p class="mt-4">Click "Start Game" to begin</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="mt-8 text-center">
             <h2 class="text-3xl font-bold mb-4">🏆 GitHub Achievements</h2>
             <div class="flex justify-center space-x-4">
@@ -90,5 +122,8 @@
     <footer class="bg-black/30 py-4 text-center">
         <p>© 2025 tboy1337 | Powered by curiosity, fueled by coffee ☕</p>
     </footer>
+
+    <!-- Game script -->
+    <script src="games.js"></script>
 </body>
 </html>
