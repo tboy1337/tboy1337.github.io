@@ -13,73 +13,207 @@
         body {
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
         }
         .project-card {
             transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         .project-card:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .project-card .card-content {
+            flex-grow: 1;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 9999px;
+            display: inline-block;
+            margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glow {
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
-    <header class="bg-black/30 py-6 text-center">
-        <h1 class="text-4xl font-bold text-white">tboy1337</h1>
+    <header class="bg-black/50 py-8 text-center backdrop-blur-sm">
+        <h1 class="text-5xl font-bold text-white mb-2 glow">tboy1337</h1>
         <p class="text-xl text-gray-300">Developer • Innovator • Problem Solver</p>
+        <div class="mt-4 flex justify-center space-x-6">
+            <a href="https://github.com/tboy1337" class="text-gray-300 hover:text-white transition-colors">
+                <i class="fab fa-github text-2xl"></i>
+            </a>
+            <a href="mailto:obywhuie@anonaddy.com" class="text-gray-300 hover:text-white transition-colors">
+                <i class="far fa-envelope text-2xl"></i>
+            </a>
+        </div>
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-8">
         <section class="grid md:grid-cols-2 gap-8">
-            <div class="bg-black/40 p-6 rounded-lg">
+            <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
                 <h2 class="text-2xl font-semibold mb-4">👋 About Me</h2>
-                <p>Passionate developer crafting tools that solve real-world problems. Specializing in system optimization, crypto tools, and automation scripts.</p>
+                <p class="text-gray-300">Passionate developer crafting tools that solve real-world problems. Specializing in system optimization, networking tools, cryptography utilities, and automation scripts.</p>
                 <div class="mt-4 flex space-x-4">
-                    <a href="https://github.com/tboy1337" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">GitHub Profile</a>
-                    <a href="mailto:obywhuie@anonaddy.com" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Contact</a>
+                    <a href="https://github.com/tboy1337" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors">GitHub Profile</a>
+                    <a href="mailto:obywhuie@anonaddy.com" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded transition-colors">Contact</a>
                 </div>
             </div>
 
-            <div class="bg-black/40 p-6 rounded-lg">
+            <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
                 <h2 class="text-2xl font-semibold mb-4">🛠️ Tech Stack</h2>
                 <div class="flex flex-wrap gap-2">
                     <span class="bg-blue-500 text-white px-3 py-1 rounded-full">Python</span>
                     <span class="bg-yellow-500 text-white px-3 py-1 rounded-full">JavaScript</span>
                     <span class="bg-green-500 text-white px-3 py-1 rounded-full">Bash</span>
                     <span class="bg-purple-500 text-white px-3 py-1 rounded-full">Batch</span>
-                    <span class="bg-red-500 text-white px-3 py-1 rounded-full">Powershell</span>
+                    <span class="bg-red-500 text-white px-3 py-1 rounded-full">PowerShell</span>
+                    <span class="bg-orange-500 text-white px-3 py-1 rounded-full">C</span>
+                    <span class="bg-pink-500 text-white px-3 py-1 rounded-full">HTML/CSS</span>
+                    <span class="bg-blue-600 text-white px-3 py-1 rounded-full">Shell</span>
                 </div>
             </div>
         </section>
 
-        <section class="mt-8">
-            <h2 class="text-3xl font-bold text-center mb-6">🚀 Featured Projects</h2>
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="project-card bg-black/40 p-6 rounded-lg">
-                    <h3 class="text-xl font-semibold mb-2">Git Installation Tools</h3>
-                    <p class="mb-4">Automated scripts for Git installation on Windows & Linux</p>
-                    <div class="flex space-x-2">
-                        <a href="https://github.com/tboy1337/Install-Uninstall-GIT-Windows" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Windows</a>
-                        <a href="https://github.com/tboy1337/Install-Uninstall-GIT-Linux" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">Linux</a>
+        <section class="mt-12">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">🚀 Featured Projects</h2>
+                <a href="https://github.com/tboy1337?tab=repositories" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+                    View All <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Network & Proxy Tools -->
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-blue-600">Python</span>
+                            <span class="tag bg-gray-700">Networking</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">MultiSocks</h3>
+                        <p class="mb-4 text-gray-300">A SOCKS proxy that aggregates multiple remote SOCKS proxies, increasing your bandwidth by distributing traffic across them.</p>
                     </div>
+                    <a href="https://github.com/tboy1337/multisocks" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg">
-                    <h3 class="text-xl font-semibold mb-2">Solana Wallet Generator</h3>
-                    <p class="mb-4">JavaScript tool for generating Solana wallets</p>
-                    <a href="https://github.com/tboy1337/solana-generate-wallets" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded">View Project</a>
+                
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-blue-600">Python</span>
+                            <span class="tag bg-gray-700">Networking</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Dispatch-py</h3>
+                        <p class="mb-4 text-gray-300">A SOCKS proxy that balances traffic between network interfaces, optimizing network performance.</p>
+                    </div>
+                    <a href="https://github.com/tboy1337/dispatch-py" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg">
-                    <h3 class="text-xl font-semibold mb-2">Proxy Tester</h3>
-                    <p class="mb-4">Python utility for testing hideip.me proxies</p>
-                    <a href="https://github.com/tboy1337/hideip.me-proxy-tester" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">View Project</a>
+                
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-blue-600">Python</span>
+                            <span class="tag bg-gray-700">Networking</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">HideIP.me Proxy Tester</h3>
+                        <p class="mb-4 text-gray-300">A tool for testing HTTP, SOCKS4, SOCKS5, and CONNECT proxies from hideip.me.</p>
+                    </div>
+                    <a href="https://github.com/tboy1337/hideip.me-proxy-tester" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
+                </div>
+                
+                <!-- Utilities & Tools -->
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-blue-600">Python</span>
+                            <span class="tag bg-gray-700">Multimedia</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Subwhisper</h3>
+                        <p class="mb-4 text-gray-300">A powerful tool using OpenAI's Whisper speech-to-text model to automatically generate subtitles for video files.</p>
+                    </div>
+                    <a href="https://github.com/tboy1337/subwhisper" class="inline-block bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
+                </div>
+                
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-yellow-600">Shell</span>
+                            <span class="tag bg-gray-700">Multimedia</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">DAV2MKV</h3>
+                        <p class="mb-4 text-gray-300">A versatile tool for converting DAV video files to MKV or MP4 while maintaining perfect quality.</p>
+                    </div>
+                    <a href="https://github.com/tboy1337/dav2mkv" class="inline-block bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
+                </div>
+                
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-blue-600">Python</span>
+                            <span class="tag bg-gray-700">Analytics</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">ProfitPioneer</h3>
+                        <p class="mb-4 text-gray-300">A comprehensive e-commerce analytics dashboard built with Streamlit that provides business intelligence insights.</p>
+                    </div>
+                    <a href="https://github.com/tboy1337/ProfitPioneer" class="inline-block bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
+                </div>
+                
+                <!-- System Tools -->
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-purple-600">Batch</span>
+                            <span class="tag bg-gray-700">System</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Repair Windows</h3>
+                        <p class="mb-4 text-gray-300">A collection of batch scripts to repair and optimize Windows systems.</p>
+                    </div>
+                    <a href="https://github.com/tboy1337/Repair-Windows" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
+                </div>
+                
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-yellow-600">JavaScript</span>
+                            <span class="tag bg-gray-700">Crypto</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Solana Wallet Generator</h3>
+                        <p class="mb-4 text-gray-300">A tool for generating Solana wallets and secrets with mnemonic support.</p>
+                    </div>
+                    <a href="https://github.com/tboy1337/solana-generate-wallets" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
+                </div>
+                
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="card-content">
+                        <div class="mb-3">
+                            <span class="tag bg-blue-600">Python</span>
+                            <span class="tag bg-gray-700">Streaming</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Video Streaming Server</h3>
+                        <p class="mb-4 text-gray-300">A simple web-based video streaming server that allows you to share your video library with friends over the internet.</p>
+                    </div>
+                    <a href="https://github.com/tboy1337/video-streaming-server" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded transition-colors">View Project</a>
                 </div>
             </div>
         </section>
 
         <!-- Memory Card Game Section -->
-        <section class="mt-8">
+        <section class="mt-12">
             <h2 class="text-3xl font-bold text-center mb-6">🎮 Play a Game</h2>
-            <div class="game-container">
+            <div class="game-container backdrop-blur-sm border border-white/10">
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
@@ -104,23 +238,32 @@
             </div>
         </section>
 
-        <section class="mt-8 text-center">
-            <h2 class="text-3xl font-bold mb-4">🏆 GitHub Achievements</h2>
-            <div class="flex justify-center space-x-4">
-                <div class="bg-black/40 p-4 rounded-lg">
-                    <h3 class="text-xl">Quickdraw</h3>
-                    <p>Rapid response champion</p>
+        <section class="mt-12">
+            <h2 class="text-3xl font-bold text-center mb-6">🏆 GitHub Achievements</h2>
+            <div class="flex justify-center space-x-6">
+                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="text-4xl text-center text-yellow-400 mb-2">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="text-xl text-center">Quickdraw</h3>
+                    <p class="text-center text-gray-300">Rapid response champion</p>
                 </div>
-                <div class="bg-black/40 p-4 rounded-lg">
-                    <h3 class="text-xl">Pull Shark</h3>
-                    <p>Master of collaborative coding</p>
+                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10">
+                    <div class="text-4xl text-center text-blue-400 mb-2">
+                        <i class="fas fa-code-pull-request"></i>
+                    </div>
+                    <h3 class="text-xl text-center">Pull Shark</h3>
+                    <p class="text-center text-gray-300">Master of collaborative coding</p>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="bg-black/30 py-4 text-center">
-        <p>© 2025 tboy1337 | Powered by curiosity, fueled by coffee ☕</p>
+    <footer class="bg-black/50 py-6 text-center backdrop-blur-sm mt-12">
+        <div class="container mx-auto px-4">
+            <p class="text-gray-300">© 2025 tboy1337 | Powered by curiosity, fueled by coffee ☕</p>
+            <p class="text-gray-500 mt-2 text-sm">Last updated: April 2025</p>
+        </div>
     </footer>
 
     <!-- Game script -->
