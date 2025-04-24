@@ -802,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let arrowKeyboardHandler = null;
   let audioContext = null;
   
-  // Define audio frequencies for different notes (pentatonic scale)
+  // Define audio frequencies for different notes (pentatonic scale with electronic vibe)
   const noteFrequencies = [
     261.63, // C
     293.66, // D
@@ -819,9 +819,9 @@ document.addEventListener('DOMContentLoaded', () => {
     gameContainer.classList.add('centered-content');
     gameContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
-        <p class="text-xl mb-4">Arrow Keys Music Maker</p>
+        <p class="text-xl mb-4">Music Keys</p>
         <p>Press the arrow keys to create your own music!</p>
-        <p>Each arrow key plays a different note from a pentatonic scale.</p>
+        <p>Each arrow key plays a different note with electronic effects.</p>
         <p class="mt-4">Click "Start" to begin making music!</p>
       </div>
     `;
@@ -850,7 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
       <div class="mt-8 text-center">
-        <p>Create your own music! Each arrow plays a different note.</p>
+        <p>Create electronic music! Each arrow plays a different note.</p>
         <p class="mt-2 text-sm text-gray-400">Try pressing multiple keys in different patterns.</p>
       </div>
     `;
@@ -911,25 +911,78 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  // Play a note based on index
+  // Play a note based on index with electronic style
   function playNote(index) {
     if (!audioContext) return;
     
+    // Create audio nodes
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
+    const filterNode = audioContext.createBiquadFilter();
+    const distortion = audioContext.createWaveShaper();
     
-    oscillator.type = 'sine';
+    // Set up oscillator with a sawtooth wave for more electronic sound
+    oscillator.type = index % 2 === 0 ? 'sawtooth' : 'square';
     oscillator.frequency.value = noteFrequencies[index];
+    
+    // Set up filter for that electronic sound
+    filterNode.type = "lowpass";
+    filterNode.frequency.value = 1000;
+    filterNode.Q.value = 8;
+    
+    // Add filter envelope for the wah effect
+    filterNode.frequency.setValueAtTime(100, audioContext.currentTime);
+    filterNode.frequency.exponentialRampToValueAtTime(
+      3000, 
+      audioContext.currentTime + 0.1
+    );
+    filterNode.frequency.exponentialRampToValueAtTime(
+      1000, 
+      audioContext.currentTime + 0.4
+    );
+    
+    // Distortion function for added effect
+    function makeDistortionCurve(amount) {
+      const k = typeof amount === 'number' ? amount : 50;
+      const samples = 44100;
+      const curve = new Float32Array(samples);
+      const deg = Math.PI / 180;
+      
+      for (let i = 0; i < samples; ++i) {
+        const x = (i * 2 / samples) - 1;
+        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+      }
+      
+      return curve;
+    }
+    
+    distortion.curve = makeDistortionCurve(25);
+    distortion.oversample = '4x';
+    
+    // Initial gain value
     gainNode.gain.value = 0.3;
     
-    oscillator.connect(gainNode);
+    // Connect all the nodes
+    oscillator.connect(filterNode);
+    filterNode.connect(distortion);
+    distortion.connect(gainNode);
     gainNode.connect(audioContext.destination);
     
+    // Start the oscillator
     oscillator.start();
     
-    // Apply a nice envelope to the sound
+    // Apply volume envelope
+    gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
     
+    // Add a slight pitch bend for more character
+    oscillator.frequency.exponentialRampToValueAtTime(
+      oscillator.frequency.value * 0.99,
+      audioContext.currentTime + 0.4
+    );
+    
+    // Stop the oscillator after a short time
     setTimeout(() => {
       oscillator.stop();
     }, 500);
@@ -942,7 +995,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isGameActive = true;
     
     // Update UI
-    scoreElement.parentElement.textContent = "Press arrow keys to make music!";
+    scoreElement.parentElement.textContent = "Press keys to make music!";
     streakElement.parentElement.style.display = "none";
     
     // Create the UI
