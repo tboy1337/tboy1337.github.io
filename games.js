@@ -789,3 +789,200 @@ document.addEventListener('DOMContentLoaded', () => {
     typingResetButton.addEventListener('click', resetTypingGame);
   }
 }); 
+
+// Discord-style Arrow Keys Game
+document.addEventListener('DOMContentLoaded', () => {
+  const startButton = document.getElementById('start-arrow');
+  const resetButton = document.getElementById('reset-arrow');
+  const scoreElement = document.getElementById('arrow-score');
+  const streakElement = document.getElementById('arrow-streak');
+  const gameContainer = document.getElementById('arrow-game');
+  
+  let isGameActive = false;
+  let arrowKeyboardHandler = null;
+  let audioContext = null;
+  
+  // Define audio frequencies for different notes (pentatonic scale)
+  const noteFrequencies = [
+    261.63, // C
+    293.66, // D
+    329.63, // E
+    392.00, // G
+    440.00, // A
+    523.25, // C (octave up)
+    587.33, // D (octave up)
+    659.25  // E (octave up)
+  ];
+  
+  // Initialize the game
+  function initArrowDisplay() {
+    gameContainer.classList.add('centered-content');
+    gameContainer.innerHTML = `
+      <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
+        <p class="text-xl mb-4">Arrow Keys Music Maker</p>
+        <p>Press the arrow keys to create your own music!</p>
+        <p>Each arrow key plays a different note from a pentatonic scale.</p>
+        <p class="mt-4">Click "Start" to begin making music!</p>
+      </div>
+    `;
+  }
+  
+  // Initialize when loaded
+  initArrowDisplay();
+  
+  // Create the game UI
+  function createArrowGameUI() {
+    gameContainer.classList.remove('centered-content');
+    
+    gameContainer.innerHTML = `
+      <div class="arrow-container">
+        <div class="arrow-key" data-key="ArrowUp" data-note="0">
+          <i class="fas fa-arrow-up"></i>
+        </div>
+        <div class="arrow-key" data-key="ArrowLeft" data-note="1">
+          <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="arrow-key" data-key="ArrowDown" data-note="2">
+          <i class="fas fa-arrow-down"></i>
+        </div>
+        <div class="arrow-key" data-key="ArrowRight" data-note="3">
+          <i class="fas fa-arrow-right"></i>
+        </div>
+      </div>
+      <div class="mt-8 text-center">
+        <p>Create your own music! Each arrow plays a different note.</p>
+        <p class="mt-2 text-sm text-gray-400">Try pressing multiple keys in different patterns.</p>
+      </div>
+    `;
+
+    // Add note labels to the keys
+    const noteNames = ["C", "D", "E", "G", "A", "C", "D", "E"];
+    document.querySelectorAll('.arrow-key').forEach((key) => {
+      const noteIndex = parseInt(key.dataset.note);
+      
+      // Add note name
+      const noteLabel = document.createElement('div');
+      noteLabel.className = 'note-label';
+      noteLabel.textContent = noteNames[noteIndex];
+      key.appendChild(noteLabel);
+    });
+  }
+  
+  // Handle key press events
+  function handleKeyPress(event) {
+    if (!isGameActive) return;
+    
+    const key = event.key;
+    const keyMap = {
+      'ArrowUp': 0,
+      'ArrowLeft': 1,
+      'ArrowDown': 2,
+      'ArrowRight': 3
+    };
+    
+    if (keyMap[key] !== undefined) {
+      // Prevent default browser scrolling behavior for arrow keys
+      event.preventDefault();
+      
+      const noteIndex = keyMap[key];
+      const arrowElement = document.querySelector(`.arrow-key[data-key="${key}"]`);
+      
+      // Visual effect for key press
+      arrowElement.classList.add('active');
+      setTimeout(() => {
+        arrowElement.classList.remove('active');
+      }, 100);
+      
+      // Play the note
+      playNote(noteIndex);
+      
+      // Add correct animation
+      arrowElement.classList.add('correct');
+      setTimeout(() => arrowElement.classList.remove('correct'), 300);
+    }
+  }
+  
+  // Initialize Web Audio API
+  function initAudio() {
+    try {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    } catch {
+      console.warn('Web Audio API not supported in this browser');
+    }
+  }
+  
+  // Play a note based on index
+  function playNote(index) {
+    if (!audioContext) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.value = noteFrequencies[index];
+    gainNode.gain.value = 0.3;
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.start();
+    
+    // Apply a nice envelope to the sound
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    
+    setTimeout(() => {
+      oscillator.stop();
+    }, 500);
+  }
+  
+  // Start the music maker
+  function startArrowGame() {
+    if (isGameActive) return;
+    
+    isGameActive = true;
+    
+    // Update UI
+    scoreElement.parentElement.textContent = "Press arrow keys to make music!";
+    streakElement.parentElement.style.display = "none";
+    
+    // Create the UI
+    createArrowGameUI();
+    
+    // Init audio context
+    initAudio();
+    
+    // Set up keyboard event handler
+    arrowKeyboardHandler = handleKeyPress;
+    document.addEventListener('keydown', arrowKeyboardHandler);
+    
+    startButton.disabled = true;
+    resetButton.disabled = false;
+  }
+  
+  // Reset the music maker
+  function resetArrowGame() {
+    if (!isGameActive) return;
+    
+    isGameActive = false;
+    
+    // Remove keyboard event handler
+    if (arrowKeyboardHandler) {
+      document.removeEventListener('keydown', arrowKeyboardHandler);
+      arrowKeyboardHandler = null;
+    }
+    
+    // Reset to initial display
+    initArrowDisplay();
+    
+    // Restore UI
+    scoreElement.parentElement.innerHTML = "<strong>Score:</strong> <span id=\"arrow-score\">0</span>";
+    streakElement.parentElement.style.display = "";
+    
+    startButton.disabled = false;
+    resetButton.disabled = true;
+  }
+  
+  // Event listeners
+  startButton.addEventListener('click', startArrowGame);
+  resetButton.addEventListener('click', resetArrowGame);
+}); 

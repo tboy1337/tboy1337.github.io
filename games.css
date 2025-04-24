@@ -302,6 +302,141 @@
   color: white;
 }
 
+/* Arrow Keys Game Styles */
+#arrow-game {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+.arrow-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 2rem;
+}
+
+.arrow-key {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  background-color: rgba(30, 30, 30, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: all 0.1s ease;
+}
+
+.arrow-key i {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.arrow-key .note-label {
+  position: absolute;
+  bottom: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.arrow-key.active {
+  border-color: rgba(79, 70, 229, 0.8);
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
+  background-color: rgba(79, 70, 229, 0.3);
+}
+
+.arrow-key.correct {
+  border-color: rgba(52, 211, 153, 0.8);
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
+  background-color: rgba(52, 211, 153, 0.3);
+  animation: pulse-green 0.3s;
+}
+
+.arrow-key.wrong {
+  border-color: rgba(239, 68, 68, 0.8);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+  background-color: rgba(239, 68, 68, 0.3);
+  animation: shake 0.3s;
+}
+
+.arrow-sequence {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 3rem;
+  height: 60px;
+}
+
+.sequence-arrow {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background-color: rgba(30, 30, 30, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.sequence-arrow i {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sequence-arrow.current {
+  border-color: rgba(234, 179, 8, 0.8);
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
+  background-color: rgba(234, 179, 8, 0.3);
+  animation: pulse 0.8s infinite;
+}
+
+.sequence-arrow.completed {
+  border-color: rgba(52, 211, 153, 0.8);
+  background-color: rgba(52, 211, 153, 0.3);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   #memory-game {
