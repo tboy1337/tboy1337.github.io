@@ -210,10 +210,32 @@
             </div>
         </section>
 
-        <!-- Memory Card Game Section -->
         <section class="mt-12">
-            <h2 class="text-3xl font-bold text-center mb-6">🎮 Play a Game</h2>
-            <div class="game-container backdrop-blur-sm border border-white/10">
+            <h2 class="text-3xl font-bold text-center mb-6">🎮 Fun & Games</h2>
+            
+            <!-- Game Menu Navigation -->
+            <div class="game-menu backdrop-blur-sm border border-white/10 mb-6">
+                <ul class="flex flex-wrap justify-center">
+                    <li class="game-menu-item active" data-game="memory">
+                        <button class="px-4 py-2">
+                            <i class="fas fa-brain mr-2"></i>Memory Game
+                        </button>
+                    </li>
+                    <li class="game-menu-item" data-game="snake">
+                        <button class="px-4 py-2">
+                            <i class="fas fa-snake mr-2"></i>Snake Game
+                        </button>
+                    </li>
+                    <li class="game-menu-item" data-game="typing">
+                        <button class="px-4 py-2">
+                            <i class="fas fa-keyboard mr-2"></i>Typing Test
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Memory Card Game Section -->
+            <div class="game-container backdrop-blur-sm border border-white/10 game-section" id="memory-section">
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
@@ -229,10 +251,54 @@
                     </div>
                 </div>
                 <div id="memory-game" class="mt-4">
-                    <div class="bg-black/60 p-8 text-center rounded-lg">
-                        <p class="text-xl mb-4">Memory Card Game</p>
-                        <p>Test your memory by matching pairs of tech icons!</p>
+                    <!-- Game content will be inserted by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Snake Game Section -->
+            <div class="game-container backdrop-blur-sm border border-white/10 game-section hidden" id="snake-section">
+                <div class="game-header">
+                    <div class="game-stats">
+                        <div class="stat-box">
+                            <strong>Score:</strong> <span id="snake-score">0</span>
+                        </div>
+                    </div>
+                    <div class="game-controls">
+                        <button id="start-snake" class="game-btn">Start Game</button>
+                        <button id="reset-snake" class="game-btn" disabled>Reset</button>
+                    </div>
+                </div>
+                <div id="snake-game" class="mt-4 centered-content">
+                    <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
+                        <p class="text-xl mb-4">Snake Game</p>
+                        <p>Control the snake using arrow keys or touch controls</p>
+                        <p>Eat the red food to grow and earn points!</p>
                         <p class="mt-4">Click "Start Game" to begin</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Speed Test Section -->
+            <div class="game-container backdrop-blur-sm border border-white/10 game-section hidden" id="typing-section">
+                <div class="game-header">
+                    <div class="game-stats">
+                        <div class="stat-box">
+                            <strong>WPM:</strong> <span id="typing-wpm">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <strong>Accuracy:</strong> <span id="typing-accuracy">0</span>%
+                        </div>
+                    </div>
+                    <div class="game-controls">
+                        <button id="start-typing" class="game-btn">Start Test</button>
+                        <button id="reset-typing" class="game-btn" disabled>Reset</button>
+                    </div>
+                </div>
+                <div id="typing-game" class="mt-4 centered-content">
+                    <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
+                        <p class="text-xl mb-4">Typing Speed Test</p>
+                        <p>Test your typing speed and accuracy!</p>
+                        <p class="mt-4">Click "Start Test" to begin</p>
                     </div>
                 </div>
             </div>
