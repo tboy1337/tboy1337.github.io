@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (gameName !== 'snake' && window.snakeKeyboardHandler) {
       document.removeEventListener('keydown', window.snakeKeyboardHandler);
     }
+    
+    // If we're switching away from Arrow game, clean up event listeners
+    if (gameName !== 'arrow' && window.arrowKeyboardHandler) {
+      document.removeEventListener('keydown', window.arrowKeyboardHandler);
+      window.arrowKeyboardHandler = null;
+    }
   }
   
   // Add click event listeners to menu items
@@ -799,7 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameContainer = document.getElementById('arrow-game');
   
   let isGameActive = false;
-  let arrowKeyboardHandler = null;
+  //let arrowKeyboardHandler = null; // This variable is unused since we use window.arrowKeyboardHandler instead
   let audioContext = null;
   
   // Define audio frequencies for different notes (pentatonic scale with electronic vibe)
@@ -853,11 +859,30 @@ document.addEventListener('DOMContentLoaded', () => {
         <p>Create electronic music! Each arrow plays a different note.</p>
         <p class="mt-2 text-sm text-gray-400">Try pressing multiple keys in different patterns.</p>
       </div>
+      <div class="mobile-controls mt-6">
+        <p class="text-center mb-3">Tap the arrows to play on mobile:</p>
+        <div class="touch-arrow-container">
+          <div class="touch-arrow-btn" data-note="0">
+            <i class="fas fa-arrow-up"></i>
+          </div>
+          <div class="touch-arrow-row">
+            <div class="touch-arrow-btn" data-note="1">
+              <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="touch-arrow-btn" data-note="2">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="touch-arrow-btn" data-note="3">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
 
     // Add note labels to the keys
     const noteNames = ["C", "D", "E", "G", "A", "C", "D", "E"];
-    document.querySelectorAll('.arrow-key').forEach((key) => {
+    document.querySelectorAll('.arrow-key, .touch-arrow-btn').forEach((key) => {
       const noteIndex = parseInt(key.dataset.note);
       
       // Add note name
@@ -866,6 +891,44 @@ document.addEventListener('DOMContentLoaded', () => {
       noteLabel.textContent = noteNames[noteIndex];
       key.appendChild(noteLabel);
     });
+
+    // Add touch event listeners for mobile
+    document.querySelectorAll('.touch-arrow-btn').forEach(btn => {
+      btn.addEventListener('touchstart', handleTouchStart);
+      btn.addEventListener('click', handleTouchStart);  // Also support clicks for testing
+    });
+  }
+  
+  // Handle touch events for mobile
+  function handleTouchStart(event) {
+    if (!isGameActive) return;
+    
+    // Prevent default behavior to avoid scrolling
+    event.preventDefault();
+    
+    const noteIndex = parseInt(this.dataset.note);
+    
+    // Visual effect for button press
+    this.classList.add('active');
+    setTimeout(() => {
+      this.classList.remove('active');
+    }, 100);
+    
+    // Play the note
+    playNote(noteIndex);
+    
+    // Add correct animation
+    this.classList.add('correct');
+    setTimeout(() => this.classList.remove('correct'), 300);
+    
+    // Find and animate the corresponding keyboard arrow
+    const arrowKey = document.querySelector(`.arrow-key[data-note="${noteIndex}"]`);
+    if (arrowKey) {
+      arrowKey.classList.add('active');
+      setTimeout(() => arrowKey.classList.remove('active'), 100);
+      arrowKey.classList.add('correct');
+      setTimeout(() => arrowKey.classList.remove('correct'), 300);
+    }
   }
   
   // Handle key press events
@@ -1005,8 +1068,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initAudio();
     
     // Set up keyboard event handler
-    arrowKeyboardHandler = handleKeyPress;
-    document.addEventListener('keydown', arrowKeyboardHandler);
+    window.arrowKeyboardHandler = handleKeyPress;
+    document.addEventListener('keydown', window.arrowKeyboardHandler);
     
     startButton.disabled = true;
     resetButton.disabled = false;
@@ -1019,10 +1082,16 @@ document.addEventListener('DOMContentLoaded', () => {
     isGameActive = false;
     
     // Remove keyboard event handler
-    if (arrowKeyboardHandler) {
-      document.removeEventListener('keydown', arrowKeyboardHandler);
-      arrowKeyboardHandler = null;
+    if (window.arrowKeyboardHandler) {
+      document.removeEventListener('keydown', window.arrowKeyboardHandler);
+      window.arrowKeyboardHandler = null;
     }
+    
+    // Remove touch event listeners
+    document.querySelectorAll('.touch-arrow-btn').forEach(btn => {
+      btn.removeEventListener('touchstart', handleTouchStart);
+      btn.removeEventListener('click', handleTouchStart);
+    });
     
     // Reset to initial display
     initArrowDisplay();

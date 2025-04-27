@@ -437,6 +437,66 @@
   }
 }
 
+/* Mobile arrow touch controls */
+.mobile-controls {
+  display: none;
+}
+
+.touch-arrow-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.touch-arrow-row {
+  display: flex;
+  gap: 15px;
+}
+
+.touch-arrow-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  background-color: rgba(30, 30, 30, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: all 0.1s ease;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-arrow-btn i {
+  font-size: 1.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.touch-arrow-btn .note-label {
+  position: absolute;
+  bottom: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.touch-arrow-btn.active {
+  border-color: rgba(79, 70, 229, 0.8);
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
+  background-color: rgba(79, 70, 229, 0.3);
+}
+
+.touch-arrow-btn.correct {
+  border-color: rgba(52, 211, 153, 0.8);
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
+  background-color: rgba(52, 211, 153, 0.3);
+  animation: pulse-green 0.3s;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   #memory-game {
@@ -445,6 +505,11 @@
   
   .memory-card {
     height: 80px;
+  }
+
+  /* Show mobile controls at this breakpoint */
+  .mobile-controls {
+    display: block;
   }
 }
 
@@ -460,5 +525,24 @@
   .game-header {
     flex-direction: column;
     gap: 1rem;
+  }
+
+  /* Adjust arrow keys size on smaller screens */
+  .arrow-key {
+    width: 60px;
+    height: 60px;
+  }
+
+  .arrow-key i {
+    font-size: 1.5rem;
+  }
+
+  .touch-arrow-btn {
+    width: 60px;
+    height: 60px;
+  }
+
+  .touch-arrow-btn i {
+    font-size: 1.5rem;
   }
 } 
