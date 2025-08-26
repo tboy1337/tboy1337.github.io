@@ -1,2 +1,13 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap
+Sitemap: https://tboy1337.github.io/sitemap.xml
+
+# Specific crawling rules
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.gif$
+Allow: /*.ico$

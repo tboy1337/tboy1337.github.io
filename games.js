@@ -1,7 +1,13 @@
 // Game Menu System
 document.addEventListener('DOMContentLoaded', () => {
-  const menuItems = document.querySelectorAll('.game-menu-item');
-  const gameSections = document.querySelectorAll('.game-section');
+  try {
+    const menuItems = document.querySelectorAll('.game-menu-item');
+    const gameSections = document.querySelectorAll('.game-section');
+    
+    if (!menuItems.length || !gameSections.length) {
+      console.warn('Game menu elements not found');
+      return;
+    }
   
   // Global reference to the snake keyboard handler
   window.snakeKeyboardHandler = null;
@@ -37,19 +43,35 @@ document.addEventListener('DOMContentLoaded', () => {
   // Add click event listeners to menu items
   menuItems.forEach(item => {
     item.addEventListener('click', function() {
-      const gameName = this.getAttribute('data-game');
-      switchGame(gameName);
+      try {
+        const gameName = this.getAttribute('data-game');
+        if (gameName) {
+          switchGame(gameName);
+        }
+      } catch (error) {
+        console.error('Error switching games:', error);
+      }
     });
   });
+  
+  } catch (error) {
+    console.error('Error initializing game menu:', error);
+  }
 });
 
 // Memory Card Game
 document.addEventListener('DOMContentLoaded', () => {
-  const gameContainer = document.getElementById('memory-game');
-  const startButton = document.getElementById('start-game');
-  const resetButton = document.getElementById('reset-game');
-  const scoreElement = document.getElementById('score');
-  const timeElement = document.getElementById('time');
+  try {
+    const gameContainer = document.getElementById('memory-game');
+    const startButton = document.getElementById('start-game');
+    const resetButton = document.getElementById('reset-game');
+    const scoreElement = document.getElementById('score');
+    const timeElement = document.getElementById('time');
+    
+    if (!gameContainer || !startButton || !resetButton || !scoreElement || !timeElement) {
+      console.warn('Memory game elements not found');
+      return;
+    }
   
   let cards = [];
   let hasFlippedCard = false;
@@ -259,16 +281,24 @@ document.addEventListener('DOMContentLoaded', () => {
     startButton.addEventListener('click', startGame);
     resetButton.addEventListener('click', resetGame);
   }
+  
+  } catch (error) {
+    console.error('Error initializing memory game:', error);
+  }
 }); 
 
 // Snake Game
 document.addEventListener('DOMContentLoaded', () => {
-  const snakeContainer = document.getElementById('snake-game');
-  const snakeStartButton = document.getElementById('start-snake');
-  const snakeResetButton = document.getElementById('reset-snake');
-  const snakeScoreElement = document.getElementById('snake-score');
-  
-  if (!snakeContainer) return;
+  try {
+    const snakeContainer = document.getElementById('snake-game');
+    const snakeStartButton = document.getElementById('start-snake');
+    const snakeResetButton = document.getElementById('reset-snake');
+    const snakeScoreElement = document.getElementById('snake-score');
+    
+    if (!snakeContainer || !snakeStartButton || !snakeResetButton || !snakeScoreElement) {
+      console.warn('Snake game elements not found');
+      return;
+    }
   
   let canvas, ctx;
   let snake = [];
@@ -571,17 +601,25 @@ document.addEventListener('DOMContentLoaded', () => {
     snakeStartButton.addEventListener('click', startSnakeGame);
     snakeResetButton.addEventListener('click', resetSnakeGame);
   }
+  
+  } catch (error) {
+    console.error('Error initializing snake game:', error);
+  }
 });
 
 // Typing Speed Test Game
 document.addEventListener('DOMContentLoaded', () => {
-  const typingContainer = document.getElementById('typing-game');
-  const typingStartButton = document.getElementById('start-typing');
-  const typingResetButton = document.getElementById('reset-typing');
-  const wpmElement = document.getElementById('typing-wpm');
-  const accuracyElement = document.getElementById('typing-accuracy');
-  
-  if (!typingContainer) return;
+  try {
+    const typingContainer = document.getElementById('typing-game');
+    const typingStartButton = document.getElementById('start-typing');
+    const typingResetButton = document.getElementById('reset-typing');
+    const wpmElement = document.getElementById('typing-wpm');
+    const accuracyElement = document.getElementById('typing-accuracy');
+    
+    if (!typingContainer || !typingStartButton || !typingResetButton || !wpmElement || !accuracyElement) {
+      console.warn('Typing game elements not found');
+      return;
+    }
   
   let startTime;
   let timerInterval;
@@ -794,15 +832,25 @@ document.addEventListener('DOMContentLoaded', () => {
     typingStartButton.addEventListener('click', startTypingGame);
     typingResetButton.addEventListener('click', resetTypingGame);
   }
+  
+  } catch (error) {
+    console.error('Error initializing typing game:', error);
+  }
 }); 
 
 // Discord-style Arrow Keys Game
 document.addEventListener('DOMContentLoaded', () => {
-  const startButton = document.getElementById('start-arrow');
-  const resetButton = document.getElementById('reset-arrow');
-  const scoreElement = document.getElementById('arrow-score');
-  const streakElement = document.getElementById('arrow-streak');
-  const gameContainer = document.getElementById('arrow-game');
+  try {
+    const startButton = document.getElementById('start-arrow');
+    const resetButton = document.getElementById('reset-arrow');
+    const scoreElement = document.getElementById('arrow-score');
+    const streakElement = document.getElementById('arrow-streak');
+    const gameContainer = document.getElementById('arrow-game');
+    
+    if (!startButton || !resetButton || !scoreElement || !streakElement || !gameContainer) {
+      console.warn('Arrow game elements not found');
+      return;
+    }
   
   let isGameActive = false;
   //let arrowKeyboardHandler = null; // This variable is unused since we use window.arrowKeyboardHandler instead
@@ -1107,4 +1155,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event listeners
   startButton.addEventListener('click', startArrowGame);
   resetButton.addEventListener('click', resetArrowGame);
+  
+  } catch (error) {
+    console.error('Error initializing arrow game:', error);
+  }
 }); 

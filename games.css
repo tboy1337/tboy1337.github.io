@@ -511,6 +511,37 @@
   .mobile-controls {
     display: block;
   }
+
+  /* Improve header layout on mobile */
+  .game-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .game-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  /* Better mobile menu layout */
+  .game-menu ul {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  
+  /* Improve text display for typing game */
+  .text-display {
+    font-size: 1rem;
+    padding: 1rem;
+  }
+  
+  /* Snake game canvas sizing */
+  #snake-game canvas {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 @media (max-width: 480px) {
@@ -544,5 +575,36 @@
 
   .touch-arrow-btn i {
     font-size: 1.5rem;
+  }
+  
+  /* Mobile-first game menu */
+  .game-menu ul {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  
+  .game-menu-item button {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+  
+  /* Better mobile typography */
+  .text-display {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+    line-height: 1.4;
+  }
+  
+  /* Container adjustments */
+  .game-container {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+  
+  /* Touch target improvements */
+  .touch-btn,
+  .touch-arrow-btn {
+    min-height: 48px;
+    min-width: 48px;
   }
 } 
