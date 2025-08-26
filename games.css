@@ -103,25 +103,29 @@
   cursor: not-allowed;
 }
 
-#start-game, #start-snake, #start-typing {
+#start-game, #start-snake, #start-typing, #start-arrow {
   background-color: #4ade80; /* Green button */
   color: white;
+  border: none;
 }
 
 #start-game:hover:not(:disabled), 
 #start-snake:hover:not(:disabled),
-#start-typing:hover:not(:disabled) {
+#start-typing:hover:not(:disabled),
+#start-arrow:hover:not(:disabled) {
   background-color: #22c55e;
 }
 
-#reset-game, #reset-snake, #reset-typing {
+#reset-game, #reset-snake, #reset-typing, #reset-arrow {
   background-color: #f87171; /* Red button */
   color: white;
+  border: none;
 }
 
 #reset-game:hover:not(:disabled),
 #reset-snake:hover:not(:disabled),
-#reset-typing:hover:not(:disabled) {
+#reset-typing:hover:not(:disabled),
+#reset-arrow:hover:not(:disabled) {
   background-color: #ef4444;
 }
 

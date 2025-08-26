@@ -327,24 +327,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Remove the centered-content class
     snakeContainer.classList.remove('centered-content');
     
+    // Calculate responsive canvas size
+    const containerWidth = snakeContainer.offsetWidth || 400; // Fallback if container not ready
+    const maxCanvasSize = Math.min(400, containerWidth - 40); // 40px for padding
+    const canvasSize = Math.max(snakeSize * 10, Math.floor(maxCanvasSize / snakeSize) * snakeSize); // Ensure minimum size
+    
     // Create canvas
     canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 400;
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
     canvas.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
     canvas.style.border = '1px solid rgba(255, 255, 255, 0.1)';
     canvas.style.borderRadius = '0.25rem';
+    canvas.style.maxWidth = '100%';
+    canvas.style.height = 'auto';
     
     ctx = canvas.getContext('2d');
     snakeContainer.innerHTML = '';
     snakeContainer.appendChild(canvas);
     
-    // Initialize snake
+    // Initialize snake (ensure it's properly aligned to grid)
     snake = [
-      { x: 100, y: 100 },
-      { x: 80, y: 100 },
-      { x: 60, y: 100 }
+      { x: 3 * snakeSize, y: 3 * snakeSize },
+      { x: 2 * snakeSize, y: 3 * snakeSize },
+      { x: 1 * snakeSize, y: 3 * snakeSize }
     ];
+    
+    // Reset direction
+    direction = 'right';
     
     // Create first food
     createFood();
@@ -356,6 +366,9 @@ document.addEventListener('DOMContentLoaded', () => {
     isSnakeGameActive = true;
     snakeScore = 0;
     snakeScoreElement.textContent = snakeScore;
+    
+    // Reset direction to ensure consistent start
+    direction = 'right';
     
     // Initial setup
     initSnakeGame();
@@ -440,22 +453,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Move snake
     moveSnake();
     
+    // Check if food eaten (before collision check to avoid issues)
+    let foodEaten = false;
+    if (snake[0].x === food.x && snake[0].y === food.y) {
+      // Increase score
+      snakeScore += 10;
+      snakeScoreElement.textContent = snakeScore;
+      
+      // Create new food
+      createFood();
+      foodEaten = true;
+    }
+    
     // Check collisions
     if (checkCollision()) {
       endSnakeGame();
       return;
     }
     
-    // Check if food eaten
-    if (snake[0].x === food.x && snake[0].y === food.y) {
-      // Increase score
-      snakeScore += 10;
-      snakeScoreElement.textContent = snakeScore;
-      
-      // Grow snake (don't remove tail)
-      createFood();
-    } else {
-      // Move normally (remove tail)
+    // Remove tail only if no food was eaten (this makes snake grow when food eaten)
+    if (!foodEaten) {
       snake.pop();
     }
     
@@ -517,18 +534,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridWidth = canvas.width / snakeSize;
     const gridHeight = canvas.height / snakeSize;
     
-    food = {
-      x: Math.floor(Math.random() * gridWidth) * snakeSize,
-      y: Math.floor(Math.random() * gridHeight) * snakeSize
-    };
+    let attempts = 0;
+    const maxAttempts = gridWidth * gridHeight; // Prevent infinite recursion
     
-    // Make sure food doesn't appear on snake
-    for (let i = 0; i < snake.length; i++) {
-      if (food.x === snake[i].x && food.y === snake[i].y) {
-        createFood(); // Recursively try again
-        return;
+    do {
+      food = {
+        x: Math.floor(Math.random() * gridWidth) * snakeSize,
+        y: Math.floor(Math.random() * gridHeight) * snakeSize
+      };
+      attempts++;
+      
+      // Check if food position conflicts with snake
+      let conflictFound = false;
+      for (let i = 0; i < snake.length; i++) {
+        if (food.x === snake[i].x && food.y === snake[i].y) {
+          conflictFound = true;
+          break;
+        }
       }
-    }
+      
+      if (!conflictFound) {
+        return; // Found valid position
+      }
+      
+    } while (attempts < maxAttempts);
+    
+    // If we can't find a valid position (game nearly won), place food at 0,0
+    food = { x: 0, y: 0 };
   }
   
   function drawSnake() {
@@ -563,9 +595,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reset to initial display
     initSnakeDisplay();
     
+    // Reset game state
+    snake = [];
+    food = {};
     snakeScore = 0;
     snakeScoreElement.textContent = snakeScore;
     direction = 'right';
+    gameSpeed = 150;
     
     snakeStartButton.disabled = false;
     snakeResetButton.disabled = true;
@@ -1017,8 +1053,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function initAudio() {
     try {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    } catch {
-      console.warn('Web Audio API not supported in this browser');
+      // Resume audio context if it's suspended (required by browser policies)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().catch(err => {
+          console.warn('Failed to resume audio context:', err);
+        });
+      }
+    } catch (error) {
+      console.warn('Web Audio API not supported in this browser:', error);
+      audioContext = null;
     }
   }
   
