@@ -629,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     snakeStartButton.disabled = false;
-    snakeResetButton.disabled = true;
+    snakeResetButton.disabled = false; // Keep reset button enabled so user can reset after game over
   }
   
   // Event listeners
@@ -1168,8 +1168,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Reset the music maker
   function resetArrowGame() {
-    if (!isGameActive) return;
-    
     isGameActive = false;
     
     // Remove keyboard event handler
