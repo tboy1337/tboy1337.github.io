@@ -454,12 +454,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function handleDirectionChange(newDirection) {
+    // Only allow direction changes if no change is already queued
+    if (direction !== nextDirection) {
+      console.log(`Touch direction change ignored: already have ${direction} -> ${nextDirection} queued`);
+      return;
+    }
+    
     if (
-      (newDirection === 'up' && nextDirection !== 'down') ||
-      (newDirection === 'down' && nextDirection !== 'up') ||
-      (newDirection === 'left' && nextDirection !== 'right') ||
-      (newDirection === 'right' && nextDirection !== 'left')
+      (newDirection === 'up' && direction !== 'down') ||
+      (newDirection === 'down' && direction !== 'up') ||
+      (newDirection === 'left' && direction !== 'right') ||
+      (newDirection === 'right' && direction !== 'left')
     ) {
+      console.log(`Touch direction change: ${direction} -> ${newDirection}`);
       nextDirection = newDirection;
     }
   }
@@ -471,21 +478,28 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
     }
     
-    // Validate against nextDirection to prevent invalid rapid direction changes
-    if (e.key === 'ArrowUp' && nextDirection !== 'down') {
-      console.log(`Direction change: ${nextDirection} -> up`);
+    // Only allow direction changes if no change is already queued
+    // This prevents multiple rapid direction changes within one game loop cycle
+    if (direction !== nextDirection) {
+      console.log(`Direction change ignored: already have ${direction} -> ${nextDirection} queued`);
+      return;
+    }
+    
+    // Validate against current direction to prevent immediate reversal
+    if (e.key === 'ArrowUp' && direction !== 'down') {
+      console.log(`Direction change: ${direction} -> up`);
       nextDirection = 'up';
-    } else if (e.key === 'ArrowDown' && nextDirection !== 'up') {
-      console.log(`Direction change: ${nextDirection} -> down`);
+    } else if (e.key === 'ArrowDown' && direction !== 'up') {
+      console.log(`Direction change: ${direction} -> down`);
       nextDirection = 'down';
-    } else if (e.key === 'ArrowLeft' && nextDirection !== 'right') {
-      console.log(`Direction change: ${nextDirection} -> left`);
+    } else if (e.key === 'ArrowLeft' && direction !== 'right') {
+      console.log(`Direction change: ${direction} -> left`);
       nextDirection = 'left';
-    } else if (e.key === 'ArrowRight' && nextDirection !== 'left') {
-      console.log(`Direction change: ${nextDirection} -> right`);
+    } else if (e.key === 'ArrowRight' && direction !== 'left') {
+      console.log(`Direction change: ${direction} -> right`);
       nextDirection = 'right';
     } else {
-      console.log(`Invalid direction change: ${e.key} blocked (current: ${direction}, next: ${nextDirection})`);
+      console.log(`Invalid direction change: ${e.key} blocked (current: ${direction})`);
     }
   }
   
