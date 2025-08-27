@@ -1148,8 +1148,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     isGameActive = true;
     
-    // Update UI
-    scoreElement.parentElement.textContent = "Press keys to make music!";
+    // Update UI - hide the stat boxes instead of destroying them
+    scoreElement.parentElement.style.display = "none";
     streakElement.parentElement.style.display = "none";
     
     // Create the UI
@@ -1176,18 +1176,25 @@ document.addEventListener('DOMContentLoaded', () => {
       window.arrowKeyboardHandler = null;
     }
     
-    // Remove touch event listeners
-    document.querySelectorAll('.touch-arrow-btn').forEach(btn => {
-      btn.removeEventListener('touchstart', handleTouchStart);
-      btn.removeEventListener('click', handleTouchStart);
-    });
+    // Remove touch event listeners only if they exist
+    const touchBtns = document.querySelectorAll('.touch-arrow-btn');
+    if (touchBtns.length > 0) {
+      touchBtns.forEach(btn => {
+        btn.removeEventListener('touchstart', handleTouchStart);
+        btn.removeEventListener('click', handleTouchStart);
+      });
+    }
     
     // Reset to initial display
     initArrowDisplay();
     
-    // Restore UI
-    scoreElement.parentElement.innerHTML = "<strong>Score:</strong> <span id=\"arrow-score\">0</span>";
+    // Restore UI - show the stat boxes again instead of recreating them
+    scoreElement.parentElement.style.display = "";
     streakElement.parentElement.style.display = "";
+    
+    // Reset the score and streak values
+    scoreElement.textContent = "0";
+    streakElement.textContent = "0";
     
     startButton.disabled = false;
     resetButton.disabled = true;
