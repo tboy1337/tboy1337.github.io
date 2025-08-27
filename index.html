@@ -363,7 +363,7 @@
             </div>
         </section>
 
-        <section class="mt-12">
+        <section class="mt-12" id="contact-form">
             <h2 class="text-3xl font-bold text-center mb-6">📬 Contact Me</h2>
             <div class="max-w-2xl mx-auto">
                 <div class="bg-black/40 p-8 rounded-lg backdrop-blur-sm border border-white/10">
@@ -371,7 +371,7 @@
                         <p class="text-gray-300">Have a project idea or want to collaborate? I'd love to hear from you!</p>
                     </div>
                     
-                    <form id="contact-form" class="space-y-6">
+                    <form class="space-y-6">
                         <div>
                             <label for="contact-name" class="block text-sm font-medium text-gray-300 mb-2">
                                 <i class="fas fa-user mr-2"></i>Your Name
@@ -646,7 +646,7 @@
     <script>
         // Contact form functionality
         (function() {
-            const form = document.getElementById('contact-form');
+            const form = document.querySelector('#contact-form form');
             const submitBtn = document.getElementById('submit-btn');
             const submitText = document.getElementById('submit-text');
             const formStatus = document.getElementById('form-status');
