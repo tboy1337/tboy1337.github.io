@@ -473,13 +473,19 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Validate against nextDirection to prevent invalid rapid direction changes
     if (e.key === 'ArrowUp' && nextDirection !== 'down') {
+      console.log(`Direction change: ${nextDirection} -> up`);
       nextDirection = 'up';
     } else if (e.key === 'ArrowDown' && nextDirection !== 'up') {
+      console.log(`Direction change: ${nextDirection} -> down`);
       nextDirection = 'down';
     } else if (e.key === 'ArrowLeft' && nextDirection !== 'right') {
+      console.log(`Direction change: ${nextDirection} -> left`);
       nextDirection = 'left';
     } else if (e.key === 'ArrowRight' && nextDirection !== 'left') {
+      console.log(`Direction change: ${nextDirection} -> right`);
       nextDirection = 'right';
+    } else {
+      console.log(`Invalid direction change: ${e.key} blocked (current: ${direction}, next: ${nextDirection})`);
     }
   }
   
@@ -487,7 +493,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isSnakeGameActive) return;
     
     // Apply queued direction change at the start of each game loop
+    const previousDirection = direction;
     direction = nextDirection;
+    if (previousDirection !== direction) {
+      console.log(`Direction applied in game loop: ${previousDirection} -> ${direction}`);
+    }
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -558,12 +568,15 @@ document.addEventListener('DOMContentLoaded', () => {
       head.x >= canvas.width ||
       head.y >= canvas.height
     ) {
+      console.log(`Wall collision detected at (${head.x}, ${head.y}), canvas size: ${canvas.width}x${canvas.height}`);
       return true;
     }
     
     // Check self collision (skip the head)
     for (let i = 1; i < snake.length; i++) {
       if (head.x === snake[i].x && head.y === snake[i].y) {
+        console.log(`Self collision detected at (${head.x}, ${head.y}) with body segment ${i} at (${snake[i].x}, ${snake[i].y})`);
+        console.log(`Snake body:`, snake.map((seg, idx) => `${idx}: (${seg.x}, ${seg.y})`));
         return true;
       }
     }
