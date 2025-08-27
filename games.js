@@ -339,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let snake = [];
   let food = {};
   let direction = 'right';
+  let nextDirection = 'right'; // Buffer for next direction change
   let gameSpeed = 150;
   let snakeSize = 20;
   let snakeScore = 0;
@@ -390,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset direction
     direction = 'right';
+    nextDirection = 'right';
     
     // Create first food
     createFood();
@@ -404,6 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset direction to ensure consistent start
     direction = 'right';
+    nextDirection = 'right';
     
     // Initial setup
     initSnakeGame();
@@ -452,12 +455,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function handleDirectionChange(newDirection) {
     if (
-      (newDirection === 'up' && direction !== 'down') ||
-      (newDirection === 'down' && direction !== 'up') ||
-      (newDirection === 'left' && direction !== 'right') ||
-      (newDirection === 'right' && direction !== 'left')
+      (newDirection === 'up' && nextDirection !== 'down') ||
+      (newDirection === 'down' && nextDirection !== 'up') ||
+      (newDirection === 'left' && nextDirection !== 'right') ||
+      (newDirection === 'right' && nextDirection !== 'left')
     ) {
-      direction = newDirection;
+      nextDirection = newDirection;
     }
   }
   
@@ -468,19 +471,23 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
     }
     
-    if (e.key === 'ArrowUp' && direction !== 'down') {
-      direction = 'up';
-    } else if (e.key === 'ArrowDown' && direction !== 'up') {
-      direction = 'down';
-    } else if (e.key === 'ArrowLeft' && direction !== 'right') {
-      direction = 'left';
-    } else if (e.key === 'ArrowRight' && direction !== 'left') {
-      direction = 'right';
+    // Validate against nextDirection to prevent invalid rapid direction changes
+    if (e.key === 'ArrowUp' && nextDirection !== 'down') {
+      nextDirection = 'up';
+    } else if (e.key === 'ArrowDown' && nextDirection !== 'up') {
+      nextDirection = 'down';
+    } else if (e.key === 'ArrowLeft' && nextDirection !== 'right') {
+      nextDirection = 'left';
+    } else if (e.key === 'ArrowRight' && nextDirection !== 'left') {
+      nextDirection = 'right';
     }
   }
   
   function gameLoop() {
     if (!isSnakeGameActive) return;
+    
+    // Apply queued direction change at the start of each game loop
+    direction = nextDirection;
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -636,6 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
     snakeScore = 0;
     snakeScoreElement.textContent = snakeScore;
     direction = 'right';
+    nextDirection = 'right';
     gameSpeed = 150;
     
     snakeStartButton.disabled = false;
