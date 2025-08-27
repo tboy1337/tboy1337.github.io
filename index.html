@@ -461,45 +461,45 @@
         <section class="mt-12">
             <h2 class="text-3xl font-bold text-center mb-6">🎮 Fun &amp; Games</h2>
             <!-- Game Menu Navigation -->
-            <div class="game-menu backdrop-blur-sm border border-white/10 mb-6">
+            <nav class="game-menu backdrop-blur-sm border border-white/10 mb-6" role="navigation" aria-label="Game selection menu">
                 <ul class="flex flex-wrap justify-center">
                     <li class="game-menu-item active" data-game="memory">
-                        <button type="button" class="px-4 py-2">
-                            <i class="fas fa-brain mr-2"></i>Memory Game
+                        <button type="button" class="px-4 py-2" aria-label="Play Memory Card Game" aria-pressed="true">
+                            <i class="fas fa-brain mr-2" aria-hidden="true"></i>Memory Game
                         </button>
                     </li>
                     <li class="game-menu-item" data-game="snake">
-                        <button type="button" class="px-4 py-2">
-                            <i class="fas fa-snake mr-2"></i>Snake Game
+                        <button type="button" class="px-4 py-2" aria-label="Play Snake Game" aria-pressed="false">
+                            <i class="fas fa-snake mr-2" aria-hidden="true"></i>Snake Game
                         </button>
                     </li>
                     <li class="game-menu-item" data-game="typing">
-                        <button type="button" class="px-4 py-2">
-                            <i class="fas fa-keyboard mr-2"></i>Typing Test
+                        <button type="button" class="px-4 py-2" aria-label="Play Typing Speed Test" aria-pressed="false">
+                            <i class="fas fa-keyboard mr-2" aria-hidden="true"></i>Typing Test
                         </button>
                     </li>
                     <li class="game-menu-item" data-game="arrow">
-                        <button type="button" class="px-4 py-2">
-                            <i class="fas fa-arrows-alt mr-2"></i>Music Keys
+                        <button type="button" class="px-4 py-2" aria-label="Play Music Keys Game" aria-pressed="false">
+                            <i class="fas fa-arrows-alt mr-2" aria-hidden="true"></i>Music Keys
                         </button>
                     </li>
                 </ul>
-            </div>
+            </nav>
 
             <!-- Memory Card Game Section -->
             <div class="game-container backdrop-blur-sm border border-white/10 game-section" id="memory-section">
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
-                            <strong>Score:</strong> <span id="score">0</span>
+                            <strong>Score:</strong> <span id="score" aria-live="polite" aria-label="Current score">0</span>
                         </div>
                         <div class="stat-box">
-                            <strong>Time:</strong> <span id="time">60</span>s
+                            <strong>Time:</strong> <span id="time" aria-live="polite" aria-label="Time remaining">60</span>s
                         </div>
                     </div>
                     <div class="game-controls">
-                        <button type="button" id="start-game" class="game-btn">Start Game</button>
-                        <button type="button" id="reset-game" class="game-btn" disabled>Reset</button>
+                        <button type="button" id="start-game" class="game-btn" aria-label="Start Memory Card Game">Start Game</button>
+                        <button type="button" id="reset-game" class="game-btn" disabled aria-label="Reset Memory Card Game">Reset</button>
                     </div>
                 </div>
                 <div id="memory-game" class="mt-4">

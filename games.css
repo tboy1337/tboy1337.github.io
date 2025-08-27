@@ -52,6 +52,13 @@
   border-color: rgba(79, 70, 229, 0.4);
 }
 
+.game-menu-item button:focus {
+  outline: 2px solid rgba(79, 70, 229, 0.8);
+  outline-offset: 2px;
+  background-color: rgba(79, 70, 229, 0.2);
+  border-color: rgba(79, 70, 229, 0.4);
+}
+
 .game-menu-item.active button {
   background-color: rgba(79, 70, 229, 0.3);
   border-color: rgba(79, 70, 229, 0.8);
@@ -101,6 +108,11 @@
 .game-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.game-btn:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
 }
 
 #start-game, #start-snake, #start-typing, #start-arrow {

@@ -19,14 +19,26 @@ document.addEventListener('DOMContentLoaded', () => {
       section.classList.add('hidden');
     });
     
-    // Deactivate all menu items
+    // Deactivate all menu items and update aria-pressed
     menuItems.forEach(item => {
       item.classList.remove('active');
+      const button = item.querySelector('button');
+      if (button) {
+        button.setAttribute('aria-pressed', 'false');
+      }
     });
     
     // Show selected game and activate menu item
     document.getElementById(`${gameName}-section`).classList.remove('hidden');
-    document.querySelector(`.game-menu-item[data-game="${gameName}"]`).classList.add('active');
+    const activeMenuItem = document.querySelector(`.game-menu-item[data-game="${gameName}"]`);
+    activeMenuItem.classList.add('active');
+    
+    // Update aria-pressed for active button
+    const activeButton = activeMenuItem.querySelector('button');
+    if (activeButton) {
+      activeButton.setAttribute('aria-pressed', 'true');
+      activeButton.focus(); // Focus the active game button for keyboard users
+    }
     
     // If we're switching away from Snake game, make sure to clean up event listeners
     if (gameName !== 'snake' && window.snakeKeyboardHandler) {
@@ -131,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
       timeLeft--;
       timeElement.textContent = timeLeft;
       
-      if (timeLeft <= 0 || document.querySelectorAll('.memory-card.matched').length === cards.length) {
-        endGame();
+      if (timeLeft <= 0) {
+        endGame(false); // Game lost - time ran out
       }
     }, 1000);
     
@@ -221,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if all cards are matched
     if (document.querySelectorAll('.memory-card.matched').length === cards.length) {
-      endGame();
+      endGame(true); // Game won - all cards matched
     }
   }
   
@@ -267,13 +279,36 @@ document.addEventListener('DOMContentLoaded', () => {
     resetBoard();
   }
   
-  function endGame() {
+  function endGame(won = false) {
     clearInterval(timer);
     isGameActive = false;
     lockBoard = true;
     
+    // Show result message
+    gameContainer.classList.add('centered-content');
+    if (won) {
+      gameContainer.innerHTML = `
+        <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
+          <p class="text-2xl mb-4 text-green-400">🎉 You Won!</p>
+          <p class="text-lg mb-2">All cards matched!</p>
+          <p>Final Score: <strong>${score}</strong></p>
+          <p>Time Remaining: <strong>${timeLeft}s</strong></p>
+          <p class="mt-4 text-gray-300">Click "Reset" to play again</p>
+        </div>
+      `;
+    } else {
+      gameContainer.innerHTML = `
+        <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
+          <p class="text-2xl mb-4 text-red-400">⏰ Time's Up!</p>
+          <p class="text-lg mb-2">Better luck next time!</p>
+          <p>Final Score: <strong>${score}</strong></p>
+          <p class="mt-4 text-gray-300">Click "Reset" to try again</p>
+        </div>
+      `;
+    }
+    
     startButton.disabled = false;
-    resetButton.disabled = true;
+    resetButton.disabled = false; // Enable reset so user can play again
   }
   
   // Event listeners
@@ -1034,18 +1069,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const noteIndex = keyMap[key];
       const arrowElement = document.querySelector(`.arrow-key[data-key="${key}"]`);
       
-      // Visual effect for key press
-      arrowElement.classList.add('active');
-      setTimeout(() => {
-        arrowElement.classList.remove('active');
-      }, 100);
-      
       // Play the note
       playNote(noteIndex);
       
-      // Add correct animation
-      arrowElement.classList.add('correct');
-      setTimeout(() => arrowElement.classList.remove('correct'), 300);
+      // Visual effect for key press (only if element exists)
+      if (arrowElement) {
+        arrowElement.classList.add('active');
+        setTimeout(() => {
+          arrowElement.classList.remove('active');
+        }, 100);
+        
+        // Add correct animation
+        arrowElement.classList.add('correct');
+        setTimeout(() => arrowElement.classList.remove('correct'), 300);
+      }
     }
   }
   
