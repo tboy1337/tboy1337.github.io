@@ -22,9 +22,37 @@
     <script src="translation.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            margin: 0;
+            padding: 0;
             color: #e0e0e0;
             font-family: 'Inter', sans-serif;
+            background: #0f0c29;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            z-index: -2;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.05) 0%, transparent 50%);
+            z-index: -1;
         }
         .project-card {
             transition: transform 0.3s, box-shadow 0.3s;
@@ -64,6 +92,33 @@
         }
         .glow {
             text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        
+        /* Ensure proper stacking and smooth transitions */
+        main, header, footer {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Enhanced glass morphism effect for cards */
+        .bg-black\/40 {
+            background: rgba(0, 0, 0, 0.25) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Improve mobile background appearance */
+        @media (max-width: 768px) {
+            body::after {
+                background: 
+                    radial-gradient(circle at 50% 20%, rgba(120, 119, 198, 0.08) 0%, transparent 60%),
+                    radial-gradient(circle at 20% 80%, rgba(255, 119, 198, 0.06) 0%, transparent 60%);
+            }
         }
     </style>
 </head>
