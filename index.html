@@ -652,11 +652,11 @@
                 if (submitting) {
                     submitBtn.disabled = true;
                     submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+                    submitText.textContent = 'Sending...';
                 } else {
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitText.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Send Message';
+                    submitText.textContent = 'Send Message';
                 }
             }
 
