@@ -318,6 +318,24 @@
   color: white;
 }
 
+.typing-stats-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sentence-counter {
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
 /* Arrow Keys Game Styles */
 #arrow-game {
   max-width: 600px;
@@ -609,6 +627,17 @@
     font-size: 0.9rem;
     padding: 0.75rem;
     line-height: 1.4;
+  }
+  
+  /* Mobile typing stats layout */
+  .typing-stats-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .timer-display, .sentence-counter {
+    font-size: 1rem;
+    padding: 0.5rem;
   }
   
   /* Container adjustments */

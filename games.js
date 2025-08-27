@@ -697,6 +697,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let isTypingGameActive = false;
   let totalTyped = 0;
   let correctTyped = 0;
+  let currentSentence = 0;
+  let sentencesCompleted = 0;
+  let totalWordsTyped = 0;
+  let totalCharactersTyped = 0;
+  let totalCorrectCharacters = 0;
   
   // Collection of text prompts for typing test
   const textPrompts = [
@@ -747,10 +752,22 @@ document.addEventListener('DOMContentLoaded', () => {
     timerDisplay.className = 'timer-display';
     timerDisplay.textContent = '60';
     
+    // Sentences counter display
+    const sentenceCounter = document.createElement('div');
+    sentenceCounter.id = 'sentence-counter';
+    sentenceCounter.className = 'sentence-counter';
+    sentenceCounter.textContent = 'Sentences: 0';
+    
+    // Create a stats row for timer and counter
+    const statsRow = document.createElement('div');
+    statsRow.className = 'typing-stats-row';
+    statsRow.appendChild(timerDisplay);
+    statsRow.appendChild(sentenceCounter);
+    
     // Append elements
     gameWrapper.appendChild(textDisplay);
     gameWrapper.appendChild(typingInput);
-    gameWrapper.appendChild(timerDisplay);
+    gameWrapper.appendChild(statsRow);
     typingContainer.appendChild(gameWrapper);
   }
   
@@ -760,26 +777,21 @@ document.addEventListener('DOMContentLoaded', () => {
     isTypingGameActive = true;
     totalTyped = 0;
     correctTyped = 0;
+    currentSentence = 0;
+    sentencesCompleted = 0;
+    totalWordsTyped = 0;
+    totalCharactersTyped = 0;
+    totalCorrectCharacters = 0;
     
     // Initialize game
     initTypingGame();
     
+    // Load first sentence
+    loadNewSentence();
+    
     // Get elements
-    const textDisplay = document.getElementById('text-display');
     const typingInput = document.getElementById('typing-input');
     const timerDisplay = document.getElementById('timer-display');
-    
-    // Select random prompt
-    const randomIndex = Math.floor(Math.random() * textPrompts.length);
-    const currentPrompt = textPrompts[randomIndex];
-    
-    // Display text character by character with spans for tracking
-    textDisplay.innerHTML = '';
-    currentPrompt.split('').forEach(char => {
-      const charSpan = document.createElement('span');
-      charSpan.textContent = char;
-      textDisplay.appendChild(charSpan);
-    });
     
     // Enable input and focus
     typingInput.disabled = false;
@@ -805,6 +817,30 @@ document.addEventListener('DOMContentLoaded', () => {
     
     typingStartButton.disabled = true;
     typingResetButton.disabled = false;
+  }
+  
+  function loadNewSentence() {
+    const textDisplay = document.getElementById('text-display');
+    const typingInput = document.getElementById('typing-input');
+    
+    // Select random prompt
+    const randomIndex = Math.floor(Math.random() * textPrompts.length);
+    const currentPrompt = textPrompts[randomIndex];
+    
+    // Display text character by character with spans for tracking
+    textDisplay.innerHTML = '';
+    currentPrompt.split('').forEach(char => {
+      const charSpan = document.createElement('span');
+      charSpan.textContent = char;
+      textDisplay.appendChild(charSpan);
+    });
+    
+    // Clear input for new sentence
+    if (typingInput) {
+      typingInput.value = '';
+      totalTyped = 0;
+      correctTyped = 0;
+    }
   }
   
   function checkTyping() {
@@ -842,9 +878,25 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // If all characters are correct, end the test
+    // If all characters are correct, load new sentence instead of ending
     if (correct && arrayValue.length === arrayPrompt.length) {
-      endTypingGame();
+      // Update cumulative stats
+      totalCharactersTyped += totalTyped;
+      totalCorrectCharacters += correctTyped;
+      sentencesCompleted++;
+      
+      // Update sentence counter display
+      const sentenceCounter = document.getElementById('sentence-counter');
+      if (sentenceCounter) {
+        sentenceCounter.textContent = `Sentences: ${sentencesCompleted}`;
+      }
+      
+      // Load new sentence if game is still active
+      if (isTypingGameActive) {
+        setTimeout(() => {
+          loadNewSentence();
+        }, 500); // Brief pause before new sentence
+      }
     }
     
     // Update stats in real-time
@@ -852,14 +904,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function updateStats() {
-    // Calculate words per minute (WPM)
+    // Calculate words per minute (WPM) based on cumulative stats
     // Assuming 5 characters = 1 word, which is a common standard
     const timeInMinutes = (new Date() - startTime) / 1000 / 60;
-    const wordsTyped = correctTyped / 5;
-    const wpm = Math.round(wordsTyped / timeInMinutes) || 0;
+    const totalCorrectWords = (totalCorrectCharacters + correctTyped) / 5;
+    const wpm = Math.round(totalCorrectWords / timeInMinutes) || 0;
     
-    // Calculate accuracy
-    const accuracy = totalTyped > 0 ? Math.round((correctTyped / totalTyped) * 100) : 0;
+    // Calculate cumulative accuracy
+    const totalCharsSoFar = totalCharactersTyped + totalTyped;
+    const totalCorrectSoFar = totalCorrectCharacters + correctTyped;
+    const accuracy = totalCharsSoFar > 0 ? Math.round((totalCorrectSoFar / totalCharsSoFar) * 100) : 0;
     
     // Update displays
     wpmElement.textContent = wpm;
@@ -883,6 +937,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function endTypingGame() {
     clearInterval(timerInterval);
+    isTypingGameActive = false;
     
     const typingInput = document.getElementById('typing-input');
     if (typingInput) {
@@ -890,12 +945,43 @@ document.addEventListener('DOMContentLoaded', () => {
       typingInput.removeEventListener('input', checkTyping);
     }
     
-    isTypingGameActive = false;
-    typingStartButton.disabled = false;
-    typingResetButton.disabled = true;
+    // Add current sentence stats to totals if user was in middle of typing
+    totalCharactersTyped += totalTyped;
+    totalCorrectCharacters += correctTyped;
     
-    // Final statistics update
-    updateStats();
+    // Final statistics calculation
+    const timeInMinutes = (new Date() - startTime) / 1000 / 60;
+    const totalCorrectWords = totalCorrectCharacters / 5;
+    const finalWpm = Math.round(totalCorrectWords / timeInMinutes) || 0;
+    const finalAccuracy = totalCharactersTyped > 0 ? Math.round((totalCorrectCharacters / totalCharactersTyped) * 100) : 0;
+    
+    // Show final score display
+    typingContainer.classList.add('centered-content');
+    typingContainer.innerHTML = `
+      <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
+        <p class="text-2xl mb-4 text-blue-400">🎯 Typing Test Complete!</p>
+        <div class="text-lg space-y-2">
+          <p><strong>Final WPM:</strong> ${finalWpm}</p>
+          <p><strong>Final Accuracy:</strong> ${finalAccuracy}%</p>
+          <p><strong>Sentences Completed:</strong> ${sentencesCompleted}</p>
+          <p><strong>Total Characters Typed:</strong> ${totalCharactersTyped}</p>
+          <p><strong>Correct Characters:</strong> ${totalCorrectCharacters}</p>
+        </div>
+        <div class="mt-6">
+          ${finalWpm >= 60 ? '<p class="text-green-400">🎉 Excellent typing speed!</p>' : 
+            finalWpm >= 40 ? '<p class="text-yellow-400">⭐ Good typing speed!</p>' : 
+            '<p class="text-blue-400">📝 Keep practicing to improve!</p>'}
+        </div>
+        <p class="mt-4 text-gray-300">Click "Reset" to try again</p>
+      </div>
+    `;
+    
+    typingStartButton.disabled = false;
+    typingResetButton.disabled = false;
+    
+    // Update final displays one more time
+    wpmElement.textContent = finalWpm;
+    accuracyElement.textContent = finalAccuracy;
   }
   
   // Event listeners
