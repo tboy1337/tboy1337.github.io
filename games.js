@@ -1035,11 +1035,9 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     const startButton = document.getElementById('start-arrow');
     const resetButton = document.getElementById('reset-arrow');
-    const scoreElement = document.getElementById('arrow-score');
-    const streakElement = document.getElementById('arrow-streak');
     const gameContainer = document.getElementById('arrow-game');
     
-    if (!startButton || !resetButton || !scoreElement || !streakElement || !gameContainer) {
+    if (!startButton || !resetButton || !gameContainer) {
       console.warn('Arrow game elements not found');
       return;
     }
@@ -1306,10 +1304,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     isGameActive = true;
     
-    // Update UI - hide the stat boxes instead of destroying them
-    scoreElement.parentElement.style.display = "none";
-    streakElement.parentElement.style.display = "none";
-    
     // Create the UI
     createArrowGameUI();
     
@@ -1345,14 +1339,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset to initial display
     initArrowDisplay();
-    
-    // Restore UI - show the stat boxes again instead of recreating them
-    scoreElement.parentElement.style.display = "";
-    streakElement.parentElement.style.display = "";
-    
-    // Reset the score and streak values
-    scoreElement.textContent = "0";
-    streakElement.textContent = "0";
     
     startButton.disabled = false;
     resetButton.disabled = true;
