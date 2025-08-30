@@ -1045,6 +1045,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isGameActive = false;
   //let arrowKeyboardHandler = null; // This variable is unused since we use window.arrowKeyboardHandler instead
   let audioContext = null;
+  let notesPlayed = 0;
   
   // Define audio frequencies for different notes (pentatonic scale with electronic vibe)
   const noteFrequencies = [
@@ -1073,6 +1074,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Initialize when loaded
   initArrowDisplay();
+  
+  // Initialize notes counter
+  const notesElement = document.getElementById('arrow-notes');
+  if (notesElement) {
+    notesElement.textContent = '0';
+  }
   
   // Create the game UI
   function createArrowGameUI() {
@@ -1225,6 +1232,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function playNote(index) {
     if (!audioContext) return;
     
+    // Update notes counter
+    notesPlayed++;
+    const notesElement = document.getElementById('arrow-notes');
+    if (notesElement) {
+      notesElement.textContent = notesPlayed;
+    }
+    
     // Create audio nodes
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -1304,6 +1318,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     isGameActive = true;
     
+    // Reset notes counter
+    notesPlayed = 0;
+    const notesElement = document.getElementById('arrow-notes');
+    if (notesElement) {
+      notesElement.textContent = notesPlayed;
+    }
+    
     // Create the UI
     createArrowGameUI();
     
@@ -1321,6 +1342,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Reset the music maker
   function resetArrowGame() {
     isGameActive = false;
+    
+    // Reset notes counter
+    notesPlayed = 0;
     
     // Remove keyboard event handler
     if (window.arrowKeyboardHandler) {
