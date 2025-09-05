@@ -1955,14 +1955,20 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log(`⏹️ Stopping current loop for tempo change...`);
           stopLayerLoop(currentLayerIndex);
           
-          // Ensure we have notes to play
-          if (loopLayers[currentLayerIndex] && loopLayers[currentLayerIndex].notes.length > 0) {
+          // Find notes to play - check recorded notes first, then layer data
+          const notesToPlay = recordedNotes.length > 0 ? recordedNotes : 
+                             (loopLayers[currentLayerIndex] ? loopLayers[currentLayerIndex].notes : []);
+          
+          if (notesToPlay.length > 0) {
             setTimeout(() => {
               console.log(`▶️ Restarting loop with new tempo: ${newTempo} BPM`);
-              startLayerLoop(currentLayerIndex, loopLayers[currentLayerIndex].notes);
-            }, 200); // Increased timeout for stability
+              console.log(`🎵 Notes to play:`, notesToPlay.length);
+              startLayerLoop(currentLayerIndex, notesToPlay);
+            }, 200);
           } else {
             console.warn(`❌ No notes found for layer ${currentLayerIndex + 1}`);
+            console.log(`🔧 recordedNotes:`, recordedNotes.length);
+            console.log(`🔧 loopLayers[${currentLayerIndex}]:`, loopLayers[currentLayerIndex]);
           }
         } else {
           console.log(`ℹ️ Layer ${currentLayerIndex + 1} is not currently looping`);
@@ -1978,12 +1984,14 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('🎛️ Slider current value:', layerTempoSlider.value);
       console.log('🎛️ Slider disabled?', layerTempoSlider.disabled);
       
-      // Manual test after 2 seconds
+      // Manual test after 3 seconds (after layer is set up)
       setTimeout(() => {
         console.log('🧪 MANUAL TEST: Simulating slider change to 140 BPM...');
+        console.log('🔧 Layer state before test:', loopLayers[currentLayerIndex]);
+        console.log('🔧 Active loops before test:', [...activeLoopLayers]);
         layerTempoSlider.value = 140;
         tempoHandler({ target: { value: 140 } });
-      }, 2000);
+      }, 3000);
     } else {
       console.error('❌ Layer tempo slider not found! Available elements:');
       console.log('Available tempo elements:', document.querySelectorAll('[id*="tempo"]'));
@@ -2067,6 +2075,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLayerDisplay();
     updateLayerCounts();
     console.log(`Saved ${recordedNotes.length} notes to layer ${currentLayerIndex + 1}`);
+    console.log(`🔧 Layer data after save:`, loopLayers[currentLayerIndex]);
+    console.log(`🔧 All layers:`, loopLayers);
   }
   
   function updateLayerDisplay() {
@@ -2265,15 +2275,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function toggleLoop() {
     const loopBtn = document.getElementById('loop-btn');
     
+    console.log(`🔄 toggleLoop called - isLooping: ${isLooping}, currentLayerIndex: ${currentLayerIndex}`);
+    console.log(`🔧 recordedNotes.length: ${recordedNotes.length}`);
+    console.log(`🔧 loopLayers[${currentLayerIndex}]:`, loopLayers[currentLayerIndex]);
+    console.log(`🔧 activeLoopLayers:`, [...activeLoopLayers]);
+    
     if (isLooping) {
       // Stop current layer loop
+      console.log(`⏹️ Stopping loop for layer ${currentLayerIndex + 1}`);
       stopLayerLoop(currentLayerIndex);
       loopBtn.textContent = '🔄 Loop Current';
       loopBtn.classList.remove('active');
     } else {
       // Start current layer loop
-      if (recordedNotes.length === 0) return;
-      startLayerLoop(currentLayerIndex, recordedNotes);
+      const notesToPlay = recordedNotes.length > 0 ? recordedNotes : 
+                         (loopLayers[currentLayerIndex] ? loopLayers[currentLayerIndex].notes : []);
+      
+      console.log(`▶️ Starting loop for layer ${currentLayerIndex + 1} with ${notesToPlay.length} notes`);
+      
+      if (notesToPlay.length === 0) {
+        console.warn(`❌ No notes to loop for layer ${currentLayerIndex + 1}`);
+        return;
+      }
+      
+      startLayerLoop(currentLayerIndex, notesToPlay);
       loopBtn.textContent = '⏹️ Stop Current';
       loopBtn.classList.add('active');
     }
