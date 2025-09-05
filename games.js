@@ -1030,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 }); 
 
-// Discord-style Arrow Keys Game
+// Advanced Music Studio
 document.addEventListener('DOMContentLoaded', () => {
   try {
     const startButton = document.getElementById('start-arrow');
@@ -1038,36 +1038,74 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameContainer = document.getElementById('arrow-game');
     
     if (!startButton || !resetButton || !gameContainer) {
-      console.warn('Arrow game elements not found');
+      console.warn('Music studio elements not found');
       return;
     }
   
   let isGameActive = false;
-  //let arrowKeyboardHandler = null; // This variable is unused since we use window.arrowKeyboardHandler instead
   let audioContext = null;
   let notesPlayed = 0;
   
-  // Define audio frequencies for different notes (pentatonic scale with electronic vibe)
-  const noteFrequencies = [
-    261.63, // C
-    293.66, // D
-    329.63, // E
-    392.00, // G
-    440.00, // A
-    523.25, // C (octave up)
-    587.33, // D (octave up)
-    659.25  // E (octave up)
-  ];
+  // Define comprehensive note frequencies (full chromatic scale with multiple octaves)
+  const noteFrequencies = {
+    // Octave 3
+    'C3': 130.81, 'C#3': 138.59, 'Db3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'Eb3': 155.56,
+    'E3': 164.81, 'F3': 174.61, 'F#3': 185.00, 'Gb3': 185.00, 'G3': 196.00, 'G#3': 207.65,
+    'Ab3': 207.65, 'A3': 220.00, 'A#3': 233.08, 'Bb3': 233.08, 'B3': 246.94,
+    // Octave 4 (Middle)
+    'C4': 261.63, 'C#4': 277.18, 'Db4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'Eb4': 311.13,
+    'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'Gb4': 369.99, 'G4': 392.00, 'G#4': 415.30,
+    'Ab4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'Bb4': 466.16, 'B4': 493.88,
+    // Octave 5
+    'C5': 523.25, 'C#5': 554.37, 'Db5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'Eb5': 622.25,
+    'E5': 659.25, 'F5': 698.46, 'F#5': 739.99, 'Gb5': 739.99, 'G5': 783.99, 'G#5': 830.61,
+    'Ab5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'Bb5': 932.33, 'B5': 987.77
+  };
+
+  // Enhanced keyboard mapping for piano-style playing
+  const keyboardMapping = {
+    // Lower row (white keys) - Major scale starting from C4
+    'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4', 'g': 'G4', 'h': 'A4', 'j': 'B4', 'k': 'C5',
+    // Upper row (black keys) - Sharps/flats
+    'w': 'C#4', 'e': 'D#4', 't': 'F#4', 'y': 'G#4', 'u': 'A#4', 'o': 'C#5', 'p': 'D#5',
+    // Number row for octave 3
+    '1': 'C3', '2': 'D3', '3': 'E3', '4': 'F3', '5': 'G3', '6': 'A3', '7': 'B3',
+    // Arrow keys for special effects and octave 5
+    'ArrowUp': 'C5', 'ArrowLeft': 'G4', 'ArrowDown': 'E4', 'ArrowRight': 'A4'
+  };
+
+  // Effect types and parameters
+  let currentEffects = {
+    reverb: { enabled: false, roomSize: 0.3, damping: 0.5, wetness: 0.3 },
+    delay: { enabled: false, time: 0.3, feedback: 0.3, wetness: 0.3 },
+    chorus: { enabled: false, rate: 1.5, depth: 0.3, wetness: 0.5 },
+    distortion: { enabled: true, amount: 25, wetness: 0.5 },
+    filter: { enabled: true, frequency: 1000, Q: 8, type: 'lowpass' }
+  };
+
+  // Current instrument type
+  let currentInstrument = 'synth'; // synth, piano, strings, bass
+
+  // Recording system
+  let isRecording = false;
+  let recordedNotes = [];
+  let recordingStartTime = 0;
+  let isLooping = false;
+  let loopInterval = null;
+  let currentTempo = 120; // BPM
+  let masterVolume = 0.3;
   
-  // Initialize the game
+  // Initialize the advanced music studio
   function initArrowDisplay() {
     gameContainer.classList.add('centered-content');
     gameContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
-        <p class="text-xl mb-4">Music Keys</p>
-        <p>Press the arrow keys to create your own music!</p>
-        <p>Each arrow key plays a different note with electronic effects.</p>
-        <p class="mt-4">Click "Start" to begin making music!</p>
+        <p class="text-xl mb-4">🎹 Advanced Music Studio</p>
+        <p class="mb-2">Create music with a full chromatic keyboard!</p>
+        <p class="mb-2">🎵 Use A-K keys for white notes, Q-P for black notes</p>
+        <p class="mb-2">🎛️ Apply effects: reverb, delay, chorus & more</p>
+        <p class="mb-2">🔄 Record and loop your compositions</p>
+        <p class="mt-4">Click "Start" to begin composing!</p>
       </div>
     `;
   }
@@ -1081,67 +1119,125 @@ document.addEventListener('DOMContentLoaded', () => {
     notesElement.textContent = '0';
   }
   
-  // Create the game UI
+  // Create the advanced music studio UI
   function createArrowGameUI() {
     gameContainer.classList.remove('centered-content');
     
     gameContainer.innerHTML = `
-      <div class="arrow-container">
-        <div class="arrow-key" data-key="ArrowUp" data-note="0">
-          <i class="fas fa-arrow-up"></i>
-        </div>
-        <div class="arrow-key" data-key="ArrowLeft" data-note="1">
-          <i class="fas fa-arrow-left"></i>
-        </div>
-        <div class="arrow-key" data-key="ArrowDown" data-note="2">
-          <i class="fas fa-arrow-down"></i>
-        </div>
-        <div class="arrow-key" data-key="ArrowRight" data-note="3">
-          <i class="fas fa-arrow-right"></i>
-        </div>
-      </div>
-      <div class="mt-8 text-center">
-        <p>Create electronic music! Each arrow plays a different note.</p>
-        <p class="mt-2 text-sm text-gray-400">Try pressing multiple keys in different patterns.</p>
-      </div>
-      <div class="mobile-controls mt-6">
-        <p class="text-center mb-3">Tap the arrows to play on mobile:</p>
-        <div class="touch-arrow-container">
-          <div class="touch-arrow-btn" data-note="0">
-            <i class="fas fa-arrow-up"></i>
+      <div class="music-studio">
+        <!-- Piano Keyboard Visual -->
+        <div class="piano-container">
+          <div class="piano-keyboard" id="piano-keyboard">
+            <!-- Keys will be generated dynamically -->
           </div>
-          <div class="touch-arrow-row">
-            <div class="touch-arrow-btn" data-note="1">
-              <i class="fas fa-arrow-left"></i>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="control-panel">
+          <div class="control-row">
+            <div class="control-group">
+              <label>🎼 Instrument:</label>
+              <select id="instrument-select" class="control-select">
+                <option value="synth">🎹 Synthesizer</option>
+                <option value="piano">🎵 Piano</option>
+                <option value="strings">🎻 Strings</option>
+                <option value="bass">🎸 Bass</option>
+              </select>
             </div>
-            <div class="touch-arrow-btn" data-note="2">
-              <i class="fas fa-arrow-down"></i>
+            <div class="control-group">
+              <label>🔊 Volume:</label>
+              <input type="range" id="volume-slider" min="0" max="100" value="30" class="control-slider">
+              <span id="volume-display">30%</span>
             </div>
-            <div class="touch-arrow-btn" data-note="3">
-              <i class="fas fa-arrow-right"></i>
+            <div class="control-group">
+              <label>⏱️ Tempo:</label>
+              <input type="range" id="tempo-slider" min="60" max="180" value="120" class="control-slider">
+              <span id="tempo-display">120 BPM</span>
+            </div>
+          </div>
+          
+          <!-- Effects Panel -->
+          <div class="effects-panel">
+            <div class="effects-title">🎛️ Effects</div>
+            <div class="effects-grid">
+              <div class="effect-control">
+                <input type="checkbox" id="reverb-toggle" class="effect-toggle">
+                <label for="reverb-toggle">🌊 Reverb</label>
+                <input type="range" id="reverb-amount" min="0" max="100" value="30" class="effect-slider" disabled>
+              </div>
+              <div class="effect-control">
+                <input type="checkbox" id="delay-toggle" class="effect-toggle">
+                <label for="delay-toggle">🔄 Delay</label>
+                <input type="range" id="delay-amount" min="0" max="100" value="30" class="effect-slider" disabled>
+              </div>
+              <div class="effect-control">
+                <input type="checkbox" id="chorus-toggle" class="effect-toggle">
+                <label for="chorus-toggle">🌈 Chorus</label>
+                <input type="range" id="chorus-amount" min="0" max="100" value="50" class="effect-slider" disabled>
+              </div>
+              <div class="effect-control">
+                <input type="checkbox" id="distortion-toggle" class="effect-toggle" checked>
+                <label for="distortion-toggle">⚡ Distortion</label>
+                <input type="range" id="distortion-amount" min="0" max="100" value="50" class="effect-slider">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recording Panel -->
+          <div class="recording-panel">
+            <div class="recording-title">🎙️ Recording</div>
+            <div class="recording-controls">
+              <button id="record-btn" class="record-btn">⏺️ Record</button>
+              <button id="play-btn" class="play-btn" disabled>▶️ Play</button>
+              <button id="loop-btn" class="loop-btn" disabled>🔄 Loop</button>
+              <button id="clear-btn" class="clear-btn" disabled>🗑️ Clear</button>
+              <button id="save-btn" class="save-btn" disabled>💾 Save</button>
+              <button id="load-btn" class="load-btn">📁 Load</button>
+            </div>
+            <div class="recording-info">
+              <span id="recording-status">Ready to record</span>
+              <span id="recording-length">0:00</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Keyboard Instruction -->
+        <div class="keyboard-help">
+          <p class="mb-2">🎹 <strong>Keyboard Controls:</strong></p>
+          <p>White keys: A S D F G H J K | Black keys: W E T Y U O P</p>
+          <p>Lower octave: 1-7 | Higher octave: Arrow keys</p>
+        </div>
+        
+        <!-- Mobile Touch Controls -->
+        <div class="mobile-controls">
+          <div class="touch-piano-container">
+            <div class="touch-key-row">
+              <div class="touch-key white-key" data-note="C4">C</div>
+              <div class="touch-key black-key" data-note="C#4">C#</div>
+              <div class="touch-key white-key" data-note="D4">D</div>
+              <div class="touch-key black-key" data-note="D#4">D#</div>
+              <div class="touch-key white-key" data-note="E4">E</div>
+              <div class="touch-key white-key" data-note="F4">F</div>
+              <div class="touch-key black-key" data-note="F#4">F#</div>
+              <div class="touch-key white-key" data-note="G4">G</div>
+              <div class="touch-key black-key" data-note="G#4">G#</div>
+              <div class="touch-key white-key" data-note="A4">A</div>
+              <div class="touch-key black-key" data-note="A#4">A#</div>
+              <div class="touch-key white-key" data-note="B4">B</div>
             </div>
           </div>
         </div>
       </div>
     `;
 
-    // Add note labels to the keys
-    const noteNames = ["C", "D", "E", "G", "A", "C", "D", "E"];
-    document.querySelectorAll('.arrow-key, .touch-arrow-btn').forEach((key) => {
-      const noteIndex = parseInt(key.dataset.note);
-      
-      // Add note name
-      const noteLabel = document.createElement('div');
-      noteLabel.className = 'note-label';
-      noteLabel.textContent = noteNames[noteIndex];
-      key.appendChild(noteLabel);
-    });
-
-    // Add touch event listeners for mobile
-    document.querySelectorAll('.touch-arrow-btn').forEach(btn => {
-      btn.addEventListener('touchstart', handleTouchStart);
-      btn.addEventListener('click', handleTouchStart);  // Also support clicks for testing
-    });
+    // Generate piano keyboard visual
+    generatePianoKeyboard();
+    
+    // Setup control event listeners
+    setupControlListeners();
+    
+    // Setup touch controls for mobile
+    setupTouchControls();
   }
   
   // Handle touch events for mobile
@@ -1151,7 +1247,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Prevent default behavior to avoid scrolling
     event.preventDefault();
     
-    const noteIndex = parseInt(this.dataset.note);
+    const noteName = this.dataset.note;
+    if (!noteName) return;
     
     // Visual effect for button press
     this.classList.add('active');
@@ -1160,54 +1257,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
     
     // Play the note
-    playNote(noteIndex);
+    playNoteByName(noteName);
     
-    // Add correct animation
+    // Add visual feedback animation
     this.classList.add('correct');
     setTimeout(() => this.classList.remove('correct'), 300);
     
-    // Find and animate the corresponding keyboard arrow
-    const arrowKey = document.querySelector(`.arrow-key[data-note="${noteIndex}"]`);
-    if (arrowKey) {
-      arrowKey.classList.add('active');
-      setTimeout(() => arrowKey.classList.remove('active'), 100);
-      arrowKey.classList.add('correct');
-      setTimeout(() => arrowKey.classList.remove('correct'), 300);
+    // Record if recording is active
+    if (isRecording) {
+      recordNote(noteName);
     }
   }
   
-  // Handle key press events
+  // Handle enhanced key press events
   function handleKeyPress(event) {
     if (!isGameActive) return;
     
-    const key = event.key;
-    const keyMap = {
-      'ArrowUp': 0,
-      'ArrowLeft': 1,
-      'ArrowDown': 2,
-      'ArrowRight': 3
-    };
+    const key = event.key.toLowerCase();
     
-    if (keyMap[key] !== undefined) {
-      // Prevent default browser scrolling behavior for arrow keys
+    // Check if key is mapped to a note
+    if (keyboardMapping[key]) {
+      // Prevent default browser behavior
       event.preventDefault();
       
-      const noteIndex = keyMap[key];
-      const arrowElement = document.querySelector(`.arrow-key[data-key="${key}"]`);
+      const noteName = keyboardMapping[key];
       
       // Play the note
-      playNote(noteIndex);
+      playNoteByName(noteName);
       
-      // Visual effect for key press (only if element exists)
-      if (arrowElement) {
-        arrowElement.classList.add('active');
-        setTimeout(() => {
-          arrowElement.classList.remove('active');
-        }, 100);
-        
-        // Add correct animation
-        arrowElement.classList.add('correct');
-        setTimeout(() => arrowElement.classList.remove('correct'), 300);
+      // Visual feedback
+      highlightKey(key, noteName);
+      
+      // Record if recording is active
+      if (isRecording) {
+        recordNote(noteName);
       }
     }
   }
@@ -1228,8 +1311,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  // Play a note based on index with electronic style
-  function playNote(index) {
+  // Play a note by name with advanced synthesis
+  function playNoteByName(noteName) {
     if (!audioContext) return;
     
     // Update notes counter
@@ -1239,79 +1322,225 @@ document.addEventListener('DOMContentLoaded', () => {
       notesElement.textContent = notesPlayed;
     }
     
-    // Create audio nodes
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const filterNode = audioContext.createBiquadFilter();
-    const distortion = audioContext.createWaveShaper();
+    const frequency = noteFrequencies[noteName];
+    if (!frequency) return;
     
-    // Set up oscillator with a sawtooth wave for more electronic sound
-    oscillator.type = index % 2 === 0 ? 'sawtooth' : 'square';
-    oscillator.frequency.value = noteFrequencies[index];
+    // Create base oscillator based on instrument type
+    const oscillator = createInstrumentOscillator(frequency);
     
-    // Set up filter for that electronic sound
-    filterNode.type = "lowpass";
-    filterNode.frequency.value = 1000;
-    filterNode.Q.value = 8;
+    // Create effect chain
+    const effectChain = createEffectChain();
     
-    // Add filter envelope for the wah effect
-    filterNode.frequency.setValueAtTime(100, audioContext.currentTime);
-    filterNode.frequency.exponentialRampToValueAtTime(
-      3000, 
-      audioContext.currentTime + 0.1
-    );
-    filterNode.frequency.exponentialRampToValueAtTime(
-      1000, 
-      audioContext.currentTime + 0.4
-    );
+    // Create master gain
+    const masterGain = audioContext.createGain();
+    masterGain.gain.value = masterVolume;
     
-    // Distortion function for added effect
-    function makeDistortionCurve(amount) {
-      const k = typeof amount === 'number' ? amount : 50;
-      const samples = 44100;
-      const curve = new Float32Array(samples);
-      const deg = Math.PI / 180;
-      
-      for (let i = 0; i < samples; ++i) {
-        const x = (i * 2 / samples) - 1;
-        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
-      }
-      
-      return curve;
-    }
-    
-    distortion.curve = makeDistortionCurve(25);
-    distortion.oversample = '4x';
-    
-    // Initial gain value
-    gainNode.gain.value = 0.3;
-    
-    // Connect all the nodes
-    oscillator.connect(filterNode);
-    filterNode.connect(distortion);
-    distortion.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // Connect the audio chain
+    oscillator.connect(effectChain.input);
+    effectChain.output.connect(masterGain);
+    masterGain.connect(audioContext.destination);
     
     // Start the oscillator
     oscillator.start();
     
-    // Apply volume envelope
-    gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    // Apply envelope based on instrument type
+    applyEnvelope(effectChain.output, currentInstrument);
     
-    // Add a slight pitch bend for more character
-    oscillator.frequency.exponentialRampToValueAtTime(
-      oscillator.frequency.value * 0.99,
-      audioContext.currentTime + 0.4
-    );
-    
-    // Stop the oscillator after a short time
+    // Stop the oscillator after note duration
+    const noteDuration = getNoteDuration(currentInstrument);
     setTimeout(() => {
-      oscillator.stop();
-    }, 500);
+      try {
+        oscillator.stop();
+      } catch (e) {
+        // Oscillator may have already stopped
+      }
+    }, noteDuration);
   }
   
+  // Create oscillator based on instrument type
+  function createInstrumentOscillator(frequency) {
+    const oscillator = audioContext.createOscillator();
+    oscillator.frequency.value = frequency;
+    
+    switch (currentInstrument) {
+      case 'piano':
+        oscillator.type = 'triangle';
+        break;
+      case 'strings':
+        oscillator.type = 'sawtooth';
+        break;
+      case 'bass':
+        oscillator.type = 'square';
+        break;
+      case 'synth':
+      default:
+        oscillator.type = 'sawtooth';
+        break;
+    }
+    
+    return oscillator;
+  }
+  
+  // Create comprehensive effect chain
+  function createEffectChain() {
+    let input = audioContext.createGain();
+    let output = input;
+    
+    // Filter
+    if (currentEffects.filter.enabled) {
+      const filter = audioContext.createBiquadFilter();
+      filter.type = currentEffects.filter.type;
+      filter.frequency.value = currentEffects.filter.frequency;
+      filter.Q.value = currentEffects.filter.Q;
+      
+      output.connect(filter);
+      output = filter;
+    }
+    
+    // Distortion
+    if (currentEffects.distortion.enabled) {
+      const distortion = audioContext.createWaveShaper();
+      distortion.curve = makeDistortionCurve(currentEffects.distortion.amount);
+      distortion.oversample = '4x';
+      
+      const preGain = audioContext.createGain();
+      const postGain = audioContext.createGain();
+      preGain.gain.value = 1;
+      postGain.gain.value = currentEffects.distortion.wetness;
+      
+      output.connect(preGain);
+      preGain.connect(distortion);
+      distortion.connect(postGain);
+      output = postGain;
+    }
+    
+    // Basic delay effect (simplified for now)
+    if (currentEffects.delay.enabled) {
+      const delayNode = audioContext.createDelay();
+      const delayGain = audioContext.createGain();
+      const feedbackGain = audioContext.createGain();
+      
+      delayNode.delayTime.value = currentEffects.delay.time;
+      delayGain.gain.value = currentEffects.delay.wetness;
+      feedbackGain.gain.value = currentEffects.delay.feedback;
+      
+      output.connect(delayGain);
+      delayGain.connect(delayNode);
+      delayNode.connect(feedbackGain);
+      feedbackGain.connect(delayNode); // Feedback loop
+      
+      // Mix with dry signal
+      const mixGain = audioContext.createGain();
+      output.connect(mixGain);
+      delayNode.connect(mixGain);
+      output = mixGain;
+    }
+    
+    return { input, output };
+  }
+  
+  // Create distortion curve
+  function makeDistortionCurve(amount) {
+    const k = typeof amount === 'number' ? amount : 50;
+    const samples = 44100;
+    const curve = new Float32Array(samples);
+    const deg = Math.PI / 180;
+    
+    for (let i = 0; i < samples; ++i) {
+      const x = (i * 2 / samples) - 1;
+      curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+    }
+    
+    return curve;
+  }
+  
+  // Apply envelope based on instrument type
+  function applyEnvelope(gainNode, instrument) {
+    const now = audioContext.currentTime;
+    
+    switch (instrument) {
+      case 'piano':
+        gainNode.gain.setValueAtTime(0.01, now);
+        gainNode.gain.exponentialRampToValueAtTime(1, now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2);
+        break;
+      case 'strings':
+        gainNode.gain.setValueAtTime(0.01, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3);
+        gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3);
+        break;
+      case 'bass':
+        gainNode.gain.setValueAtTime(0.01, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
+        break;
+      case 'synth':
+      default:
+        gainNode.gain.setValueAtTime(0.01, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+        break;
+    }
+  }
+  
+  // Get note duration based on instrument
+  function getNoteDuration(instrument) {
+    switch (instrument) {
+      case 'piano': return 2000;
+      case 'strings': return 3000;
+      case 'bass': return 1000;
+      case 'synth':
+      default: return 800;
+    }
+  }
+  
+  // Generate piano keyboard visual
+  function generatePianoKeyboard() {
+    const pianoKeyboard = document.getElementById('piano-keyboard');
+    if (!pianoKeyboard) return;
+    
+    const whiteKeys = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+    const blackKeys = [['C#4'], ['D#4'], [], ['F#4'], ['G#4'], ['A#4'], []];
+    
+    pianoKeyboard.innerHTML = '';
+    
+    // Create white keys
+    whiteKeys.forEach((note, index) => {
+      const key = document.createElement('div');
+      key.className = 'piano-key white-key';
+      key.dataset.note = note;
+      key.textContent = note;
+      
+      // Add black key if it exists
+      if (blackKeys[index] && blackKeys[index].length > 0) {
+        const blackKey = document.createElement('div');
+        blackKey.className = 'piano-key black-key';
+        blackKey.dataset.note = blackKeys[index][0];
+        blackKey.textContent = blackKeys[index][0];
+        key.appendChild(blackKey);
+      }
+      
+      pianoKeyboard.appendChild(key);
+    });
+    
+    // Add click event listeners to piano keys
+    pianoKeyboard.addEventListener('click', (e) => {
+      if (e.target.classList.contains('piano-key')) {
+        const noteName = e.target.dataset.note;
+        if (noteName) {
+          playNoteByName(noteName);
+          highlightPianoKey(noteName);
+          
+          if (isRecording) {
+            recordNote(noteName);
+          }
+        }
+      }
+    });
+  }
+
   // Start the music maker
   function startArrowGame() {
     if (isGameActive) return;
@@ -1339,6 +1568,73 @@ document.addEventListener('DOMContentLoaded', () => {
     resetButton.disabled = false;
   }
   
+  // Setup control panel event listeners
+  function setupControlListeners() {
+    // Instrument selector
+    const instrumentSelect = document.getElementById('instrument-select');
+    if (instrumentSelect) {
+      instrumentSelect.addEventListener('change', (e) => {
+        currentInstrument = e.target.value;
+      });
+    }
+    
+    // Volume control
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeDisplay = document.getElementById('volume-display');
+    if (volumeSlider && volumeDisplay) {
+      volumeSlider.addEventListener('input', (e) => {
+        masterVolume = e.target.value / 100;
+        volumeDisplay.textContent = e.target.value + '%';
+      });
+    }
+    
+    // Tempo control
+    const tempoSlider = document.getElementById('tempo-slider');
+    const tempoDisplay = document.getElementById('tempo-display');
+    if (tempoSlider && tempoDisplay) {
+      tempoSlider.addEventListener('input', (e) => {
+        currentTempo = parseInt(e.target.value);
+        tempoDisplay.textContent = e.target.value + ' BPM';
+      });
+    }
+    
+    // Effect toggles and sliders
+    setupEffectControls();
+    
+    // Recording controls
+    setupRecordingControls();
+  }
+  
+  // Setup effect controls
+  function setupEffectControls() {
+    const effects = ['reverb', 'delay', 'chorus', 'distortion'];
+    
+    effects.forEach(effect => {
+      const toggle = document.getElementById(`${effect}-toggle`);
+      const slider = document.getElementById(`${effect}-amount`);
+      
+      if (toggle) {
+        toggle.addEventListener('change', (e) => {
+          currentEffects[effect].enabled = e.target.checked;
+          if (slider) {
+            slider.disabled = !e.target.checked;
+          }
+        });
+      }
+      
+      if (slider) {
+        slider.addEventListener('input', (e) => {
+          const value = e.target.value / 100;
+          if (effect === 'distortion') {
+            currentEffects[effect].amount = e.target.value;
+          } else {
+            currentEffects[effect].wetness = value;
+          }
+        });
+      }
+    });
+  }
+
   // Reset the music maker
   function resetArrowGame() {
     isGameActive = false;
@@ -1346,19 +1642,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reset notes counter
     notesPlayed = 0;
     
+    // Stop any loops
+    if (loopInterval) {
+      clearInterval(loopInterval);
+      loopInterval = null;
+    }
+    isLooping = false;
+    isRecording = false;
+    
     // Remove keyboard event handler
     if (window.arrowKeyboardHandler) {
       document.removeEventListener('keydown', window.arrowKeyboardHandler);
       window.arrowKeyboardHandler = null;
-    }
-    
-    // Remove touch event listeners only if they exist
-    const touchBtns = document.querySelectorAll('.touch-arrow-btn');
-    if (touchBtns.length > 0) {
-      touchBtns.forEach(btn => {
-        btn.removeEventListener('touchstart', handleTouchStart);
-        btn.removeEventListener('click', handleTouchStart);
-      });
     }
     
     // Reset to initial display
@@ -1368,6 +1663,289 @@ document.addEventListener('DOMContentLoaded', () => {
     resetButton.disabled = true;
   }
   
+  // Setup recording controls
+  function setupRecordingControls() {
+    const recordBtn = document.getElementById('record-btn');
+    const playBtn = document.getElementById('play-btn');
+    const loopBtn = document.getElementById('loop-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const loadBtn = document.getElementById('load-btn');
+    
+    if (recordBtn) {
+      recordBtn.addEventListener('click', toggleRecording);
+    }
+    if (playBtn) {
+      playBtn.addEventListener('click', playRecording);
+    }
+    if (loopBtn) {
+      loopBtn.addEventListener('click', toggleLoop);
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearRecording);
+    }
+    if (saveBtn) {
+      saveBtn.addEventListener('click', saveRecording);
+    }
+    if (loadBtn) {
+      loadBtn.addEventListener('click', loadRecording);
+    }
+  }
+  
+  // Setup touch controls for mobile
+  function setupTouchControls() {
+    document.querySelectorAll('.touch-key').forEach(key => {
+      key.addEventListener('touchstart', handleTouchStart);
+      key.addEventListener('click', handleTouchStart);
+    });
+  }
+  
+  // Highlight key visual feedback
+  function highlightKey(keyCode, noteName) {
+    // Highlight keyboard key mapping visualization if present
+    const keyElement = document.querySelector(`[data-key=\"${keyCode}\"]`);
+    if (keyElement) {
+      keyElement.classList.add('active');
+      setTimeout(() => keyElement.classList.remove('active'), 100);
+    }
+    
+    // Highlight piano key
+    highlightPianoKey(noteName);
+  }
+  
+  // Highlight piano key
+  function highlightPianoKey(noteName) {
+    const pianoKey = document.querySelector(`[data-note=\"${noteName}\"]`);
+    if (pianoKey) {
+      pianoKey.classList.add('active');
+      setTimeout(() => pianoKey.classList.remove('active'), 200);
+    }
+  }
+  
+  // Recording functions
+  function toggleRecording() {
+    const recordBtn = document.getElementById('record-btn');
+    const statusElement = document.getElementById('recording-status');
+    
+    if (isRecording) {
+      // Stop recording
+      isRecording = false;
+      recordBtn.textContent = '⏺️ Record';
+      recordBtn.classList.remove('recording');
+      statusElement.textContent = `Recorded ${recordedNotes.length} notes`;
+      
+      // Enable playback buttons if we have notes
+      if (recordedNotes.length > 0) {
+        document.getElementById('play-btn').disabled = false;
+        document.getElementById('loop-btn').disabled = false;
+        document.getElementById('clear-btn').disabled = false;
+        document.getElementById('save-btn').disabled = false;
+      }
+    } else {
+      // Start recording
+      isRecording = true;
+      recordedNotes = [];
+      recordingStartTime = Date.now();
+      recordBtn.textContent = '⏹️ Stop';
+      recordBtn.classList.add('recording');
+      statusElement.textContent = 'Recording...';
+    }
+  }
+  
+  function recordNote(noteName) {
+    if (!isRecording) return;
+    
+    const timestamp = Date.now() - recordingStartTime;
+    recordedNotes.push({ note: noteName, time: timestamp });
+    
+    // Update recording length display
+    const lengthElement = document.getElementById('recording-length');
+    if (lengthElement) {
+      const seconds = Math.floor(timestamp / 1000);
+      const minutes = Math.floor(seconds / 60);
+      lengthElement.textContent = `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+    }
+  }
+  
+  function playRecording() {
+    if (recordedNotes.length === 0) return;
+    
+    const playBtn = document.getElementById('play-btn');
+    playBtn.textContent = '⏸️ Stop';
+    playBtn.disabled = true;
+    
+    // Play each recorded note at the correct time
+    recordedNotes.forEach(({ note, time }) => {
+      setTimeout(() => {
+        playNoteByName(note);
+        highlightPianoKey(note);
+      }, time);
+    });
+    
+    // Reset play button after playback
+    const totalDuration = recordedNotes[recordedNotes.length - 1].time + 1000;
+    setTimeout(() => {
+      playBtn.textContent = '▶️ Play';
+      playBtn.disabled = false;
+    }, totalDuration);
+  }
+  
+  function toggleLoop() {
+    const loopBtn = document.getElementById('loop-btn');
+    
+    if (isLooping) {
+      // Stop looping
+      isLooping = false;
+      if (loopInterval) {
+        clearInterval(loopInterval);
+        loopInterval = null;
+      }
+      loopBtn.textContent = '🔄 Loop';
+      loopBtn.classList.remove('active');
+    } else {
+      // Start looping
+      if (recordedNotes.length === 0) return;
+      
+      isLooping = true;
+      loopBtn.textContent = '⏹️ Stop Loop';
+      loopBtn.classList.add('active');
+      
+      const playLoop = () => {
+        recordedNotes.forEach(({ note, time }) => {
+          setTimeout(() => {
+            if (isLooping) {
+              playNoteByName(note);
+              highlightPianoKey(note);
+            }
+          }, time);
+        });
+      };
+      
+      // Start immediately
+      playLoop();
+      
+      // Set up interval for looping
+      const loopDuration = recordedNotes[recordedNotes.length - 1].time + 1000;
+      loopInterval = setInterval(playLoop, loopDuration);
+    }
+  }
+  
+  function clearRecording() {
+    if (confirm('Are you sure you want to clear the recording?')) {
+      recordedNotes = [];
+      isRecording = false;
+      isLooping = false;
+      
+      if (loopInterval) {
+        clearInterval(loopInterval);
+        loopInterval = null;
+      }
+      
+      // Reset UI
+      document.getElementById('record-btn').textContent = '⏺️ Record';
+      document.getElementById('record-btn').classList.remove('recording');
+      document.getElementById('play-btn').disabled = true;
+      document.getElementById('loop-btn').disabled = true;
+      document.getElementById('clear-btn').disabled = true;
+      document.getElementById('save-btn').disabled = true;
+      document.getElementById('loop-btn').textContent = '🔄 Loop';
+      document.getElementById('loop-btn').classList.remove('active');
+      document.getElementById('recording-status').textContent = 'Ready to record';
+      document.getElementById('recording-length').textContent = '0:00';
+    }
+  }
+  
+  function saveRecording() {
+    if (recordedNotes.length === 0) return;
+    
+    const name = prompt('Enter a name for your composition:');
+    if (!name) return;
+    
+    const composition = {
+      name,
+      notes: recordedNotes,
+      instrument: currentInstrument,
+      effects: JSON.parse(JSON.stringify(currentEffects)),
+      tempo: currentTempo,
+      timestamp: new Date().toISOString()
+    };
+    
+    try {
+      const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
+      saved.push(composition);
+      localStorage.setItem('musicCompositions', JSON.stringify(saved));
+      alert(`Composition "${name}" saved successfully!`);
+    } catch (error) {
+      alert('Failed to save composition. Storage may be full.');
+    }
+  }
+  
+  function loadRecording() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
+      
+      if (saved.length === 0) {
+        alert('No saved compositions found.');
+        return;
+      }
+      
+      const names = saved.map((comp, index) => `${index + 1}. ${comp.name} (${new Date(comp.timestamp).toLocaleString()})`);
+      const choice = prompt(`Select a composition to load:\n\n${names.join('\n')}\n\nEnter the number:`);
+      
+      const index = parseInt(choice) - 1;
+      if (isNaN(index) || index < 0 || index >= saved.length) {
+        alert('Invalid selection.');
+        return;
+      }
+      
+      const composition = saved[index];
+      recordedNotes = composition.notes;
+      currentInstrument = composition.instrument;
+      currentEffects = composition.effects;
+      currentTempo = composition.tempo;
+      
+      // Update UI
+      document.getElementById('instrument-select').value = currentInstrument;
+      document.getElementById('tempo-slider').value = currentTempo;
+      document.getElementById('tempo-display').textContent = currentTempo + ' BPM';
+      
+      // Update effect controls
+      Object.keys(currentEffects).forEach(effect => {
+        const toggle = document.getElementById(`${effect}-toggle`);
+        const slider = document.getElementById(`${effect}-amount`);
+        
+        if (toggle) {
+          toggle.checked = currentEffects[effect].enabled;
+          if (slider) {
+            slider.disabled = !currentEffects[effect].enabled;
+          }
+        }
+        
+        if (slider && effect === 'distortion') {
+          slider.value = currentEffects[effect].amount;
+        } else if (slider) {
+          slider.value = currentEffects[effect].wetness * 100;
+        }
+      });
+      
+      // Enable playback buttons
+      document.getElementById('play-btn').disabled = false;
+      document.getElementById('loop-btn').disabled = false;
+      document.getElementById('clear-btn').disabled = false;
+      document.getElementById('save-btn').disabled = false;
+      document.getElementById('recording-status').textContent = `Loaded "${composition.name}"`;
+      
+      const totalTime = recordedNotes[recordedNotes.length - 1].time;
+      const seconds = Math.floor(totalTime / 1000);
+      const minutes = Math.floor(seconds / 60);
+      document.getElementById('recording-length').textContent = `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+      
+      alert(`Composition "${composition.name}" loaded successfully!`);
+    } catch (error) {
+      alert('Failed to load compositions.');
+    }
+  }
+
   // Event listeners
   startButton.addEventListener('click', startArrowGame);
   resetButton.addEventListener('click', resetArrowGame);
