@@ -1468,9 +1468,9 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Distortion applied, amount:', currentEffects.distortion.amount, 'wetness:', currentEffects.distortion.wetness);
     }
     
-    // Delay effect with proper timing
+    // Delay effect (FIXED: tempo should NOT affect delay characteristics)
     if (currentEffects.delay.enabled) {
-      const delayTime = (60 / currentTempo) * currentEffects.delay.time; // Sync to tempo
+      const delayTime = currentEffects.delay.time; // Fixed delay time, not tempo-dependent
       const delayNode = audioContext.createDelay(1);
       const delayGain = audioContext.createGain();
       const feedbackGain = audioContext.createGain();
@@ -1589,47 +1589,45 @@ document.addEventListener('DOMContentLoaded', () => {
     return curve;
   }
   
-  // Apply envelope based on instrument type with tempo influence
+  // Apply envelope based on instrument type (FIXED: tempo should NOT affect sound quality)
   function applyEnvelope(gainNode, instrument) {
     const now = audioContext.currentTime;
-    const tempoMultiplier = 120 / currentTempo; // Faster tempo = shorter notes
     
     switch (instrument) {
       case 'piano':
         gainNode.gain.setValueAtTime(0.01, now);
         gainNode.gain.exponentialRampToValueAtTime(1, now + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1 * tempoMultiplier);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2);
         break;
       case 'strings':
         gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3 * tempoMultiplier);
-        gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1 * tempoMultiplier);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3);
+        gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3);
         break;
       case 'bass':
         gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05 * tempoMultiplier);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
         break;
       case 'synth':
       default:
         gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05 * tempoMultiplier);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
         break;
     }
   }
   
-  // Get note duration based on instrument and tempo
+  // Get note duration based on instrument (FIXED: tempo should NOT affect individual note length)
   function getNoteDuration(instrument) {
-    const tempoMultiplier = 120 / currentTempo;
     switch (instrument) {
-      case 'piano': return 2000 * tempoMultiplier;
-      case 'strings': return 3000 * tempoMultiplier;
-      case 'bass': return 1000 * tempoMultiplier;
+      case 'piano': return 2000;
+      case 'strings': return 3000;
+      case 'bass': return 1000;
       case 'synth':
-      default: return 800 * tempoMultiplier;
+      default: return 800;
     }
   }
   
