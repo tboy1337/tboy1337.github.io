@@ -1180,6 +1180,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label for="distortion-toggle">⚡ Distortion</label>
                 <input type="range" id="distortion-amount" min="0" max="100" value="50" class="effect-slider">
               </div>
+              <div class="effect-control">
+                <input type="checkbox" id="filter-toggle" class="effect-toggle" checked>
+                <label for="filter-toggle">🎛️ Filter</label>
+                <input type="range" id="filter-amount" min="0" max="100" value="80" class="effect-slider">
+              </div>
             </div>
           </div>
           
@@ -1393,47 +1398,149 @@ document.addEventListener('DOMContentLoaded', () => {
       filter.frequency.value = currentEffects.filter.frequency;
       filter.Q.value = currentEffects.filter.Q;
       
+      // Add filter envelope for sweep effect
+      filter.frequency.setValueAtTime(currentEffects.filter.frequency * 0.5, audioContext.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(
+        currentEffects.filter.frequency * 2, 
+        audioContext.currentTime + 0.1
+      );
+      filter.frequency.exponentialRampToValueAtTime(
+        currentEffects.filter.frequency, 
+        audioContext.currentTime + 0.3
+      );
+      
       output.connect(filter);
       output = filter;
+      console.log('Filter applied:', currentEffects.filter.frequency + 'Hz');
     }
     
-    // Distortion
+    // Distortion with proper wet/dry mix
     if (currentEffects.distortion.enabled) {
       const distortion = audioContext.createWaveShaper();
       distortion.curve = makeDistortionCurve(currentEffects.distortion.amount);
       distortion.oversample = '4x';
       
-      const preGain = audioContext.createGain();
-      const postGain = audioContext.createGain();
-      preGain.gain.value = 1;
-      postGain.gain.value = currentEffects.distortion.wetness;
+      const dryGain = audioContext.createGain();
+      const wetGain = audioContext.createGain();
+      const mixGain = audioContext.createGain();
       
-      output.connect(preGain);
-      preGain.connect(distortion);
-      distortion.connect(postGain);
-      output = postGain;
+      dryGain.gain.value = 1 - currentEffects.distortion.wetness;
+      wetGain.gain.value = currentEffects.distortion.wetness;
+      
+      // Split signal
+      output.connect(dryGain);
+      output.connect(distortion);
+      distortion.connect(wetGain);
+      
+      // Mix back together
+      dryGain.connect(mixGain);
+      wetGain.connect(mixGain);
+      output = mixGain;
+      
+      console.log('Distortion applied, amount:', currentEffects.distortion.amount, 'wetness:', currentEffects.distortion.wetness);
     }
     
-    // Basic delay effect (simplified for now)
+    // Delay effect with proper timing
     if (currentEffects.delay.enabled) {
-      const delayNode = audioContext.createDelay();
+      const delayTime = (60 / currentTempo) * currentEffects.delay.time; // Sync to tempo
+      const delayNode = audioContext.createDelay(1);
       const delayGain = audioContext.createGain();
       const feedbackGain = audioContext.createGain();
+      const wetGain = audioContext.createGain();
+      const dryGain = audioContext.createGain();
+      const mixGain = audioContext.createGain();
       
-      delayNode.delayTime.value = currentEffects.delay.time;
-      delayGain.gain.value = currentEffects.delay.wetness;
+      delayNode.delayTime.value = Math.min(delayTime, 0.8);
+      wetGain.gain.value = currentEffects.delay.wetness;
+      dryGain.gain.value = 1 - currentEffects.delay.wetness;
       feedbackGain.gain.value = currentEffects.delay.feedback;
       
+      // Create delay chain
+      output.connect(dryGain);
       output.connect(delayGain);
       delayGain.connect(delayNode);
+      delayNode.connect(wetGain);
       delayNode.connect(feedbackGain);
-      feedbackGain.connect(delayNode); // Feedback loop
+      feedbackGain.connect(delayGain); // Feedback loop
       
-      // Mix with dry signal
-      const mixGain = audioContext.createGain();
-      output.connect(mixGain);
-      delayNode.connect(mixGain);
+      // Mix signals
+      dryGain.connect(mixGain);
+      wetGain.connect(mixGain);
       output = mixGain;
+      
+      console.log('Delay applied, time:', delayTime + 's', 'feedback:', currentEffects.delay.feedback);
+    }
+    
+    // Simple reverb (using multiple delays)
+    if (currentEffects.reverb.enabled) {
+      const reverbGain = audioContext.createGain();
+      const dryGain = audioContext.createGain();
+      const mixGain = audioContext.createGain();
+      
+      reverbGain.gain.value = currentEffects.reverb.wetness;
+      dryGain.gain.value = 1 - currentEffects.reverb.wetness;
+      
+      // Create multiple short delays to simulate reverb
+      const delays = [0.03, 0.05, 0.07, 0.09].map(time => {
+        const delay = audioContext.createDelay();
+        const gain = audioContext.createGain();
+        delay.delayTime.value = time * currentEffects.reverb.roomSize;
+        gain.gain.value = 0.3 * (1 - currentEffects.reverb.damping);
+        
+        output.connect(delay);
+        delay.connect(gain);
+        gain.connect(reverbGain);
+        return { delay, gain };
+      });
+      
+      // Mix dry and wet
+      output.connect(dryGain);
+      dryGain.connect(mixGain);
+      reverbGain.connect(mixGain);
+      output = mixGain;
+      
+      console.log('Reverb applied, wetness:', currentEffects.reverb.wetness);
+    }
+    
+    // Simple chorus effect (using modulated delay)
+    if (currentEffects.chorus.enabled) {
+      const chorusDelay = audioContext.createDelay(0.05);
+      const chorusLFO = audioContext.createOscillator();
+      const chorusGain = audioContext.createGain();
+      const chorusDepth = audioContext.createGain();
+      const dryGain = audioContext.createGain();
+      const mixGain = audioContext.createGain();
+      
+      // Set up LFO for chorus modulation
+      chorusLFO.frequency.value = currentEffects.chorus.rate;
+      chorusLFO.type = 'sine';
+      chorusDepth.gain.value = currentEffects.chorus.depth * 0.002; // Small modulation
+      
+      // Connect LFO to delay time
+      chorusLFO.connect(chorusDepth);
+      chorusDepth.connect(chorusDelay.delayTime);
+      
+      // Set base delay time
+      chorusDelay.delayTime.value = 0.02;
+      
+      // Set gains
+      chorusGain.gain.value = currentEffects.chorus.wetness;
+      dryGain.gain.value = 1 - currentEffects.chorus.wetness;
+      
+      // Connect audio path
+      output.connect(chorusDelay);
+      chorusDelay.connect(chorusGain);
+      output.connect(dryGain);
+      
+      // Mix signals
+      dryGain.connect(mixGain);
+      chorusGain.connect(mixGain);
+      
+      // Start LFO
+      chorusLFO.start();
+      
+      output = mixGain;
+      console.log('Chorus applied, rate:', currentEffects.chorus.rate + 'Hz', 'depth:', currentEffects.chorus.depth);
     }
     
     return { input, output };
@@ -1454,45 +1561,72 @@ document.addEventListener('DOMContentLoaded', () => {
     return curve;
   }
   
-  // Apply envelope based on instrument type
+  // Apply envelope based on instrument type with tempo influence
   function applyEnvelope(gainNode, instrument) {
     const now = audioContext.currentTime;
+    const tempoMultiplier = 120 / currentTempo; // Faster tempo = shorter notes
     
     switch (instrument) {
       case 'piano':
         gainNode.gain.setValueAtTime(0.01, now);
         gainNode.gain.exponentialRampToValueAtTime(1, now + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2);
+        gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2 * tempoMultiplier);
         break;
       case 'strings':
         gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3);
-        gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3);
+        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3 * tempoMultiplier);
         break;
       case 'bass':
         gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
+        gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1 * tempoMultiplier);
         break;
       case 'synth':
       default:
         gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05 * tempoMultiplier);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8 * tempoMultiplier);
         break;
     }
   }
   
-  // Get note duration based on instrument
+  // Get note duration based on instrument and tempo
   function getNoteDuration(instrument) {
+    const tempoMultiplier = 120 / currentTempo;
     switch (instrument) {
-      case 'piano': return 2000;
-      case 'strings': return 3000;
-      case 'bass': return 1000;
+      case 'piano': return 2000 * tempoMultiplier;
+      case 'strings': return 3000 * tempoMultiplier;
+      case 'bass': return 1000 * tempoMultiplier;
       case 'synth':
-      default: return 800;
+      default: return 800 * tempoMultiplier;
+    }
+  }
+  
+  // Tempo-based metronome click (visual feedback)
+  function addTempoFeedback() {
+    const tempoDisplay = document.getElementById('tempo-display');
+    if (tempoDisplay && currentTempo > 0) {
+      const beatInterval = 60000 / currentTempo; // ms per beat
+      
+      // Clear existing tempo feedback
+      if (window.tempoFeedbackInterval) {
+        clearInterval(window.tempoFeedbackInterval);
+      }
+      
+      // Add visual beat indicator
+      window.tempoFeedbackInterval = setInterval(() => {
+        if (tempoDisplay) {
+          tempoDisplay.style.color = '#4ade80';
+          setTimeout(() => {
+            if (tempoDisplay) {
+              tempoDisplay.style.color = '#e0e0e0';
+            }
+          }, 100);
+        }
+      }, beatInterval);
     }
   }
   
@@ -1564,6 +1698,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.arrowKeyboardHandler = handleKeyPress;
     document.addEventListener('keydown', window.arrowKeyboardHandler);
     
+    // Start tempo feedback
+    addTempoFeedback();
+    
+    // Log initial state for debugging
+    console.log('🎹 Music Studio Started!');
+    console.log('Initial effects:', currentEffects);
+    console.log('Initial tempo:', currentTempo + ' BPM');
+    console.log('Initial instrument:', currentInstrument);
+    
     startButton.disabled = true;
     resetButton.disabled = false;
   }
@@ -1595,6 +1738,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tempoSlider.addEventListener('input', (e) => {
         currentTempo = parseInt(e.target.value);
         tempoDisplay.textContent = e.target.value + ' BPM';
+        addTempoFeedback(); // Start visual tempo feedback
+        console.log('Tempo set to:', currentTempo + ' BPM');
       });
     }
     
@@ -1607,29 +1752,49 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Setup effect controls
   function setupEffectControls() {
-    const effects = ['reverb', 'delay', 'chorus', 'distortion'];
+    const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
     
     effects.forEach(effect => {
       const toggle = document.getElementById(`${effect}-toggle`);
       const slider = document.getElementById(`${effect}-amount`);
       
       if (toggle) {
+        // Set initial state based on currentEffects
+        toggle.checked = currentEffects[effect].enabled;
+        
         toggle.addEventListener('change', (e) => {
           currentEffects[effect].enabled = e.target.checked;
           if (slider) {
             slider.disabled = !e.target.checked;
           }
+          console.log(`${effect} ${e.target.checked ? 'enabled' : 'disabled'}`);
         });
       }
       
       if (slider) {
+        // Enable/disable slider based on toggle state
+        slider.disabled = !currentEffects[effect].enabled;
+        
+        // Set initial value
+        if (effect === 'distortion') {
+          slider.value = currentEffects[effect].amount;
+        } else if (effect === 'filter') {
+          slider.value = currentEffects[effect].frequency / 50; // Scale 1000Hz to slider range
+        } else {
+          slider.value = currentEffects[effect].wetness * 100;
+        }
+        
         slider.addEventListener('input', (e) => {
           const value = e.target.value / 100;
           if (effect === 'distortion') {
-            currentEffects[effect].amount = e.target.value;
+            currentEffects[effect].amount = parseInt(e.target.value);
+            currentEffects[effect].wetness = value;
+          } else if (effect === 'filter') {
+            currentEffects[effect].frequency = parseInt(e.target.value) * 50; // Scale back to Hz
           } else {
             currentEffects[effect].wetness = value;
           }
+          console.log(`${effect} set to:`, currentEffects[effect]);
         });
       }
     });
@@ -1647,6 +1812,13 @@ document.addEventListener('DOMContentLoaded', () => {
       clearInterval(loopInterval);
       loopInterval = null;
     }
+    
+    // Stop tempo feedback
+    if (window.tempoFeedbackInterval) {
+      clearInterval(window.tempoFeedbackInterval);
+      window.tempoFeedbackInterval = null;
+    }
+    
     isLooping = false;
     isRecording = false;
     
@@ -1661,6 +1833,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     startButton.disabled = false;
     resetButton.disabled = true;
+    
+    console.log('🎹 Music Studio Reset');
   }
   
   // Setup recording controls
