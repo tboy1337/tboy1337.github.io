@@ -1932,7 +1932,13 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🎛️ Looking for layer-tempo-slider:', layerTempoSlider);
     if (layerTempoSlider) {
       console.log('✅ Found layer tempo slider, adding event listener...');
-      layerTempoSlider.addEventListener('input', (e) => {
+      
+      // Test slider interaction
+      layerTempoSlider.addEventListener('mousedown', () => console.log('🖱️ Slider mousedown detected'));
+      layerTempoSlider.addEventListener('click', () => console.log('🖱️ Slider click detected'));
+      layerTempoSlider.addEventListener('change', () => console.log('🖱️ Slider change detected'));
+      
+      const tempoHandler = (e) => {
         const newTempo = parseInt(e.target.value);
         const oldTempo = layerTempos[currentLayerIndex] || 120;
         layerTempos[currentLayerIndex] = newTempo;
@@ -1961,8 +1967,23 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           console.log(`ℹ️ Layer ${currentLayerIndex + 1} is not currently looping`);
         }
-      });
-      console.log('✅ Layer tempo slider event listener added successfully');
+      };
+      
+      // Add multiple event types to ensure we catch the change
+      layerTempoSlider.addEventListener('input', tempoHandler);
+      layerTempoSlider.addEventListener('change', tempoHandler);
+      layerTempoSlider.addEventListener('oninput', tempoHandler);
+      
+      console.log('✅ Layer tempo slider event listeners added successfully');
+      console.log('🎛️ Slider current value:', layerTempoSlider.value);
+      console.log('🎛️ Slider disabled?', layerTempoSlider.disabled);
+      
+      // Manual test after 2 seconds
+      setTimeout(() => {
+        console.log('🧪 MANUAL TEST: Simulating slider change to 140 BPM...');
+        layerTempoSlider.value = 140;
+        tempoHandler({ target: { value: 140 } });
+      }, 2000);
     } else {
       console.error('❌ Layer tempo slider not found! Available elements:');
       console.log('Available tempo elements:', document.querySelectorAll('[id*="tempo"]'));
