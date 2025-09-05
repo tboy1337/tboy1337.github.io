@@ -1929,7 +1929,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Layer tempo control
     const layerTempoSlider = document.getElementById('layer-tempo-slider');
+    console.log('🎛️ Looking for layer-tempo-slider:', layerTempoSlider);
     if (layerTempoSlider) {
+      console.log('✅ Found layer tempo slider, adding event listener...');
       layerTempoSlider.addEventListener('input', (e) => {
         const newTempo = parseInt(e.target.value);
         const oldTempo = layerTempos[currentLayerIndex] || 120;
@@ -1937,6 +1939,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('layer-tempo').textContent = newTempo;
         
         console.log(`🎵 TEMPO CHANGE: Layer ${currentLayerIndex + 1} from ${oldTempo} to ${newTempo} BPM`);
+        console.log('🎛️ Slider triggered! Event:', e);
+        console.log('🎛️ Slider value:', e.target.value);
         console.log(`📊 Current layer data:`, loopLayers[currentLayerIndex]);
         console.log(`🔄 Is this layer looping?`, activeLoopLayers.has(currentLayerIndex));
         
@@ -1958,6 +1962,11 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log(`ℹ️ Layer ${currentLayerIndex + 1} is not currently looping`);
         }
       });
+      console.log('✅ Layer tempo slider event listener added successfully');
+    } else {
+      console.error('❌ Layer tempo slider not found! Available elements:');
+      console.log('Available tempo elements:', document.querySelectorAll('[id*="tempo"]'));
+      console.log('Available sliders:', document.querySelectorAll('input[type="range"]'));
     }
   }
   
