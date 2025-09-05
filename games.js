@@ -1932,16 +1932,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (layerTempoSlider) {
       layerTempoSlider.addEventListener('input', (e) => {
         const newTempo = parseInt(e.target.value);
+        const oldTempo = layerTempos[currentLayerIndex] || 120;
         layerTempos[currentLayerIndex] = newTempo;
         document.getElementById('layer-tempo').textContent = newTempo;
-        console.log(`Layer ${currentLayerIndex + 1} tempo set to ${newTempo} BPM`);
+        
+        console.log(`🎵 TEMPO CHANGE: Layer ${currentLayerIndex + 1} from ${oldTempo} to ${newTempo} BPM`);
+        console.log(`📊 Current layer data:`, loopLayers[currentLayerIndex]);
+        console.log(`🔄 Is this layer looping?`, activeLoopLayers.has(currentLayerIndex));
         
         // If this layer is currently looping, restart it with new tempo
         if (activeLoopLayers.has(currentLayerIndex)) {
+          console.log(`⏹️ Stopping current loop for tempo change...`);
           stopLayerLoop(currentLayerIndex);
-          setTimeout(() => {
-            startLayerLoop(currentLayerIndex, loopLayers[currentLayerIndex].notes);
-          }, 100);
+          
+          // Ensure we have notes to play
+          if (loopLayers[currentLayerIndex] && loopLayers[currentLayerIndex].notes.length > 0) {
+            setTimeout(() => {
+              console.log(`▶️ Restarting loop with new tempo: ${newTempo} BPM`);
+              startLayerLoop(currentLayerIndex, loopLayers[currentLayerIndex].notes);
+            }, 200); // Increased timeout for stability
+          } else {
+            console.warn(`❌ No notes found for layer ${currentLayerIndex + 1}`);
+          }
+        } else {
+          console.log(`ℹ️ Layer ${currentLayerIndex + 1} is not currently looping`);
         }
       });
     }
@@ -2253,8 +2267,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function startLayerLoop(layerIndex, notes) {
-    if (activeLoopLayers.has(layerIndex)) return; // Already playing
-    if (!notes || notes.length === 0) return;
+    if (activeLoopLayers.has(layerIndex)) {
+      console.log(`⚠️ Layer ${layerIndex + 1} already playing - stopping first`);
+      stopLayerLoop(layerIndex);
+      return;
+    }
+    if (!notes || notes.length === 0) {
+      console.log(`❌ No notes to play for layer ${layerIndex + 1}`);
+      return;
+    }
     
     activeLoopLayers.add(layerIndex);
     
@@ -2262,15 +2283,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const layerTempo = layerTempos[layerIndex] || 120;
     const tempoScale = 120 / layerTempo;
     
+    console.log(`🎵 Starting layer ${layerIndex + 1}:`);
+    console.log(`  - Tempo: ${layerTempo} BPM`);
+    console.log(`  - Tempo scale: ${tempoScale.toFixed(3)} (${tempoScale > 1 ? 'slower' : 'faster'})`);
+    console.log(`  - Notes: ${notes.length}`);
+    console.log(`  - Original duration: ${notes[notes.length - 1]?.time}ms`);
+    console.log(`  - Scaled duration: ${(notes[notes.length - 1]?.time * tempoScale).toFixed(1)}ms`);
+    
     const playLoop = () => {
       if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
       
-      notes.forEach(({ note, time }) => {
+      console.log(`🔄 Playing loop cycle for layer ${layerIndex + 1}`);
+      notes.forEach(({ note, time }, index) => {
         const adjustedTime = time * tempoScale;
         setTimeout(() => {
           if (activeLoopLayers.has(layerIndex)) {
             playNoteByName(note);
             highlightPianoKey(note);
+            console.log(`♪ Note ${index + 1}/${notes.length}: ${note} at ${adjustedTime.toFixed(1)}ms`);
           }
         }, adjustedTime);
       });
@@ -2281,11 +2311,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Set up interval for looping (tempo-adjusted)
     const loopDuration = (notes[notes.length - 1].time * tempoScale) + 500;
+    console.log(`⏰ Loop will repeat every ${loopDuration.toFixed(1)}ms`);
+    
     const intervalId = setInterval(() => {
       if (activeLoopLayers.has(layerIndex)) {
         playLoop();
       } else {
         clearInterval(intervalId);
+        console.log(`⏹️ Stopped interval for layer ${layerIndex + 1}`);
       }
     }, loopDuration);
     
@@ -2294,7 +2327,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.layerIntervals.set(layerIndex, intervalId);
     
     updateLayerDisplay();
-    console.log(`Started loop for layer ${layerIndex + 1} at ${layerTempo} BPM (layer-specific tempo)`);
+    console.log(`✅ Started loop for layer ${layerIndex + 1} at ${layerTempo} BPM`);
   }
   
   function stopLayerLoop(layerIndex) {
