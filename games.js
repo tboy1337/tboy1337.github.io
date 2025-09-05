@@ -1086,7 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Current instrument type
   let currentInstrument = 'synth'; // synth, piano, strings, bass
 
-  // Recording system
+  // Multi-layer recording system
   let isRecording = false;
   let recordedNotes = [];
   let recordingStartTime = 0;
@@ -1094,6 +1094,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let loopInterval = null;
   let currentTempo = 120; // BPM
   let masterVolume = 0.3;
+  
+  // Multi-layer loop system
+  let loopLayers = []; // Array of loop tracks
+  let activeLoopLayers = new Set(); // Which layers are currently playing
+  let maxLoopLayers = 4; // Maximum number of simultaneous loops
   
   // Initialize the advanced music studio
   function initArrowDisplay() {
@@ -1190,18 +1195,33 @@ document.addEventListener('DOMContentLoaded', () => {
           
           <!-- Recording Panel -->
           <div class="recording-panel">
-            <div class="recording-title">🎙️ Recording</div>
+            <div class="recording-title">🎙️ Multi-Layer Recording</div>
             <div class="recording-controls">
-              <button id="record-btn" class="record-btn">⏺️ Record</button>
+              <button id="record-btn" class="record-btn">⏺️ Record Layer</button>
               <button id="play-btn" class="play-btn" disabled>▶️ Play</button>
-              <button id="loop-btn" class="loop-btn" disabled>🔄 Loop</button>
-              <button id="clear-btn" class="clear-btn" disabled>🗑️ Clear</button>
+              <button id="loop-btn" class="loop-btn" disabled>🔄 Loop Current</button>
+              <button id="loop-all-btn" class="loop-btn" disabled>🔄 Loop All</button>
+              <button id="clear-btn" class="clear-btn" disabled>🗑️ Clear Current</button>
+              <button id="clear-all-btn" class="clear-btn" disabled>🗑️ Clear All</button>
               <button id="save-btn" class="save-btn" disabled>💾 Save</button>
               <button id="load-btn" class="load-btn">📁 Load</button>
             </div>
+            <div class="layer-status">
+              <div class="layer-info">
+                <span>Current Layer: <span id="current-layer">1</span></span>
+                <span>Total Layers: <span id="total-layers">0</span></span>
+              </div>
+              <div class="layer-controls">
+                <button id="prev-layer-btn" class="layer-nav-btn" disabled>◀ Prev</button>
+                <button id="next-layer-btn" class="layer-nav-btn" disabled>Next ▶</button>
+              </div>
+            </div>
             <div class="recording-info">
-              <span id="recording-status">Ready to record</span>
+              <span id="recording-status">Ready to record layer 1</span>
               <span id="recording-length">0:00</span>
+            </div>
+            <div class="layers-display" id="layers-display">
+              <!-- Layer indicators will be added here -->
             </div>
           </div>
         </div>
@@ -1243,6 +1263,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Setup touch controls for mobile
     setupTouchControls();
+    
+    // IMPORTANT: Initialize effects after DOM elements are created
+    setTimeout(() => {
+      initializeEffectStates();
+    }, 100);
   }
   
   // Handle touch events for mobile
@@ -1750,7 +1775,42 @@ document.addEventListener('DOMContentLoaded', () => {
     setupRecordingControls();
   }
   
-  // Setup effect controls
+  // Initialize effect states after DOM is ready
+  function initializeEffectStates() {
+    const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
+    
+    console.log('🎛️ Initializing effect states...');
+    
+    effects.forEach(effect => {
+      const toggle = document.getElementById(`${effect}-toggle`);
+      const slider = document.getElementById(`${effect}-amount`);
+      
+      if (toggle && currentEffects[effect]) {
+        // Set toggle to match currentEffects state
+        toggle.checked = currentEffects[effect].enabled;
+        console.log(`${effect} toggle set to:`, toggle.checked);
+        
+        if (slider) {
+          // Set slider state based on toggle
+          slider.disabled = !currentEffects[effect].enabled;
+          
+          // Set slider value
+          if (effect === 'distortion') {
+            slider.value = currentEffects[effect].amount;
+          } else if (effect === 'filter') {
+            slider.value = currentEffects[effect].frequency / 50;
+          } else {
+            slider.value = currentEffects[effect].wetness * 100;
+          }
+          console.log(`${effect} slider: value=${slider.value}, disabled=${slider.disabled}`);
+        }
+      } else {
+        console.warn(`${effect} toggle or currentEffects[${effect}] not found`);
+      }
+    });
+  }
+
+  // Setup effect controls (event listeners only)
   function setupEffectControls() {
     const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
     
@@ -1759,9 +1819,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const slider = document.getElementById(`${effect}-amount`);
       
       if (toggle) {
-        // Set initial state based on currentEffects
-        toggle.checked = currentEffects[effect].enabled;
-        
         toggle.addEventListener('change', (e) => {
           currentEffects[effect].enabled = e.target.checked;
           if (slider) {
@@ -1772,25 +1829,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       if (slider) {
-        // Enable/disable slider based on toggle state
-        slider.disabled = !currentEffects[effect].enabled;
-        
-        // Set initial value
-        if (effect === 'distortion') {
-          slider.value = currentEffects[effect].amount;
-        } else if (effect === 'filter') {
-          slider.value = currentEffects[effect].frequency / 50; // Scale 1000Hz to slider range
-        } else {
-          slider.value = currentEffects[effect].wetness * 100;
-        }
-        
         slider.addEventListener('input', (e) => {
           const value = e.target.value / 100;
           if (effect === 'distortion') {
             currentEffects[effect].amount = parseInt(e.target.value);
             currentEffects[effect].wetness = value;
           } else if (effect === 'filter') {
-            currentEffects[effect].frequency = parseInt(e.target.value) * 50; // Scale back to Hz
+            currentEffects[effect].frequency = parseInt(e.target.value) * 50;
           } else {
             currentEffects[effect].wetness = value;
           }
@@ -1842,9 +1887,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const recordBtn = document.getElementById('record-btn');
     const playBtn = document.getElementById('play-btn');
     const loopBtn = document.getElementById('loop-btn');
+    const loopAllBtn = document.getElementById('loop-all-btn');
     const clearBtn = document.getElementById('clear-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
     const saveBtn = document.getElementById('save-btn');
     const loadBtn = document.getElementById('load-btn');
+    const prevLayerBtn = document.getElementById('prev-layer-btn');
+    const nextLayerBtn = document.getElementById('next-layer-btn');
     
     if (recordBtn) {
       recordBtn.addEventListener('click', toggleRecording);
@@ -1855,14 +1904,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loopBtn) {
       loopBtn.addEventListener('click', toggleLoop);
     }
+    if (loopAllBtn) {
+      loopAllBtn.addEventListener('click', toggleLoopAll);
+    }
     if (clearBtn) {
-      clearBtn.addEventListener('click', clearRecording);
+      clearBtn.addEventListener('click', clearCurrentLayer);
+    }
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', clearAllLayers);
     }
     if (saveBtn) {
       saveBtn.addEventListener('click', saveRecording);
     }
     if (loadBtn) {
       loadBtn.addEventListener('click', loadRecording);
+    }
+    if (prevLayerBtn) {
+      prevLayerBtn.addEventListener('click', switchToPrevLayer);
+    }
+    if (nextLayerBtn) {
+      nextLayerBtn.addEventListener('click', switchToNextLayer);
     }
   }
   
@@ -1902,27 +1963,182 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusElement = document.getElementById('recording-status');
     
     if (isRecording) {
-      // Stop recording
+      // Stop recording and save to current layer
       isRecording = false;
-      recordBtn.textContent = '⏺️ Record';
+      recordBtn.textContent = '⏺️ Record Layer';
       recordBtn.classList.remove('recording');
-      statusElement.textContent = `Recorded ${recordedNotes.length} notes`;
       
-      // Enable playback buttons if we have notes
+      // Save the current recording to the layer
       if (recordedNotes.length > 0) {
+        saveCurrentRecordingToLayer();
+        statusElement.textContent = `Layer ${currentLayerIndex + 1}: ${recordedNotes.length} notes recorded`;
+        
+        // Enable controls
         document.getElementById('play-btn').disabled = false;
         document.getElementById('loop-btn').disabled = false;
+        document.getElementById('loop-all-btn').disabled = false;
         document.getElementById('clear-btn').disabled = false;
         document.getElementById('save-btn').disabled = false;
       }
     } else {
-      // Start recording
+      // Start recording new layer
       isRecording = true;
       recordedNotes = [];
       recordingStartTime = Date.now();
-      recordBtn.textContent = '⏹️ Stop';
+      recordBtn.textContent = '⏹️ Stop Recording';
       recordBtn.classList.add('recording');
-      statusElement.textContent = 'Recording...';
+      statusElement.textContent = `Recording layer ${currentLayerIndex + 1}...`;
+    }
+  }
+  
+  function saveCurrentRecordingToLayer() {
+    // Ensure we have enough layers
+    while (loopLayers.length <= currentLayerIndex) {
+      loopLayers.push({ notes: [], name: `Layer ${loopLayers.length + 1}` });
+    }
+    
+    // Save current recording to the layer
+    loopLayers[currentLayerIndex].notes = [...recordedNotes];
+    
+    updateLayerDisplay();
+    updateLayerCounts();
+    console.log(`Saved ${recordedNotes.length} notes to layer ${currentLayerIndex + 1}`);
+  }
+  
+  function updateLayerDisplay() {
+    const layersDisplay = document.getElementById('layers-display');
+    if (!layersDisplay) return;
+    
+    layersDisplay.innerHTML = '';
+    
+    loopLayers.forEach((layer, index) => {
+      const layerElement = document.createElement('div');
+      layerElement.className = `layer-indicator ${index === currentLayerIndex ? 'current' : ''}`;
+      layerElement.innerHTML = `
+        <span class="layer-number">${index + 1}</span>
+        <span class="layer-notes">${layer.notes.length} notes</span>
+        <span class="layer-status ${activeLoopLayers.has(index) ? 'playing' : 'stopped'}">
+          ${activeLoopLayers.has(index) ? '▶️' : '⏸️'}
+        </span>
+      `;
+      layersDisplay.appendChild(layerElement);
+    });
+  }
+  
+  function updateLayerCounts() {
+    document.getElementById('current-layer').textContent = currentLayerIndex + 1;
+    document.getElementById('total-layers').textContent = loopLayers.length;
+    
+    // Update navigation buttons
+    document.getElementById('prev-layer-btn').disabled = currentLayerIndex === 0;
+    document.getElementById('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
+    document.getElementById('clear-all-btn').disabled = loopLayers.length === 0;
+  }
+  
+  function switchToPrevLayer() {
+    if (currentLayerIndex > 0) {
+      currentLayerIndex--;
+      switchToLayer(currentLayerIndex);
+    }
+  }
+  
+  function switchToNextLayer() {
+    if (currentLayerIndex < maxLoopLayers - 1) {
+      currentLayerIndex++;
+      switchToLayer(currentLayerIndex);
+    }
+  }
+  
+  function switchToLayer(layerIndex) {
+    currentLayerIndex = layerIndex;
+    
+    // Load the layer's recorded notes
+    if (loopLayers[layerIndex]) {
+      recordedNotes = [...loopLayers[layerIndex].notes];
+    } else {
+      recordedNotes = [];
+    }
+    
+    // Update UI
+    updateLayerDisplay();
+    updateLayerCounts();
+    
+    const statusElement = document.getElementById('recording-status');
+    if (recordedNotes.length > 0) {
+      statusElement.textContent = `Layer ${layerIndex + 1}: ${recordedNotes.length} notes`;
+      document.getElementById('play-btn').disabled = false;
+      document.getElementById('loop-btn').disabled = false;
+      document.getElementById('clear-btn').disabled = false;
+    } else {
+      statusElement.textContent = `Ready to record layer ${layerIndex + 1}`;
+      document.getElementById('play-btn').disabled = true;
+      document.getElementById('loop-btn').disabled = true;
+      document.getElementById('clear-btn').disabled = true;
+    }
+    
+    // Update loop button state
+    const loopBtn = document.getElementById('loop-btn');
+    if (activeLoopLayers.has(layerIndex)) {
+      loopBtn.textContent = '⏹️ Stop Current';
+      loopBtn.classList.add('active');
+      isLooping = true;
+    } else {
+      loopBtn.textContent = '🔄 Loop Current';
+      loopBtn.classList.remove('active');
+      isLooping = false;
+    }
+    
+    console.log(`Switched to layer ${layerIndex + 1}`);
+  }
+  
+  function clearCurrentLayer() {
+    if (confirm(`Clear layer ${currentLayerIndex + 1}?`)) {
+      // Stop loop if playing
+      if (activeLoopLayers.has(currentLayerIndex)) {
+        stopLayerLoop(currentLayerIndex);
+      }
+      
+      // Clear the layer
+      if (loopLayers[currentLayerIndex]) {
+        loopLayers[currentLayerIndex].notes = [];
+      }
+      recordedNotes = [];
+      
+      // Update UI
+      updateLayerDisplay();
+      document.getElementById('recording-status').textContent = `Layer ${currentLayerIndex + 1} cleared`;
+      document.getElementById('play-btn').disabled = true;
+      document.getElementById('loop-btn').disabled = true;
+      document.getElementById('clear-btn').disabled = true;
+    }
+  }
+  
+  function clearAllLayers() {
+    if (confirm('Clear all layers? This cannot be undone!')) {
+      // Stop all loops
+      stopAllLoops();
+      
+      // Clear all data
+      loopLayers = [];
+      recordedNotes = [];
+      currentLayerIndex = 0;
+      isRecording = false;
+      
+      // Reset UI
+      const recordBtn = document.getElementById('record-btn');
+      recordBtn.textContent = '⏺️ Record Layer';
+      recordBtn.classList.remove('recording');
+      
+      updateLayerDisplay();
+      updateLayerCounts();
+      
+      document.getElementById('recording-status').textContent = 'All layers cleared - ready to record layer 1';
+      document.getElementById('play-btn').disabled = true;
+      document.getElementById('loop-btn').disabled = true;
+      document.getElementById('loop-all-btn').disabled = true;
+      document.getElementById('clear-btn').disabled = true;
+      document.getElementById('clear-all-btn').disabled = true;
+      document.getElementById('save-btn').disabled = true;
     }
   }
   
@@ -1948,60 +2164,141 @@ document.addEventListener('DOMContentLoaded', () => {
     playBtn.textContent = '⏸️ Stop';
     playBtn.disabled = true;
     
-    // Play each recorded note at the correct time
+    // Calculate tempo scaling factor
+    const tempoScale = 120 / currentTempo; // Scale timing based on tempo
+    
+    // Play each recorded note at tempo-adjusted time
     recordedNotes.forEach(({ note, time }) => {
+      const adjustedTime = time * tempoScale;
       setTimeout(() => {
         playNoteByName(note);
         highlightPianoKey(note);
-      }, time);
+      }, adjustedTime);
     });
     
-    // Reset play button after playback
-    const totalDuration = recordedNotes[recordedNotes.length - 1].time + 1000;
+    // Reset play button after playback (also tempo-adjusted)
+    const totalDuration = (recordedNotes[recordedNotes.length - 1].time * tempoScale) + 1000;
     setTimeout(() => {
       playBtn.textContent = '▶️ Play';
       playBtn.disabled = false;
     }, totalDuration);
+    
+    console.log(`Playing recording at ${currentTempo} BPM (${tempoScale.toFixed(2)}x speed)`);
   }
+  
+  // Multi-layer loop management
+  let currentLayerIndex = 0;
   
   function toggleLoop() {
     const loopBtn = document.getElementById('loop-btn');
     
     if (isLooping) {
-      // Stop looping
-      isLooping = false;
-      if (loopInterval) {
-        clearInterval(loopInterval);
-        loopInterval = null;
-      }
-      loopBtn.textContent = '🔄 Loop';
+      // Stop current layer loop
+      stopLayerLoop(currentLayerIndex);
+      loopBtn.textContent = '🔄 Loop Current';
       loopBtn.classList.remove('active');
     } else {
-      // Start looping
+      // Start current layer loop
       if (recordedNotes.length === 0) return;
-      
-      isLooping = true;
-      loopBtn.textContent = '⏹️ Stop Loop';
+      startLayerLoop(currentLayerIndex, recordedNotes);
+      loopBtn.textContent = '⏹️ Stop Current';
       loopBtn.classList.add('active');
-      
-      const playLoop = () => {
-        recordedNotes.forEach(({ note, time }) => {
-          setTimeout(() => {
-            if (isLooping) {
-              playNoteByName(note);
-              highlightPianoKey(note);
-            }
-          }, time);
-        });
-      };
-      
-      // Start immediately
-      playLoop();
-      
-      // Set up interval for looping
-      const loopDuration = recordedNotes[recordedNotes.length - 1].time + 1000;
-      loopInterval = setInterval(playLoop, loopDuration);
     }
+  }
+  
+  function toggleLoopAll() {
+    const loopAllBtn = document.getElementById('loop-all-btn');
+    
+    if (activeLoopLayers.size > 0) {
+      // Stop all loops
+      stopAllLoops();
+      loopAllBtn.textContent = '🔄 Loop All';
+      loopAllBtn.classList.remove('active');
+    } else {
+      // Start all layer loops
+      if (loopLayers.length === 0) return;
+      startAllLoops();
+      loopAllBtn.textContent = '⏹️ Stop All';
+      loopAllBtn.classList.add('active');
+    }
+  }
+  
+  function startLayerLoop(layerIndex, notes) {
+    if (activeLoopLayers.has(layerIndex)) return; // Already playing
+    
+    activeLoopLayers.add(layerIndex);
+    const tempoScale = 120 / currentTempo;
+    
+    const playLoop = () => {
+      if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
+      
+      notes.forEach(({ note, time }) => {
+        const adjustedTime = time * tempoScale;
+        setTimeout(() => {
+          if (activeLoopLayers.has(layerIndex)) {
+            playNoteByName(note);
+            highlightPianoKey(note);
+          }
+        }, adjustedTime);
+      });
+    };
+    
+    // Start immediately
+    playLoop();
+    
+    // Set up interval for looping (tempo-adjusted)
+    const loopDuration = (notes[notes.length - 1].time * tempoScale) + 500;
+    const intervalId = setInterval(() => {
+      if (activeLoopLayers.has(layerIndex)) {
+        playLoop();
+      } else {
+        clearInterval(intervalId);
+      }
+    }, loopDuration);
+    
+    // Store interval ID for this layer
+    if (!window.layerIntervals) window.layerIntervals = new Map();
+    window.layerIntervals.set(layerIndex, intervalId);
+    
+    updateLayerDisplay();
+    console.log(`Started loop for layer ${layerIndex + 1} at ${currentTempo} BPM`);
+  }
+  
+  function stopLayerLoop(layerIndex) {
+    activeLoopLayers.delete(layerIndex);
+    
+    if (window.layerIntervals && window.layerIntervals.has(layerIndex)) {
+      clearInterval(window.layerIntervals.get(layerIndex));
+      window.layerIntervals.delete(layerIndex);
+    }
+    
+    if (layerIndex === currentLayerIndex) {
+      isLooping = false;
+      const loopBtn = document.getElementById('loop-btn');
+      loopBtn.textContent = '🔄 Loop Current';
+      loopBtn.classList.remove('active');
+    }
+    
+    updateLayerDisplay();
+    console.log(`Stopped loop for layer ${layerIndex + 1}`);
+  }
+  
+  function startAllLoops() {
+    loopLayers.forEach((layer, index) => {
+      if (layer.notes.length > 0) {
+        startLayerLoop(index, layer.notes);
+      }
+    });
+  }
+  
+  function stopAllLoops() {
+    [...activeLoopLayers].forEach(layerIndex => {
+      stopLayerLoop(layerIndex);
+    });
+    
+    const loopAllBtn = document.getElementById('loop-all-btn');
+    loopAllBtn.textContent = '🔄 Loop All';
+    loopAllBtn.classList.remove('active');
   }
   
   function clearRecording() {
