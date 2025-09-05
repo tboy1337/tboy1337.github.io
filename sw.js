@@ -1,7 +1,7 @@
 // Service Worker for tboy1337.github.io
 // Provides offline support and caching for better performance
 
-const CACHE_NAME = 'tboy1337-v1.0.6';
+const CACHE_NAME = 'tboy1337-v1.0.7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

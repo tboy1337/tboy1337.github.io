@@ -1074,11 +1074,11 @@ document.addEventListener('DOMContentLoaded', () => {
     'ArrowUp': 'C5', 'ArrowLeft': 'G4', 'ArrowDown': 'E4', 'ArrowRight': 'A4'
   };
 
-  // Effect types and parameters
+  // Effect types and parameters - ALL ENABLED BY DEFAULT
   let currentEffects = {
-    reverb: { enabled: false, roomSize: 0.3, damping: 0.5, wetness: 0.3 },
-    delay: { enabled: false, time: 0.3, feedback: 0.3, wetness: 0.3 },
-    chorus: { enabled: false, rate: 1.5, depth: 0.3, wetness: 0.5 },
+    reverb: { enabled: true, roomSize: 0.3, damping: 0.5, wetness: 0.3 },
+    delay: { enabled: true, time: 0.3, feedback: 0.3, wetness: 0.3 },
+    chorus: { enabled: true, rate: 1.5, depth: 0.3, wetness: 0.5 },
     distortion: { enabled: true, amount: 25, wetness: 0.5 },
     filter: { enabled: true, frequency: 1000, Q: 8, type: 'lowpass' }
   };
@@ -1095,10 +1095,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentTempo = 120; // BPM
   let masterVolume = 0.3;
   
-  // Multi-layer loop system
-  let loopLayers = []; // Array of loop tracks
+  // Multi-layer loop system with individual tempos
+  let loopLayers = []; // Array of loop tracks with individual tempo settings
   let activeLoopLayers = new Set(); // Which layers are currently playing
   let maxLoopLayers = 4; // Maximum number of simultaneous loops
+  let layerTempos = [120, 120, 120, 120]; // Individual BPM for each layer
   
   // Initialize the advanced music studio
   function initArrowDisplay() {
@@ -1166,19 +1167,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="effects-title">🎛️ Effects</div>
             <div class="effects-grid">
               <div class="effect-control">
-                <input type="checkbox" id="reverb-toggle" class="effect-toggle">
+                <input type="checkbox" id="reverb-toggle" class="effect-toggle" checked>
                 <label for="reverb-toggle">🌊 Reverb</label>
-                <input type="range" id="reverb-amount" min="0" max="100" value="30" class="effect-slider" disabled>
+                <input type="range" id="reverb-amount" min="0" max="100" value="30" class="effect-slider">
               </div>
               <div class="effect-control">
-                <input type="checkbox" id="delay-toggle" class="effect-toggle">
+                <input type="checkbox" id="delay-toggle" class="effect-toggle" checked>
                 <label for="delay-toggle">🔄 Delay</label>
-                <input type="range" id="delay-amount" min="0" max="100" value="30" class="effect-slider" disabled>
+                <input type="range" id="delay-amount" min="0" max="100" value="30" class="effect-slider">
               </div>
               <div class="effect-control">
-                <input type="checkbox" id="chorus-toggle" class="effect-toggle">
+                <input type="checkbox" id="chorus-toggle" class="effect-toggle" checked>
                 <label for="chorus-toggle">🌈 Chorus</label>
-                <input type="range" id="chorus-amount" min="0" max="100" value="50" class="effect-slider" disabled>
+                <input type="range" id="chorus-amount" min="0" max="100" value="50" class="effect-slider">
               </div>
               <div class="effect-control">
                 <input type="checkbox" id="distortion-toggle" class="effect-toggle" checked>
@@ -1210,10 +1211,12 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="layer-info">
                 <span>Current Layer: <span id="current-layer">1</span></span>
                 <span>Total Layers: <span id="total-layers">0</span></span>
+                <span>Layer Tempo: <span id="layer-tempo">120</span> BPM</span>
               </div>
               <div class="layer-controls">
                 <button id="prev-layer-btn" class="layer-nav-btn" disabled>◀ Prev</button>
                 <button id="next-layer-btn" class="layer-nav-btn" disabled>Next ▶</button>
+                <input type="range" id="layer-tempo-slider" min="60" max="200" value="120" class="tempo-slider-small">
               </div>
             </div>
             <div class="recording-info">
@@ -1925,6 +1928,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (nextLayerBtn) {
       nextLayerBtn.addEventListener('click', switchToNextLayer);
     }
+    
+    // Layer tempo control
+    const layerTempoSlider = document.getElementById('layer-tempo-slider');
+    if (layerTempoSlider) {
+      layerTempoSlider.addEventListener('input', (e) => {
+        const newTempo = parseInt(e.target.value);
+        layerTempos[currentLayerIndex] = newTempo;
+        document.getElementById('layer-tempo').textContent = newTempo;
+        console.log(`Layer ${currentLayerIndex + 1} tempo set to ${newTempo} BPM`);
+        
+        // If this layer is currently looping, restart it with new tempo
+        if (activeLoopLayers.has(currentLayerIndex)) {
+          stopLayerLoop(currentLayerIndex);
+          setTimeout(() => {
+            startLayerLoop(currentLayerIndex, loopLayers[currentLayerIndex].notes);
+          }, 100);
+        }
+      });
+    }
   }
   
   // Setup touch controls for mobile
@@ -2063,14 +2085,22 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLayerDisplay();
     updateLayerCounts();
     
+    // Update layer tempo display and slider
+    const layerTempo = layerTempos[layerIndex] || 120;
+    document.getElementById('layer-tempo').textContent = layerTempo;
+    const layerTempoSlider = document.getElementById('layer-tempo-slider');
+    if (layerTempoSlider) {
+      layerTempoSlider.value = layerTempo;
+    }
+    
     const statusElement = document.getElementById('recording-status');
     if (recordedNotes.length > 0) {
-      statusElement.textContent = `Layer ${layerIndex + 1}: ${recordedNotes.length} notes`;
+      statusElement.textContent = `Layer ${layerIndex + 1}: ${recordedNotes.length} notes @ ${layerTempo} BPM`;
       document.getElementById('play-btn').disabled = false;
       document.getElementById('loop-btn').disabled = false;
       document.getElementById('clear-btn').disabled = false;
     } else {
-      statusElement.textContent = `Ready to record layer ${layerIndex + 1}`;
+      statusElement.textContent = `Ready to record layer ${layerIndex + 1} @ ${layerTempo} BPM`;
       document.getElementById('play-btn').disabled = true;
       document.getElementById('loop-btn').disabled = true;
       document.getElementById('clear-btn').disabled = true;
@@ -2088,7 +2118,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isLooping = false;
     }
     
-    console.log(`Switched to layer ${layerIndex + 1}`);
+    console.log(`Switched to layer ${layerIndex + 1} (tempo: ${layerTempo} BPM)`);
   }
   
   function clearCurrentLayer() {
@@ -2164,8 +2194,9 @@ document.addEventListener('DOMContentLoaded', () => {
     playBtn.textContent = '⏸️ Stop';
     playBtn.disabled = true;
     
-    // Calculate tempo scaling factor
-    const tempoScale = 120 / currentTempo; // Scale timing based on tempo
+    // Use current layer's tempo instead of global tempo
+    const layerTempo = layerTempos[currentLayerIndex] || 120;
+    const tempoScale = 120 / layerTempo;
     
     // Play each recorded note at tempo-adjusted time
     recordedNotes.forEach(({ note, time }) => {
@@ -2183,7 +2214,7 @@ document.addEventListener('DOMContentLoaded', () => {
       playBtn.disabled = false;
     }, totalDuration);
     
-    console.log(`Playing recording at ${currentTempo} BPM (${tempoScale.toFixed(2)}x speed)`);
+    console.log(`Playing recording at ${layerTempo} BPM (layer ${currentLayerIndex + 1} tempo)`);
   }
   
   // Multi-layer loop management
@@ -2225,9 +2256,13 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function startLayerLoop(layerIndex, notes) {
     if (activeLoopLayers.has(layerIndex)) return; // Already playing
+    if (!notes || notes.length === 0) return;
     
     activeLoopLayers.add(layerIndex);
-    const tempoScale = 120 / currentTempo;
+    
+    // Use layer-specific tempo instead of global tempo
+    const layerTempo = layerTempos[layerIndex] || 120;
+    const tempoScale = 120 / layerTempo;
     
     const playLoop = () => {
       if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
@@ -2261,7 +2296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.layerIntervals.set(layerIndex, intervalId);
     
     updateLayerDisplay();
-    console.log(`Started loop for layer ${layerIndex + 1} at ${currentTempo} BPM`);
+    console.log(`Started loop for layer ${layerIndex + 1} at ${layerTempo} BPM (layer-specific tempo)`);
   }
   
   function stopLayerLoop(layerIndex) {

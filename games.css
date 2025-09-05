@@ -1101,6 +1101,12 @@
 .layer-controls {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
+}
+
+.tempo-slider-small {
+  width: 100px;
+  height: 20px;
 }
 
 .layer-nav-btn {
