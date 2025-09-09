@@ -64,7 +64,7 @@ The portfolio showcases the following key projects:
 - **[Subwhisper](https://github.com/tboy1337/subwhisper)**: AI-powered subtitle generation using OpenAI Whisper
 - **[DAV2MKV](https://github.com/tboy1337/dav2mkv)**: High-quality video format conversion tool
 - **[SubtranSlate](https://github.com/tboy1337/SubtranSlate)**: Subtitle translation tool for SRT files
-- **[Video Streaming Server](https://github.com/tboy1337/video-streaming-server)**: Web-based video streaming platform
+- **[MediaRelay](https://github.com/tboy1337/MediaRelay)**: Comprehensive, production-ready video streaming server with enterprise-grade security
 
 ### System & Utility Tools
 - **[Repair Windows](https://github.com/tboy1337/Repair-Windows)**: Windows system optimization scripts
