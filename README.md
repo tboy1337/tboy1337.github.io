@@ -60,7 +60,7 @@ The portfolio showcases the following key projects:
 - **[Scrapeer-py](https://github.com/tboy1337/scrapeer-py)**: Library for scraping HTTP(S) and UDP trackers for torrent information
 
 ### Multimedia & Content Tools
-- **[SubtitleTools](https://github.com/tboy1337/SubtitleTools)**: Unified tool for comprehensive subtitle processing workflows
+- **[SubtitleTools](https://github.com/tboy1337/SubtitleTools)**: A tool for subtitle processing workflows, including extraction, conversion and optimization
 - **[MediaRelay](https://github.com/tboy1337/MediaRelay)**: Video streaming server for securely sharing personal video library over the internet
 - **[DAV2MKV](https://github.com/tboy1337/dav2mkv)**: Versatile tool for converting DAV video files to MKV or MP4 while maintaining perfect quality
 
