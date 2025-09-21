@@ -57,28 +57,37 @@ The portfolio showcases the following key projects:
 ### Networking & Proxy Tools
 - **[MultiSocks](https://github.com/tboy1337/multisocks)**: SOCKS proxy aggregator for bandwidth optimization
 - **[Dispatch-py](https://github.com/tboy1337/dispatch-py)**: Traffic balancing SOCKS proxy for network optimization
-- **[HideIP.me Proxy Tester](https://github.com/tboy1337/hideip.me-proxy-tester)**: Comprehensive proxy testing tool
-- **[Scrapeer-py](https://github.com/tboy1337/scrapeer-py)**: Library for scraping torrent tracker information
+- **[Scrapeer-py](https://github.com/tboy1337/scrapeer-py)**: Library for scraping HTTP(S) and UDP trackers for torrent information
 
 ### Multimedia & Content Tools
-- **[Subwhisper](https://github.com/tboy1337/subwhisper)**: AI-powered subtitle generation using OpenAI Whisper
-- **[DAV2MKV](https://github.com/tboy1337/dav2mkv)**: High-quality video format conversion tool
-- **[SubtranSlate](https://github.com/tboy1337/SubtranSlate)**: Subtitle translation tool for SRT files
-- **[MediaRelay](https://github.com/tboy1337/MediaRelay)**: Comprehensive, production-ready video streaming server with enterprise-grade security
+- **[SubtitleTools](https://github.com/tboy1337/SubtitleTools)**: Unified tool for comprehensive subtitle processing workflows
+- **[MediaRelay](https://github.com/tboy1337/MediaRelay)**: Video streaming server for securely sharing personal video library over the internet
+- **[DAV2MKV](https://github.com/tboy1337/dav2mkv)**: Versatile tool for converting DAV video files to MKV or MP4 while maintaining perfect quality
+
+### Communication Tools
+- **[FreeSMS](https://github.com/tboy1337/FreeSMS)**: Cross-platform Python application with PySide GUI for sending free SMS messages worldwide
 
 ### System & Utility Tools
-- **[Repair Windows](https://github.com/tboy1337/Repair-Windows)**: Windows system optimization scripts
-- **[Git Manager Windows](https://github.com/tboy1337/Git-Manager-Windows)**: Automated Git installation and management
+- **[WindowsRescue](https://github.com/tboy1337/WindowsRescue)**: Collection of batch scripts to repair, maintain, optimize and update Windows systems
+- **[Git Manager Windows](https://github.com/tboy1337/Git-Manager-Windows)**: Batch scripts to automate Git management on Windows systems
 - **[LineForge](https://github.com/tboy1337/LineForge)**: Cross-platform line ending normalization
-- **[TgCrypto2](https://github.com/tboy1337/tgcrypto2)**: Enhanced TgCrypto fork with improved compatibility
+- **[TgCrypto2](https://github.com/tboy1337/tgcrypto2)**: Enhanced TgCrypto fork with working wheels for Python 3.9-3.13
 
-### Applications & Analytics
-- **[ProfitPioneer](https://github.com/tboy1337/ProfitPioneer)**: E-commerce analytics dashboard with Streamlit
-- **[SMSMaster](https://github.com/tboy1337/SMSMaster)**: Cross-platform SMS messaging application
-- **[ClockClock24-py](https://github.com/tboy1337/ClockClock24-py)**: Python implementation of the ClockClock project
+### Development Tools
+- **[Blint](https://github.com/crosenblum/blint)**: Lightweight linter for Windows batch files (.bat) - helps identify syntax errors and enforce best practices
+
+### Analytics & Business
+- **[ProfitPioneer](https://github.com/tboy1337/ProfitPioneer)**: Comprehensive e-commerce analytics dashboard built with Streamlit for business intelligence insights
+
+
+### Fun Projects
+- **[ClockClock24-py](https://github.com/tboy1337/ClockClock24-py)**: Python port of the ClockClock project - creative clock display made of analog clocks
 
 ### Cryptocurrency Tools
-- **[Cryptocurrency Wallet Generators Organization](https://github.com/Cryptocurrency-Wallet-Generators)**: Collection of tools for generating cryptocurrency wallets
+- **[Cryptocurrency Wallet Generators Organization](https://github.com/Cryptocurrency-Wallet-Generators)**: Collection of open-source tools for generating wallets for various cryptocurrencies
+
+### Legal & Documentation
+- **[Commercial Restricted License](https://github.com/tboy1337/Commercial-Restricted-License)**: Software license designed to bridge the gap between fully open and fully proprietary software
 
 ## 📁 Project Structure
 
