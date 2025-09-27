@@ -74,7 +74,7 @@ The portfolio showcases the following key projects:
 - **[TgCrypto2](https://github.com/tboy1337/tgcrypto2)**: Enhanced TgCrypto fork with working wheels for Python 3.9-3.13
 
 ### Development Tools
-- **[Blint](https://github.com/crosenblum/blint)**: Lightweight linter for Windows batch files (.bat) - helps identify syntax errors and enforce best practices
+- **[Blinter](https://github.com/tboy1337/Blinter)**: Lightweight linter for Windows batch files (.bat) - helps identify syntax errors and enforce best practices
 
 ### Analytics & Business
 - **[ProfitPioneer](https://github.com/tboy1337/ProfitPioneer)**: Comprehensive e-commerce analytics dashboard built with Streamlit for business intelligence insights
