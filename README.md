@@ -70,7 +70,6 @@ The portfolio showcases the following key projects:
 ### System & Utility Tools
 - **[WindowsRescue](https://github.com/tboy1337/WindowsRescue)**: Collection of batch scripts to repair, maintain, optimize and update Windows systems
 - **[Git Manager Windows](https://github.com/tboy1337/Git-Manager-Windows)**: Batch scripts to automate Git management on Windows systems
-- **[LineForge](https://github.com/tboy1337/LineForge)**: Cross-platform line ending normalization
 - **[TgCrypto2](https://github.com/tboy1337/tgcrypto2)**: Enhanced TgCrypto fork with working wheels for Python 3.9-3.13
 
 ### Development Tools
