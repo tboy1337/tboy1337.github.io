@@ -72,15 +72,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Show selected game and activate menu item
-    document.getElementById(`${gameName}-section`).classList.remove('hidden');
-    const activeMenuItem = document.querySelector(`.game-menu-item[data-game="${gameName}"]`);
-    activeMenuItem.classList.add('active');
+    const gameSection = document.getElementById(`${gameName}-section`);
+    if (gameSection) {
+      gameSection.classList.remove('hidden');
+    }
     
-    // Update aria-pressed for active button
-    const activeButton = activeMenuItem.querySelector('button');
-    if (activeButton) {
-      activeButton.setAttribute('aria-pressed', 'true');
-      activeButton.focus(); // Focus the active game button for keyboard users
+    const activeMenuItem = document.querySelector(`.game-menu-item[data-game="${gameName}"]`);
+    if (activeMenuItem) {
+      activeMenuItem.classList.add('active');
+      
+      // Update aria-pressed for active button
+      const activeButton = activeMenuItem.querySelector('button');
+      if (activeButton) {
+        activeButton.setAttribute('aria-pressed', 'true');
+        activeButton.focus(); // Focus the active game button for keyboard users
+      }
     }
   }
   
@@ -547,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if food eaten (before collision check to avoid issues)
     let foodEaten = false;
-    if (snake[0].x === food.x && snake[0].y === food.y) {
+    if (snake.length > 0 && snake[0].x === food.x && snake[0].y === food.y) {
       // Increase score
       snakeScore += 10;
       snakeScoreElement.textContent = snakeScore;
@@ -576,6 +582,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function moveSnake() {
+    // Safety check: ensure snake exists
+    if (!snake || snake.length === 0) {
+      console.warn('Snake array is empty');
+      endSnakeGame();
+      return;
+    }
+    
     // Calculate new head position
     const head = { x: snake[0].x, y: snake[0].y };
     
@@ -599,6 +612,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function checkCollision() {
+    // Safety check: ensure snake has a head
+    if (!snake || snake.length === 0) {
+      return true; // Treat as collision if snake doesn't exist
+    }
+    
     const head = snake[0];
     
     // Check wall collision
@@ -851,6 +869,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const typingInput = document.getElementById('typing-input');
     const timerDisplay = document.getElementById('timer-display');
     
+    if (!typingInput || !timerDisplay) {
+      console.warn('Typing game elements not ready');
+      window.typingGameActive = false;
+      return;
+    }
+    
     // Enable input and focus
     typingInput.disabled = false;
     typingInput.value = '';
@@ -881,6 +905,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const textDisplay = document.getElementById('text-display');
     const typingInput = document.getElementById('typing-input');
     
+    if (!textDisplay) {
+      console.warn('Text display element not found');
+      return;
+    }
+    
     // Select random prompt
     const randomIndex = Math.floor(Math.random() * textPrompts.length);
     const currentPrompt = textPrompts[randomIndex];
@@ -904,6 +933,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function checkTyping() {
     const textDisplay = document.getElementById('text-display');
     const typingInput = document.getElementById('typing-input');
+    
+    if (!textDisplay || !typingInput) {
+      return;
+    }
     
     const arrayPrompt = textDisplay.querySelectorAll('span');
     const arrayValue = typingInput.value.split('');
