@@ -40,52 +40,52 @@
 
 // Initialize the Google Translate widget
 function initGoogleTranslate() {
-    try {
-        // Add the language switcher CSS first
-        addTranslateStyles();
+  try {
+    // Add the language switcher CSS first
+    addTranslateStyles();
         
     // Create and insert Google Translate script
     const script = document.createElement('script');
-        script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
     script.async = true;
         
-        // Add error handling for script loading
-        script.onerror = function() {
-            console.warn('Google Translate failed to load. Translation feature will be unavailable.');
-            showTranslateError();
-        };
+    // Add error handling for script loading
+    script.onerror = function() {
+      console.warn('Google Translate failed to load. Translation feature will be unavailable.');
+      showTranslateError();
+    };
         
-        script.onload = function() {
-            console.log('Google Translate script loaded successfully');
-            // Set a timeout to initialize if googleTranslateElementInit hasn't been called
-            setTimeout(() => {
-                if (!window.googleTranslateInitialized) {
-                    console.warn('Google Translate initialization timeout');
-                    showTranslateError();
-                }
-            }, 10000);
-        };
+    script.onload = function() {
+      console.log('Google Translate script loaded successfully');
+      // Set a timeout to initialize if googleTranslateElementInit hasn't been called
+      setTimeout(() => {
+        if (!window.googleTranslateInitialized) {
+          console.warn('Google Translate initialization timeout');
+          showTranslateError();
+        }
+      }, 10000);
+    };
         
     document.body.appendChild(script);
-    } catch (error) {
-        console.error('Error initializing Google Translate:', error);
-        showTranslateError();
-    }
+  } catch (error) {
+    console.error('Error initializing Google Translate:', error);
+    showTranslateError();
+  }
 }
 
 // Show error message when Google Translate fails
 function showTranslateError() {
-    const translateElement = document.getElementById('google_translate_element');
-    if (translateElement) {
-        translateElement.innerHTML = `
+  const translateElement = document.getElementById('google_translate_element');
+  if (translateElement) {
+    translateElement.innerHTML = `
             <div class="translate-error" title="Translation service unavailable">
                 <i class="fas fa-exclamation-triangle"></i>
                 <span style="display: none;">Translation unavailable</span>
             </div>
         `;
-        // Show the element even in error state
-        translateElement.classList.add('customized');
-    }
+    // Show the element even in error state
+    translateElement.classList.add('customized');
+  }
 }
 
 // Store the mutation observer globally so it can be disconnected if needed
@@ -94,290 +94,290 @@ window.googleTranslateMutationObserver = null;
 // Callback function for Google Translate initialization
 // This needs to be in the global scope as it's called by the Google Translate script
 window.googleTranslateElementInit = function() {
-    try {
-        // Mark as initialized to prevent timeout error
-        window.googleTranslateInitialized = true;
+  try {
+    // Mark as initialized to prevent timeout error
+    window.googleTranslateInitialized = true;
         
     // The 'google' object is provided by the Google Translate script
-    // eslint-disable-next-line no-undef
+     
     new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        // eslint-disable-next-line no-undef
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false,
-        // Include an expanded list of languages
-        includedLanguages: 'ar,bg,cs,da,nl,en,fi,fr,de,el,he,hi,hu,id,it,ja,ko,no,pl,pt,ro,ru,sk,es,sv,th,tr,uk,vi,zh-CN,zh-TW',
+      pageLanguage: 'en',
+       
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false,
+      // Include an expanded list of languages
+      includedLanguages: 'ar,bg,cs,da,nl,en,fi,fr,de,el,he,hi,hu,id,it,ja,ko,no,pl,pt,ro,ru,sk,es,sv,th,tr,uk,vi,zh-CN,zh-TW',
     }, 'google_translate_element');
     
-            // Apply additional styling and customization immediately
-        setTimeout(completeCustomization, 100);
+    // Apply additional styling and customization immediately
+    setTimeout(completeCustomization, 100);
         
-        console.log('Google Translate initialized successfully');
-    } catch (error) {
-        console.error('Error during Google Translate initialization:', error);
-        showTranslateError();
-    }
+    console.log('Google Translate initialized successfully');
+  } catch (error) {
+    console.error('Error during Google Translate initialization:', error);
+    showTranslateError();
+  }
 };
 
 // Force Google Translate styling with maximum specificity
 function completeCustomization() {
-    const translateElement = document.getElementById('google_translate_element');
-    if (!translateElement) {
-        setTimeout(completeCustomization, 50);
-        return;
-    }
+  const translateElement = document.getElementById('google_translate_element');
+  if (!translateElement) {
+    setTimeout(completeCustomization, 50);
+    return;
+  }
     
-    // Wait for Google Translate to fully load
-    const checkAndStyle = () => {
-        const gadgets = translateElement.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple');
-        const selects = translateElement.querySelectorAll('select');
-        const spans = translateElement.querySelectorAll('span');
-        const links = translateElement.querySelectorAll('a');
+  // Wait for Google Translate to fully load
+  const checkAndStyle = () => {
+    const gadgets = translateElement.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple');
+    const selects = translateElement.querySelectorAll('select');
+    const spans = translateElement.querySelectorAll('span');
+    const links = translateElement.querySelectorAll('a');
         
-        if (gadgets.length === 0) {
-            setTimeout(checkAndStyle, 10);
-            return;
-        }
+    if (gadgets.length === 0) {
+      setTimeout(checkAndStyle, 10);
+      return;
+    }
         
-        // Apply aggressive styling to override Google's CSS
-        const applyForceStyle = (element, styles) => {
-            Object.keys(styles).forEach(property => {
-                element.style.setProperty(property, styles[property], 'important');
-            });
-        };
+    // Apply aggressive styling to override Google's CSS
+    const applyForceStyle = (element, styles) => {
+      Object.keys(styles).forEach(property => {
+        element.style.setProperty(property, styles[property], 'important');
+      });
+    };
         
-        // Style all gadget elements
-        gadgets.forEach(gadget => {
-            // Force the correct layout first
-            applyForceStyle(gadget, {
-                'display': 'inline-flex',
-                'flex-direction': 'row',
-                'align-items': 'center',
-                'justify-content': 'center',
-                'white-space': 'nowrap',
-                'gap': '0px'
-            });
+    // Style all gadget elements
+    gadgets.forEach(gadget => {
+      // Force the correct layout first
+      applyForceStyle(gadget, {
+        'display': 'inline-flex',
+        'flex-direction': 'row',
+        'align-items': 'center',
+        'justify-content': 'center',
+        'white-space': 'nowrap',
+        'gap': '0px'
+      });
             
-            // Apply visual styling
-            applyForceStyle(gadget, {
-                'background': 'linear-gradient(135deg, rgba(15, 12, 41, 0.9), rgba(36, 36, 62, 0.9))',
-                'border': '1px solid rgba(255, 255, 255, 0.3)',
-                'border-radius': '6px',
-                'padding': '10px 12px',
-                'margin': '0',
-                'color': '#ffffff',
-                'font-family': 'Inter, sans-serif',
-                'font-size': '14px',
-                'font-weight': '500',
-                'box-shadow': '0 2px 12px rgba(0, 0, 0, 0.3)',
-                'backdrop-filter': 'blur(10px)',
-                '-webkit-backdrop-filter': 'blur(10px)',
-                'transition': 'all 0.3s ease',
-                'min-height': 'auto',
-                'line-height': '1.2',
-                'vertical-align': 'middle'
-            });
+      // Apply visual styling
+      applyForceStyle(gadget, {
+        'background': 'linear-gradient(135deg, rgba(15, 12, 41, 0.9), rgba(36, 36, 62, 0.9))',
+        'border': '1px solid rgba(255, 255, 255, 0.3)',
+        'border-radius': '6px',
+        'padding': '10px 12px',
+        'margin': '0',
+        'color': '#ffffff',
+        'font-family': 'Inter, sans-serif',
+        'font-size': '14px',
+        'font-weight': '500',
+        'box-shadow': '0 2px 12px rgba(0, 0, 0, 0.3)',
+        'backdrop-filter': 'blur(10px)',
+        '-webkit-backdrop-filter': 'blur(10px)',
+        'transition': 'all 0.3s ease',
+        'min-height': 'auto',
+        'line-height': '1.2',
+        'vertical-align': 'middle'
+      });
             
-            // Replace text with SVG globe icon immediately and aggressively
-            const replaceWithIcon = () => {
-                // Find the main text element that contains the actual text to replace
-                const textElements = gadget.querySelectorAll('span');
-                let replaced = false;
+      // Replace text with SVG globe icon immediately and aggressively
+      const replaceWithIcon = () => {
+        // Find the main text element that contains the actual text to replace
+        const textElements = gadget.querySelectorAll('span');
+        let replaced = false;
                 
-                textElements.forEach(textEl => {
-                    if (!replaced && textEl.textContent && textEl.textContent.trim() && !textEl.querySelector('svg')) {
-                        const text = textEl.textContent.trim().toLowerCase();
-                        // Only replace the main text element that contains the default Google Translate text
-                        if (text.includes('select') || text.includes('language') || text.includes('translate')) {
-                            textEl.innerHTML = '<svg style="width: 20px; height: 20px; color: #ffffff; display: inline-block; vertical-align: middle;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg><span style="color: #ffffff; font-size: 12px; margin-left: 4px;">&#9660;</span>';
-                            replaced = true; // Only replace once
-                            gadget.setAttribute('data-custom-styled', 'true'); // Mark as processed
+        textElements.forEach(textEl => {
+          if (!replaced && textEl.textContent && textEl.textContent.trim() && !textEl.querySelector('svg')) {
+            const text = textEl.textContent.trim().toLowerCase();
+            // Only replace the main text element that contains the default Google Translate text
+            if (text.includes('select') || text.includes('language') || text.includes('translate')) {
+              textEl.innerHTML = '<svg style="width: 20px; height: 20px; color: #ffffff; display: inline-block; vertical-align: middle;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg><span style="color: #ffffff; font-size: 12px; margin-left: 4px;">&#9660;</span>';
+              replaced = true; // Only replace once
+              gadget.setAttribute('data-custom-styled', 'true'); // Mark as processed
                             
-                            // Show the translate element now that we've replaced the text
-                            translateElement.classList.add('customized');
-                        }
-                    }
-                });
-            };
+              // Show the translate element now that we've replaced the text
+              translateElement.classList.add('customized');
+            }
+          }
+        });
+      };
             
-            // Replace immediately and once more after a short delay
-            replaceWithIcon();
-            setTimeout(replaceWithIcon, 100);
+      // Replace immediately and once more after a short delay
+      replaceWithIcon();
+      setTimeout(replaceWithIcon, 100);
             
-            // Force all child elements into proper layout
+      // Force all child elements into proper layout
+      const childElements = gadget.querySelectorAll('*');
+      childElements.forEach(child => {
+        applyForceStyle(child, {
+          'display': 'inline-block',
+          'vertical-align': 'middle',
+          'margin': '0',
+          'padding': '0'
+        });
+      });
+            
+      // Hide Google's original dropdown arrow images since we have our own
+      const arrowImages = gadget.querySelectorAll('img');
+      arrowImages.forEach(img => {
+        applyForceStyle(img, {
+          'display': 'none'
+        });
+      });
+            
+      // Mark this gadget as processed to prevent duplicate processing
+      gadget.setAttribute('data-custom-styled', 'true');
+    });
+        
+    // Style select elements
+    selects.forEach(select => {
+      applyForceStyle(select, {
+        'background': 'transparent',
+        'border': 'none',
+        'color': '#ffffff',
+        'font-family': 'Inter, sans-serif',
+        'font-size': '14px',
+        'font-weight': '500',
+        'outline': 'none',
+        'cursor': 'pointer'
+      });
+    });
+        
+    // Style all text elements
+    [...spans, ...links].forEach(element => {
+      applyForceStyle(element, {
+        'color': '#ffffff',
+        'font-family': 'Inter, sans-serif',
+        'font-size': '14px',
+        'font-weight': '500',
+        'text-decoration': 'none'
+      });
+    });
+        
+    // Add hover effects via event listeners since CSS might not work
+    gadgets.forEach(gadget => {
+      gadget.addEventListener('mouseenter', () => {
+        applyForceStyle(gadget, {
+          'transform': 'translateY(-1px)',
+          'box-shadow': '0 4px 18px rgba(0, 0, 0, 0.5)',
+          'background': 'linear-gradient(135deg, rgba(48, 43, 99, 0.9), rgba(79, 70, 229, 0.9))'
+        });
+      });
+            
+      gadget.addEventListener('mouseleave', () => {
+        applyForceStyle(gadget, {
+          'transform': 'translateY(0)',
+          'box-shadow': '0 2px 12px rgba(0, 0, 0, 0.3)',
+          'background': 'linear-gradient(135deg, rgba(15, 12, 41, 0.9), rgba(36, 36, 62, 0.9))'
+        });
+      });
+    });
+        
+    // Disconnect any existing observer before creating a new one
+    if (window.googleTranslateMutationObserver) {
+      window.googleTranslateMutationObserver.disconnect();
+    }
+        
+    // Set up a mutation observer to reapply styles if Google overrides them
+    window.googleTranslateMutationObserver = new MutationObserver(() => {
+      setTimeout(() => {
+        const currentGadgets = translateElement.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple');
+        currentGadgets.forEach(gadget => {
+          // Only reapply if it hasn't been processed and doesn't already have our styling
+          if (!gadget.getAttribute('data-custom-styled') && (!gadget.style.background || !gadget.style.background.includes('linear-gradient')) && !gadget.querySelector('svg')) {
+            // Fix layout first
+            applyForceStyle(gadget, {
+              'display': 'inline-flex',
+              'flex-direction': 'row',
+              'align-items': 'center',
+              'justify-content': 'center',
+              'white-space': 'nowrap'
+            });
+                        
+            // Apply styling
+            applyForceStyle(gadget, {
+              'background': 'linear-gradient(135deg, rgba(15, 12, 41, 0.9), rgba(36, 36, 62, 0.9))',
+              'border': '1px solid rgba(255, 255, 255, 0.3)',
+              'border-radius': '6px',
+              'padding': '10px 12px',
+              'margin': '0',
+              'color': '#ffffff',
+              'font-family': 'Inter, sans-serif',
+              'font-size': '14px',
+              'font-weight': '500',
+              'box-shadow': '0 2px 12px rgba(0, 0, 0, 0.3)',
+              'min-height': 'auto',
+              'line-height': '1.2'
+            });
+                        
+            // Replace text with SVG globe icon
+            const textElements = gadget.querySelectorAll('span');
+            let replaced = false;
+                        
+            textElements.forEach(textEl => {
+              if (!replaced && textEl.textContent && textEl.textContent.trim() && !textEl.querySelector('svg')) {
+                const text = textEl.textContent.trim().toLowerCase();
+                // Only replace the main text element that contains language selection text
+                if (text.includes('select') || text.includes('language') || text.includes('translate') || text === 'powered by google' || text.length > 8) {
+                  textEl.innerHTML = '<svg style="width: 20px; height: 20px; color: #ffffff; display: inline-block; vertical-align: middle;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg><span style="color: #ffffff; font-size: 12px; margin-left: 4px;">&#9660;</span>';
+                  replaced = true; // Only replace once
+                                    
+                  // Show the translate element now that we've replaced the text
+                  translateElement.classList.add('customized');
+                }
+              }
+            });
+                        
+            // Fix child elements
             const childElements = gadget.querySelectorAll('*');
             childElements.forEach(child => {
-                applyForceStyle(child, {
-                    'display': 'inline-block',
-                    'vertical-align': 'middle',
-                    'margin': '0',
-                    'padding': '0'
-                });
+              applyForceStyle(child, {
+                'display': 'inline-block',
+                'vertical-align': 'middle',
+                'margin': '0',
+                'padding': '0'
+              });
             });
-            
-            // Hide Google's original dropdown arrow images since we have our own
+                        
+            // Hide Google's original arrow images since we have our own
             const arrowImages = gadget.querySelectorAll('img');
             arrowImages.forEach(img => {
-                applyForceStyle(img, {
-                    'display': 'none'
-                });
+              applyForceStyle(img, {
+                'display': 'none'
+              });
             });
-            
-            // Mark this gadget as processed to prevent duplicate processing
+                        
+            // Mark this gadget as processed
             gadget.setAttribute('data-custom-styled', 'true');
+          }
         });
+      }, 200);
+    });
         
-        // Style select elements
-        selects.forEach(select => {
-            applyForceStyle(select, {
-                'background': 'transparent',
-                'border': 'none',
-                'color': '#ffffff',
-                'font-family': 'Inter, sans-serif',
-                'font-size': '14px',
-                'font-weight': '500',
-                'outline': 'none',
-                'cursor': 'pointer'
-            });
-        });
+    window.googleTranslateMutationObserver.observe(translateElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
         
-        // Style all text elements
-        [...spans, ...links].forEach(element => {
-            applyForceStyle(element, {
-                'color': '#ffffff',
-                'font-family': 'Inter, sans-serif',
-                'font-size': '14px',
-                'font-weight': '500',
-                'text-decoration': 'none'
-            });
-        });
-        
-        // Add hover effects via event listeners since CSS might not work
-        gadgets.forEach(gadget => {
-            gadget.addEventListener('mouseenter', () => {
-                applyForceStyle(gadget, {
-                    'transform': 'translateY(-1px)',
-                    'box-shadow': '0 4px 18px rgba(0, 0, 0, 0.5)',
-                    'background': 'linear-gradient(135deg, rgba(48, 43, 99, 0.9), rgba(79, 70, 229, 0.9))'
-                });
-            });
-            
-            gadget.addEventListener('mouseleave', () => {
-                applyForceStyle(gadget, {
-                    'transform': 'translateY(0)',
-                    'box-shadow': '0 2px 12px rgba(0, 0, 0, 0.3)',
-                    'background': 'linear-gradient(135deg, rgba(15, 12, 41, 0.9), rgba(36, 36, 62, 0.9))'
-                });
-            });
-        });
-        
-        // Disconnect any existing observer before creating a new one
-        if (window.googleTranslateMutationObserver) {
-            window.googleTranslateMutationObserver.disconnect();
-        }
-        
-        // Set up a mutation observer to reapply styles if Google overrides them
-        window.googleTranslateMutationObserver = new MutationObserver(() => {
-                setTimeout(() => {
-                    const currentGadgets = translateElement.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple');
-                    currentGadgets.forEach(gadget => {
-                        // Only reapply if it hasn't been processed and doesn't already have our styling
-                        if (!gadget.getAttribute('data-custom-styled') && (!gadget.style.background || !gadget.style.background.includes('linear-gradient')) && !gadget.querySelector('svg')) {
-                        // Fix layout first
-                        applyForceStyle(gadget, {
-                            'display': 'inline-flex',
-                            'flex-direction': 'row',
-                            'align-items': 'center',
-                            'justify-content': 'center',
-                            'white-space': 'nowrap'
-                        });
-                        
-                        // Apply styling
-                        applyForceStyle(gadget, {
-                            'background': 'linear-gradient(135deg, rgba(15, 12, 41, 0.9), rgba(36, 36, 62, 0.9))',
-                            'border': '1px solid rgba(255, 255, 255, 0.3)',
-                            'border-radius': '6px',
-                            'padding': '10px 12px',
-                            'margin': '0',
-                            'color': '#ffffff',
-                            'font-family': 'Inter, sans-serif',
-                            'font-size': '14px',
-                            'font-weight': '500',
-                            'box-shadow': '0 2px 12px rgba(0, 0, 0, 0.3)',
-                            'min-height': 'auto',
-                            'line-height': '1.2'
-                        });
-                        
-                        // Replace text with SVG globe icon
-                        const textElements = gadget.querySelectorAll('span');
-                        let replaced = false;
-                        
-                        textElements.forEach(textEl => {
-                            if (!replaced && textEl.textContent && textEl.textContent.trim() && !textEl.querySelector('svg')) {
-                                const text = textEl.textContent.trim().toLowerCase();
-                                // Only replace the main text element that contains language selection text
-                                if (text.includes('select') || text.includes('language') || text.includes('translate') || text === 'powered by google' || text.length > 8) {
-                                    textEl.innerHTML = '<svg style="width: 20px; height: 20px; color: #ffffff; display: inline-block; vertical-align: middle;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg><span style="color: #ffffff; font-size: 12px; margin-left: 4px;">&#9660;</span>';
-                                    replaced = true; // Only replace once
-                                    
-                                    // Show the translate element now that we've replaced the text
-                                    translateElement.classList.add('customized');
-                                }
-                            }
-                        });
-                        
-                        // Fix child elements
-                        const childElements = gadget.querySelectorAll('*');
-                        childElements.forEach(child => {
-                            applyForceStyle(child, {
-                                'display': 'inline-block',
-                                'vertical-align': 'middle',
-                                'margin': '0',
-                                'padding': '0'
-                            });
-                        });
-                        
-                        // Hide Google's original arrow images since we have our own
-                        const arrowImages = gadget.querySelectorAll('img');
-                        arrowImages.forEach(img => {
-                            applyForceStyle(img, {
-                                'display': 'none'
-                            });
-                        });
-                        
-                        // Mark this gadget as processed
-                        gadget.setAttribute('data-custom-styled', 'true');
-                    }
-                });
-                }, 200);
-        });
-        
-        window.googleTranslateMutationObserver.observe(translateElement, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['style', 'class']
-        });
-        
-        console.log('Google Translate styling forcefully applied with observer');
-    };
+    console.log('Google Translate styling forcefully applied with observer');
+  };
     
-    checkAndStyle();
+  checkAndStyle();
 }
 
 // Cleanup function to disconnect observer when page unloads
 window.addEventListener('beforeunload', () => {
-    if (window.googleTranslateMutationObserver) {
-        window.googleTranslateMutationObserver.disconnect();
-        window.googleTranslateMutationObserver = null;
-    }
+  if (window.googleTranslateMutationObserver) {
+    window.googleTranslateMutationObserver.disconnect();
+    window.googleTranslateMutationObserver = null;
+  }
 });
 
 // Add custom styling for the language selector
 function addTranslateStyles() {
-    const styleElement = document.createElement('style');
-    styleElement.id = 'custom-translate-styles';
-    styleElement.textContent = `
+  const styleElement = document.createElement('style');
+  styleElement.id = 'custom-translate-styles';
+  styleElement.textContent = `
         /* Initially hide the translate element to prevent text flash */
         #google_translate_element {
             visibility: hidden !important;
@@ -600,50 +600,50 @@ function addTranslateStyles() {
             }
         }
     `;
-    document.head.appendChild(styleElement);
+  document.head.appendChild(styleElement);
 }
 
 // Remove any Google-added elements from the page body
 function cleanupGoogleElements() {
-    // Remove the Google top banner if it exists
-    const bannerFrame = document.querySelector('.goog-te-banner-frame');
-    if (bannerFrame) {
-        bannerFrame.remove();
+  // Remove the Google top banner if it exists
+  const bannerFrame = document.querySelector('.goog-te-banner-frame');
+  if (bannerFrame) {
+    bannerFrame.remove();
+  }
+    
+  // Reset the body position if Google altered it
+  document.body.style.top = '0';
+  document.body.classList.remove('translated-rtl');
+    
+  // Fix various Google injected styles
+  const googleStyleElems = document.querySelectorAll('style[id^="goog-"]');
+  googleStyleElems.forEach(el => {
+    if (el.textContent.includes('top: -40px')) {
+      el.textContent = el.textContent.replace('top: -40px', 'top: 0px');
     }
-    
-    // Reset the body position if Google altered it
-    document.body.style.top = '0';
-    document.body.classList.remove('translated-rtl');
-    
-    // Fix various Google injected styles
-    const googleStyleElems = document.querySelectorAll('style[id^="goog-"]');
-    googleStyleElems.forEach(el => {
-        if (el.textContent.includes('top: -40px')) {
-            el.textContent = el.textContent.replace('top: -40px', 'top: 0px');
-        }
-    });
+  });
 }
 
 // Initialize the translation functionality when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    initGoogleTranslate();
+  initGoogleTranslate();
     
-    // Clean up any Google elements periodically to ensure they don't interfere with the page
-    setTimeout(cleanupGoogleElements, 1500);
-    setInterval(cleanupGoogleElements, 5000);
+  // Clean up any Google elements periodically to ensure they don't interfere with the page
+  setTimeout(cleanupGoogleElements, 1500);
+  setInterval(cleanupGoogleElements, 5000);
     
-    // Retry customization multiple times very quickly to catch the text replacement
-    setTimeout(completeCustomization, 50);
-    setTimeout(completeCustomization, 100);
-    setTimeout(completeCustomization, 200);
-    setTimeout(completeCustomization, 300);
+  // Retry customization multiple times very quickly to catch the text replacement
+  setTimeout(completeCustomization, 50);
+  setTimeout(completeCustomization, 100);
+  setTimeout(completeCustomization, 200);
+  setTimeout(completeCustomization, 300);
     
-    // Safety timeout: Show the element after 3 seconds even if customization didn't complete
-    setTimeout(() => {
-        const translateElement = document.getElementById('google_translate_element');
-        if (translateElement && !translateElement.classList.contains('customized')) {
-            console.warn('Google Translate customization timeout - showing element anyway');
-            translateElement.classList.add('customized');
-        }
-    }, 3000);
+  // Safety timeout: Show the element after 3 seconds even if customization didn't complete
+  setTimeout(() => {
+    const translateElement = document.getElementById('google_translate_element');
+    if (translateElement && !translateElement.classList.contains('customized')) {
+      console.warn('Google Translate customization timeout - showing element anyway');
+      translateElement.classList.add('customized');
+    }
+  }, 3000);
 });
