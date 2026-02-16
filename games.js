@@ -894,7 +894,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const character = arrayValue[index];
       
       // If character hasn't been typed yet
-      if (character == null) {
+      if (character === null || character === undefined) {
         characterSpan.classList.remove('correct');
         characterSpan.classList.remove('incorrect');
         correct = false;

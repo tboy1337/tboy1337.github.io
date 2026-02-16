@@ -28,6 +28,11 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <meta name="theme-color" content="#0f0c29">
     
+    <!-- Preconnect to external domains for better performance -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://translate.google.com">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -385,6 +390,7 @@
                                 id="contact-name" 
                                 name="name" 
                                 required
+                                autocomplete="name"
                                 class="w-full px-4 py-3 bg-black/60 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors"
                                 placeholder="Enter your full name"
                             >
@@ -400,6 +406,7 @@
                                 id="contact-email" 
                                 name="email" 
                                 required
+                                autocomplete="email"
                                 class="w-full px-4 py-3 bg-black/60 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors"
                                 placeholder="Enter your email address"
                             >
@@ -415,6 +422,7 @@
                                 id="contact-subject" 
                                 name="subject" 
                                 required
+                                autocomplete="off"
                                 class="w-full px-4 py-3 bg-black/60 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors"
                                 placeholder="What's this about?"
                             >
