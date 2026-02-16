@@ -1,7 +1,7 @@
 // Service Worker for tboy1337.github.io
 // Provides offline support and caching for better performance
 
-const CACHE_NAME = 'tboy1337-v1.0.12';
+const CACHE_NAME = 'tboy1337-v1.0.13';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -75,7 +75,6 @@ self.addEventListener('fetch', event => {
 // Network-first strategy for HTML files to ensure fresh content
 async function handleHTMLRequest(request) {
   try {
-    console.log('Fetching fresh HTML:', request.url);
     const networkResponse = await fetch(request);
     
     if (networkResponse.status === 200) {
@@ -83,12 +82,10 @@ async function handleHTMLRequest(request) {
       const responseClone = networkResponse.clone();
       const cache = await caches.open(CACHE_NAME);
       await cache.put(request, responseClone);
-      console.log('Cached fresh HTML:', request.url);
     }
     
     return networkResponse;
   } catch (error) {
-    console.log('Network failed for HTML, trying cache:', request.url);
     // Fallback to cache if network fails
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
@@ -108,21 +105,17 @@ async function handleAssetRequest(request) {
   const fetchPromise = fetch(request).then(response => {
     if (response.status === 200) {
       cache.put(request, response.clone());
-      console.log('Updated cached asset:', request.url);
     }
     return response;
-  }).catch(error => {
-    console.log('Failed to update asset:', request.url, error);
+  }).catch(() => {
     return null;
   });
   
   // Return cached version immediately if available, otherwise wait for network
   if (cachedResponse) {
-    console.log('Serving cached asset:', request.url);
     fetchPromise; // Update cache in background
     return cachedResponse;
   } else {
-    console.log('No cached asset, waiting for network:', request.url);
     return fetchPromise;
   }
 }

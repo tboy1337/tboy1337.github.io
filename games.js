@@ -456,7 +456,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleDirectionChange(newDirection) {
     // Only allow direction changes if no change is already queued
     if (direction !== nextDirection) {
-      console.log(`Touch direction change ignored: already have ${direction} -> ${nextDirection} queued`);
       return;
     }
     
@@ -466,7 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
       (newDirection === 'left' && direction !== 'right') ||
       (newDirection === 'right' && direction !== 'left')
     ) {
-      console.log(`Touch direction change: ${direction} -> ${newDirection}`);
       nextDirection = newDirection;
     }
   }
@@ -481,25 +479,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Only allow direction changes if no change is already queued
     // This prevents multiple rapid direction changes within one game loop cycle
     if (direction !== nextDirection) {
-      console.log(`Direction change ignored: already have ${direction} -> ${nextDirection} queued`);
       return;
     }
     
     // Validate against current direction to prevent immediate reversal
     if (e.key === 'ArrowUp' && direction !== 'down') {
-      console.log(`Direction change: ${direction} -> up`);
       nextDirection = 'up';
     } else if (e.key === 'ArrowDown' && direction !== 'up') {
-      console.log(`Direction change: ${direction} -> down`);
       nextDirection = 'down';
     } else if (e.key === 'ArrowLeft' && direction !== 'right') {
-      console.log(`Direction change: ${direction} -> left`);
       nextDirection = 'left';
     } else if (e.key === 'ArrowRight' && direction !== 'left') {
-      console.log(`Direction change: ${direction} -> right`);
       nextDirection = 'right';
-    } else {
-      console.log(`Invalid direction change: ${e.key} blocked (current: ${direction})`);
     }
   }
   
@@ -507,11 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isSnakeGameActive) return;
     
     // Apply queued direction change at the start of each game loop
-    const previousDirection = direction;
     direction = nextDirection;
-    if (previousDirection !== direction) {
-      console.log(`Direction applied in game loop: ${previousDirection} -> ${direction}`);
-    }
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -582,15 +569,12 @@ document.addEventListener('DOMContentLoaded', () => {
       head.x >= canvas.width ||
       head.y >= canvas.height
     ) {
-      console.log(`Wall collision detected at (${head.x}, ${head.y}), canvas size: ${canvas.width}x${canvas.height}`);
       return true;
     }
     
     // Check self collision (skip the head)
     for (let i = 1; i < snake.length; i++) {
       if (head.x === snake[i].x && head.y === snake[i].y) {
-        console.log(`Self collision detected at (${head.x}, ${head.y}) with body segment ${i} at (${snake[i].x}, ${snake[i].y})`);
-        console.log(`Snake body:`, snake.map((seg, idx) => `${idx}: (${seg.x}, ${seg.y})`));
         return true;
       }
     }
