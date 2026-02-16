@@ -43,9 +43,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Arrow game cleanup
-    if (gameName !== 'arrow' && window.arrowKeyboardHandler) {
-      document.removeEventListener('keydown', window.arrowKeyboardHandler);
-      window.arrowKeyboardHandler = null;
+    if (gameName !== 'arrow') {
+      if (window.arrowKeyboardHandler) {
+        document.removeEventListener('keydown', window.arrowKeyboardHandler);
+        window.arrowKeyboardHandler = null;
+      }
+      // Close audio context when switching away from arrow game
+      if (window.arrowGameAudioContext && window.arrowGameAudioContext.state !== 'closed') {
+        window.arrowGameAudioContext.close().catch(err => {
+          console.warn('Failed to close arrow game audio context:', err);
+        });
+        window.arrowGameAudioContext = null;
+      }
     }
     
     // Hide all game sections
@@ -519,6 +528,13 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function gameLoop() {
     if (!window.snakeGameActive) return;
+    
+    // Safety check: ensure canvas and context exist
+    if (!canvas || !ctx) {
+      console.warn('Canvas or context not initialized');
+      endSnakeGame();
+      return;
+    }
     
     // Apply queued direction change at the start of each game loop
     direction = nextDirection;
@@ -1050,7 +1066,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
   let isGameActive = false;
-  let audioContext = null;
+  window.arrowGameAudioContext = null;
   let notesPlayed = 0;
   
   // Define audio frequencies for different notes (pentatonic scale with electronic vibe)
@@ -1221,22 +1237,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize Web Audio API
   function initAudio() {
     try {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      window.arrowGameAudioContext = new (window.AudioContext || window.webkitAudioContext)();
       // Resume audio context if it's suspended (required by browser policies)
-      if (audioContext.state === 'suspended') {
-        audioContext.resume().catch(err => {
+      if (window.arrowGameAudioContext.state === 'suspended') {
+        window.arrowGameAudioContext.resume().catch(err => {
           console.warn('Failed to resume audio context:', err);
         });
       }
     } catch (error) {
       console.warn('Web Audio API not supported in this browser:', error);
-      audioContext = null;
+      window.arrowGameAudioContext = null;
     }
   }
   
   // Play a note based on index with electronic style
   function playNote(index) {
-    if (!audioContext) return;
+    if (!window.arrowGameAudioContext) return;
     
     // Update notes counter
     notesPlayed++;
@@ -1246,10 +1262,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Create audio nodes
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    const filterNode = audioContext.createBiquadFilter();
-    const distortion = audioContext.createWaveShaper();
+    const oscillator = window.arrowGameAudioContext.createOscillator();
+    const gainNode = window.arrowGameAudioContext.createGain();
+    const filterNode = window.arrowGameAudioContext.createBiquadFilter();
+    const distortion = window.arrowGameAudioContext.createWaveShaper();
     
     // Set up oscillator with a sawtooth wave for more electronic sound
     oscillator.type = index % 2 === 0 ? 'sawtooth' : 'square';
@@ -1261,14 +1277,14 @@ document.addEventListener('DOMContentLoaded', () => {
     filterNode.Q.value = 8;
     
     // Add filter envelope for the wah effect
-    filterNode.frequency.setValueAtTime(100, audioContext.currentTime);
+    filterNode.frequency.setValueAtTime(100, window.arrowGameAudioContext.currentTime);
     filterNode.frequency.exponentialRampToValueAtTime(
       3000, 
-      audioContext.currentTime + 0.1
+      window.arrowGameAudioContext.currentTime + 0.1
     );
     filterNode.frequency.exponentialRampToValueAtTime(
       1000, 
-      audioContext.currentTime + 0.4
+      window.arrowGameAudioContext.currentTime + 0.4
     );
     
     // Distortion function for added effect
@@ -1296,20 +1312,20 @@ document.addEventListener('DOMContentLoaded', () => {
     oscillator.connect(filterNode);
     filterNode.connect(distortion);
     distortion.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    gainNode.connect(window.arrowGameAudioContext.destination);
     
     // Start the oscillator
     oscillator.start();
     
     // Apply volume envelope
-    gainNode.gain.setValueAtTime(0.01, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    gainNode.gain.setValueAtTime(0.01, window.arrowGameAudioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.3, window.arrowGameAudioContext.currentTime + 0.05);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, window.arrowGameAudioContext.currentTime + 0.5);
     
     // Add a slight pitch bend for more character
     oscillator.frequency.exponentialRampToValueAtTime(
       oscillator.frequency.value * 0.99,
-      audioContext.currentTime + 0.4
+      window.arrowGameAudioContext.currentTime + 0.4
     );
     
     // Stop the oscillator after a short time
@@ -1351,6 +1367,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset notes counter
     notesPlayed = 0;
+    
+    // Close audio context to prevent memory leak
+    if (window.arrowGameAudioContext && window.arrowGameAudioContext.state !== 'closed') {
+      window.arrowGameAudioContext.close().catch(err => {
+        console.warn('Failed to close audio context:', err);
+      });
+      window.arrowGameAudioContext = null;
+    }
     
     // Remove keyboard event handler
     if (window.arrowKeyboardHandler) {
