@@ -88,6 +88,9 @@ function showTranslateError() {
     }
 }
 
+// Store the mutation observer globally so it can be disconnected if needed
+window.googleTranslateMutationObserver = null;
+
 // Callback function for Google Translate initialization
 // This needs to be in the global scope as it's called by the Google Translate script
 window.googleTranslateElementInit = function() {
@@ -268,8 +271,13 @@ function completeCustomization() {
             });
         });
         
+        // Disconnect any existing observer before creating a new one
+        if (window.googleTranslateMutationObserver) {
+            window.googleTranslateMutationObserver.disconnect();
+        }
+        
         // Set up a mutation observer to reapply styles if Google overrides them
-        const observer = new MutationObserver(() => {
+        window.googleTranslateMutationObserver = new MutationObserver(() => {
                 setTimeout(() => {
                     const currentGadgets = translateElement.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple');
                     currentGadgets.forEach(gadget => {
@@ -344,7 +352,7 @@ function completeCustomization() {
                 }, 200);
         });
         
-        observer.observe(translateElement, {
+        window.googleTranslateMutationObserver.observe(translateElement, {
             childList: true,
             subtree: true,
             attributes: true,
@@ -356,6 +364,14 @@ function completeCustomization() {
     
     checkAndStyle();
 }
+
+// Cleanup function to disconnect observer when page unloads
+window.addEventListener('beforeunload', () => {
+    if (window.googleTranslateMutationObserver) {
+        window.googleTranslateMutationObserver.disconnect();
+        window.googleTranslateMutationObserver = null;
+    }
+});
 
 // Add custom styling for the language selector
 function addTranslateStyles() {

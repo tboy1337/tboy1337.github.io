@@ -14,6 +14,40 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Function to switch between games
   function switchGame(gameName) {
+    // Stop all active games before switching
+    // Memory game cleanup
+    if (gameName !== 'memory' && window.memoryGameTimer) {
+      clearInterval(window.memoryGameTimer);
+      window.memoryGameTimer = null;
+      window.memoryGameActive = false;
+    }
+    
+    // Snake game cleanup
+    if (gameName !== 'snake') {
+      if (window.snakeGameInterval) {
+        clearInterval(window.snakeGameInterval);
+        window.snakeGameInterval = null;
+      }
+      if (window.snakeKeyboardHandler) {
+        document.removeEventListener('keydown', window.snakeKeyboardHandler);
+        window.snakeKeyboardHandler = null;
+      }
+      window.snakeGameActive = false;
+    }
+    
+    // Typing game cleanup
+    if (gameName !== 'typing' && window.typingTimerInterval) {
+      clearInterval(window.typingTimerInterval);
+      window.typingTimerInterval = null;
+      window.typingGameActive = false;
+    }
+    
+    // Arrow game cleanup
+    if (gameName !== 'arrow' && window.arrowKeyboardHandler) {
+      document.removeEventListener('keydown', window.arrowKeyboardHandler);
+      window.arrowKeyboardHandler = null;
+    }
+    
     // Hide all game sections
     gameSections.forEach(section => {
       section.classList.add('hidden');
@@ -38,17 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (activeButton) {
       activeButton.setAttribute('aria-pressed', 'true');
       activeButton.focus(); // Focus the active game button for keyboard users
-    }
-    
-    // If we're switching away from Snake game, make sure to clean up event listeners
-    if (gameName !== 'snake' && window.snakeKeyboardHandler) {
-      document.removeEventListener('keydown', window.snakeKeyboardHandler);
-    }
-    
-    // If we're switching away from Arrow game, clean up event listeners
-    if (gameName !== 'arrow' && window.arrowKeyboardHandler) {
-      document.removeEventListener('keydown', window.arrowKeyboardHandler);
-      window.arrowKeyboardHandler = null;
     }
   }
   
@@ -91,8 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let firstCard, secondCard;
   let score = 0;
   let timeLeft = 60;
-  let timer;
-  let isGameActive = false;
+  window.memoryGameTimer = null;
+  window.memoryGameActive = false;
   
   // Card icons (using Font Awesome 6 naming)
   const icons = [
@@ -124,9 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeGameDisplay();
   
   function startGame() {
-    if (isGameActive) return;
+    if (window.memoryGameActive) return;
     
-    isGameActive = true;
+    window.memoryGameActive = true;
     score = 0;
     timeLeft = 60;
     scoreElement.textContent = score;
@@ -139,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createCards();
     
     // Start timer
-    timer = setInterval(() => {
+    window.memoryGameTimer = setInterval(() => {
       timeLeft--;
       timeElement.textContent = timeLeft;
       
@@ -262,8 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function resetGame() {
-    clearInterval(timer);
-    isGameActive = false;
+    clearInterval(window.memoryGameTimer);
+    window.memoryGameActive = false;
     
     // Reset to initial display
     initializeGameDisplay();
@@ -280,8 +303,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function endGame(won = false) {
-    clearInterval(timer);
-    isGameActive = false;
+    clearInterval(window.memoryGameTimer);
+    window.memoryGameActive = false;
     lockBoard = true;
     
     // Show result message
@@ -343,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let gameSpeed = 150;
   let snakeSize = 20;
   let snakeScore = 0;
-  let gameInterval;
-  let isSnakeGameActive = false;
+  window.snakeGameInterval = null;
+  window.snakeGameActive = false;
   
   // Initialize with a centered start message
   function initSnakeDisplay() {
@@ -398,9 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function startSnakeGame() {
-    if (isSnakeGameActive) return;
+    if (window.snakeGameActive) return;
     
-    isSnakeGameActive = true;
+    window.snakeGameActive = true;
     snakeScore = 0;
     snakeScoreElement.textContent = snakeScore;
     
@@ -421,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addTouchControls();
     
     // Start game loop
-    gameInterval = setInterval(gameLoop, gameSpeed);
+    window.snakeGameInterval = setInterval(gameLoop, gameSpeed);
     
     snakeStartButton.disabled = true;
     snakeResetButton.disabled = false;
@@ -495,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function gameLoop() {
-    if (!isSnakeGameActive) return;
+    if (!window.snakeGameActive) return;
     
     // Apply queued direction change at the start of each game loop
     direction = nextDirection;
@@ -662,14 +685,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function endSnakeGame() {
-    clearInterval(gameInterval);
+    clearInterval(window.snakeGameInterval);
     
     // Remove keyboard event listener
     if (window.snakeKeyboardHandler) {
       document.removeEventListener('keydown', window.snakeKeyboardHandler);
     }
     
-    isSnakeGameActive = false;
+    window.snakeGameActive = false;
     
     if (canvas && ctx) {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -712,8 +735,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
   let startTime;
-  let timerInterval;
-  let isTypingGameActive = false;
+  window.typingTimerInterval = null;
+  window.typingGameActive = false;
   let totalTyped = 0;
   let correctTyped = 0;
   let currentSentence = 0;
@@ -791,9 +814,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function startTypingGame() {
-    if (isTypingGameActive) return;
+    if (window.typingGameActive) return;
     
-    isTypingGameActive = true;
+    window.typingGameActive = true;
     totalTyped = 0;
     correctTyped = 0;
     currentSentence = 0;
@@ -822,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
     timerDisplay.textContent = timeLeft;
     
     startTime = new Date();
-    timerInterval = setInterval(() => {
+    window.typingTimerInterval = setInterval(() => {
       timeLeft--;
       timerDisplay.textContent = timeLeft;
       
@@ -911,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Load new sentence if game is still active
-      if (isTypingGameActive) {
+      if (window.typingGameActive) {
         setTimeout(() => {
           loadNewSentence();
         }, 500); // Brief pause before new sentence
@@ -940,9 +963,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function resetTypingGame() {
-    clearInterval(timerInterval);
+    clearInterval(window.typingTimerInterval);
     
-    isTypingGameActive = false;
+    window.typingGameActive = false;
     typingStartButton.disabled = false;
     typingResetButton.disabled = true;
     
@@ -955,8 +978,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function endTypingGame() {
-    clearInterval(timerInterval);
-    isTypingGameActive = false;
+    clearInterval(window.typingTimerInterval);
+    window.typingGameActive = false;
     
     const typingInput = document.getElementById('typing-input');
     if (typingInput) {
