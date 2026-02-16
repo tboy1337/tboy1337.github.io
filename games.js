@@ -1043,7 +1043,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
   let isGameActive = false;
-  //let arrowKeyboardHandler = null; // This variable is unused since we use window.arrowKeyboardHandler instead
   let audioContext = null;
   let notesPlayed = 0;
   
