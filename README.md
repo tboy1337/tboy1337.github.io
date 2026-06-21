@@ -23,7 +23,7 @@ The site includes four fully-featured browser games:
 1. **Memory Card Game**: Match pairs of tech-themed icons within a time limit
 2. **Snake Game**: Classic snake game with responsive canvas and touch controls
 3. **Typing Speed Test**: Measure your WPM and accuracy with various text prompts
-4. **Music Keys**: Create electronic music using arrow keys with Web Audio API
+4. **Advanced Music Studio**: Full chromatic keyboard with multi-layer recording, effects, and looping
 
 ### Advanced Functionality
 - **Form Validation**: Real-time client-side validation with user-friendly error messages
@@ -57,28 +57,36 @@ The portfolio showcases the following key projects:
 ### Networking & Proxy Tools
 - **[MultiSocks](https://github.com/tboy1337/multisocks)**: SOCKS proxy aggregator for bandwidth optimization
 - **[Dispatch-py](https://github.com/tboy1337/dispatch-py)**: Traffic balancing SOCKS proxy for network optimization
-- **[HideIP.me Proxy Tester](https://github.com/tboy1337/hideip.me-proxy-tester)**: Comprehensive proxy testing tool
-- **[Scrapeer-py](https://github.com/tboy1337/scrapeer-py)**: Library for scraping torrent tracker information
+- **[Scrapeer-py](https://github.com/tboy1337/scrapeer-py)**: Library for scraping HTTP(S) and UDP trackers for torrent information
 
 ### Multimedia & Content Tools
-- **[Subwhisper](https://github.com/tboy1337/subwhisper)**: AI-powered subtitle generation using OpenAI Whisper
-- **[DAV2MKV](https://github.com/tboy1337/dav2mkv)**: High-quality video format conversion tool
-- **[SubtranSlate](https://github.com/tboy1337/SubtranSlate)**: Subtitle translation tool for SRT files
-- **[Video Streaming Server](https://github.com/tboy1337/video-streaming-server)**: Web-based video streaming platform
+- **[SubtitleTools](https://github.com/tboy1337/SubtitleTools)**: A tool for subtitle processing workflows, including extraction, conversion and optimization
+- **[MediaRelay](https://github.com/tboy1337/MediaRelay)**: Video streaming server for securely sharing personal video library over the internet
+- **[DAV2MKV](https://github.com/tboy1337/dav2mkv)**: Versatile tool for converting DAV video files to MKV or MP4 while maintaining perfect quality
+
+### Communication Tools
+- **[FreeSMS](https://github.com/tboy1337/FreeSMS)**: Cross-platform Python application with PySide GUI for sending free SMS messages worldwide
 
 ### System & Utility Tools
-- **[Repair Windows](https://github.com/tboy1337/Repair-Windows)**: Windows system optimization scripts
-- **[Git Manager Windows](https://github.com/tboy1337/Git-Manager-Windows)**: Automated Git installation and management
-- **[LineForge](https://github.com/tboy1337/LineForge)**: Cross-platform line ending normalization
-- **[TgCrypto2](https://github.com/tboy1337/tgcrypto2)**: Enhanced TgCrypto fork with improved compatibility
+- **[WindowsRescue](https://github.com/tboy1337/WindowsRescue)**: Collection of batch scripts to repair, maintain, optimize and update Windows systems
+- **[Git Manager Windows](https://github.com/tboy1337/Git-Manager-Windows)**: Batch scripts to automate Git management on Windows systems
+- **[TgCrypto2](https://github.com/tboy1337/tgcrypto2)**: Enhanced TgCrypto fork with working wheels for Python 3.9-3.13
 
-### Applications & Analytics
-- **[ProfitPioneer](https://github.com/tboy1337/ProfitPioneer)**: E-commerce analytics dashboard with Streamlit
-- **[SMSMaster](https://github.com/tboy1337/SMSMaster)**: Cross-platform SMS messaging application
-- **[ClockClock24-py](https://github.com/tboy1337/ClockClock24-py)**: Python implementation of the ClockClock project
+### Development Tools
+- **[Blinter](https://github.com/tboy1337/Blinter)**: Blinter is a linter for Windows batch files. It provides comprehensive static analysis to identify syntax errors, security vulnerabilities, performance issues and style problems
+
+### Analytics & Business
+- **[ProfitPioneer](https://github.com/tboy1337/ProfitPioneer)**: Comprehensive e-commerce analytics dashboard built with Streamlit for business intelligence insights
+
+
+### Fun Projects
+- **[ClockClock24-py](https://github.com/tboy1337/ClockClock24-py)**: Python port of the ClockClock project - creative clock display made of analog clocks
 
 ### Cryptocurrency Tools
-- **[Cryptocurrency Wallet Generators Organization](https://github.com/Cryptocurrency-Wallet-Generators)**: Collection of tools for generating cryptocurrency wallets
+- **[Cryptocurrency Wallet Generators Organization](https://github.com/Cryptocurrency-Wallet-Generators)**: Collection of open-source tools for generating wallets for various cryptocurrencies
+
+### Legal & Documentation
+- **[Commercial Restricted License](https://github.com/tboy1337/Commercial-Restricted-License)**: Software license designed to bridge the gap between fully open and fully proprietary software
 
 ## 📁 Project Structure
 
@@ -122,10 +130,12 @@ tboy1337.github.io/
 - **Features**: Real-time WPM calculation, accuracy tracking, multiple text prompts
 - **Metrics**: Words per minute, accuracy percentage, time tracking
 
-### Music Keys
+### Advanced Music Studio
 - **Tech Stack**: Web Audio API, JavaScript
-- **Features**: Real-time audio synthesis, electronic sound effects, mobile touch support
-- **Audio**: Sawtooth and square wave oscillators with filter envelopes
+- **Features**: Chromatic piano keyboard, multi-layer recording (up to 4 layers), per-layer tempo control, save/load compositions
+- **Effects**: Reverb, delay, chorus, distortion, and filter with real-time mixing
+- **Instruments**: Synthesizer, piano, strings, and bass
+- **Controls**: A-K for white keys, Q-P for black keys (desktop); touch piano on mobile
 
 ## 📱 Responsive Design
 

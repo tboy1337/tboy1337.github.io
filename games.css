@@ -1,5 +1,5 @@
 .game-container {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgb(0, 0, 0, 0.5);
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin-top: 2rem;
@@ -19,7 +19,7 @@
 
 /* Game Menu Styles */
 .game-menu {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgb(0, 0, 0, 0.5);
   border-radius: 0.5rem;
   padding: 0.5rem;
 }
@@ -37,9 +37,9 @@
 }
 
 .game-menu-item button {
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgb(0, 0, 0, 0.3);
   color: #e0e0e0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255, 255, 255, 0.1);
   font-weight: 500;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -48,22 +48,22 @@
 }
 
 .game-menu-item button:hover {
-  background-color: rgba(79, 70, 229, 0.2);
-  border-color: rgba(79, 70, 229, 0.4);
+  background-color: rgb(79, 70, 229, 0.2);
+  border-color: rgb(79, 70, 229, 0.4);
 }
 
 .game-menu-item button:focus {
-  outline: 2px solid rgba(79, 70, 229, 0.8);
+  outline: 2px solid rgb(79, 70, 229, 0.8);
   outline-offset: 2px;
-  background-color: rgba(79, 70, 229, 0.2);
-  border-color: rgba(79, 70, 229, 0.4);
+  background-color: rgb(79, 70, 229, 0.2);
+  border-color: rgb(79, 70, 229, 0.4);
 }
 
 .game-menu-item.active button {
-  background-color: rgba(79, 70, 229, 0.3);
-  border-color: rgba(79, 70, 229, 0.8);
+  background-color: rgb(79, 70, 229, 0.3);
+  border-color: rgb(79, 70, 229, 0.8);
   color: white;
-  box-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 0 10px rgb(79, 70, 229, 0.3);
 }
 
 .game-section {
@@ -87,7 +87,7 @@
 }
 
 .stat-box {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgb(0, 0, 0, 0.4);
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
 }
@@ -111,7 +111,7 @@
 }
 
 .game-btn:focus {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline: 2px solid rgb(255, 255, 255, 0.8);
   outline-offset: 2px;
 }
 
@@ -164,10 +164,8 @@
 .memory-card {
   height: 100px;
   position: relative;
-  transform-style: preserve-3d;
   transition: transform 0.5s;
   cursor: pointer;
-  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
 }
 
@@ -185,7 +183,6 @@
   left: 0;
   width: 100%;
   height: 100%;
-  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   display: flex;
   justify-content: center;
@@ -226,8 +223,8 @@
 .touch-btn {
   width: 40px;
   height: 40px;
-  background-color: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgb(0, 0, 0, 0.3);
+  border: 1px solid rgb(255, 255, 255, 0.1);
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -237,7 +234,7 @@
 }
 
 .touch-btn:hover {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgb(0, 0, 0, 0.5);
 }
 
 .touch-btn[data-direction="up"] {
@@ -274,7 +271,7 @@
 }
 
 .text-display {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgb(0, 0, 0, 0.4);
   padding: 1.5rem;
   border-radius: 0.25rem;
   font-size: 1.1rem;
@@ -293,10 +290,10 @@
 }
 
 .typing-input {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgb(0, 0, 0, 0.4);
   color: white;
   padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255, 255, 255, 0.1);
   border-radius: 0.25rem;
   font-size: 1rem;
   width: 100%;
@@ -304,12 +301,12 @@
 
 .typing-input:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+  border-color: rgb(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgb(79, 70, 229, 0.3);
 }
 
 .timer-display {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgb(0, 0, 0, 0.4);
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   font-size: 1.5rem;
@@ -325,7 +322,7 @@
 }
 
 .sentence-counter {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgb(0, 0, 0, 0.4);
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   font-size: 1rem;
@@ -355,8 +352,8 @@
   width: 80px;
   height: 80px;
   border-radius: 10px;
-  background-color: rgba(30, 30, 30, 0.7);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background-color: rgb(30, 30, 30, 0.7);
+  border: 2px solid rgb(255, 255, 255, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -366,7 +363,7 @@
 
 .arrow-key i {
   font-size: 2rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgb(255, 255, 255, 0.7);
 }
 
 .arrow-key .note-label {
@@ -374,26 +371,26 @@
   bottom: 8px;
   font-size: 12px;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgb(255, 255, 255, 0.9);
 }
 
 .arrow-key.active {
-  border-color: rgba(79, 70, 229, 0.8);
-  box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
-  background-color: rgba(79, 70, 229, 0.3);
+  border-color: rgb(79, 70, 229, 0.8);
+  box-shadow: 0 0 15px rgb(79, 70, 229, 0.5);
+  background-color: rgb(79, 70, 229, 0.3);
 }
 
 .arrow-key.correct {
-  border-color: rgba(52, 211, 153, 0.8);
-  box-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
-  background-color: rgba(52, 211, 153, 0.3);
+  border-color: rgb(52, 211, 153, 0.8);
+  box-shadow: 0 0 15px rgb(52, 211, 153, 0.5);
+  background-color: rgb(52, 211, 153, 0.3);
   animation: pulse-green 0.3s;
 }
 
 .arrow-key.wrong {
-  border-color: rgba(239, 68, 68, 0.8);
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
-  background-color: rgba(239, 68, 68, 0.3);
+  border-color: rgb(239, 68, 68, 0.8);
+  box-shadow: 0 0 15px rgb(239, 68, 68, 0.5);
+  background-color: rgb(239, 68, 68, 0.3);
   animation: shake 0.3s;
 }
 
@@ -409,8 +406,8 @@
   width: 60px;
   height: 60px;
   border-radius: 8px;
-  background-color: rgba(30, 30, 30, 0.7);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background-color: rgb(30, 30, 30, 0.7);
+  border: 2px solid rgb(255, 255, 255, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -420,28 +417,30 @@
 
 .sequence-arrow i {
   font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgb(255, 255, 255, 0.7);
 }
 
 .sequence-arrow.current {
-  border-color: rgba(234, 179, 8, 0.8);
-  box-shadow: 0 0 15px rgba(234, 179, 8, 0.5);
-  background-color: rgba(234, 179, 8, 0.3);
+  border-color: rgb(234, 179, 8, 0.8);
+  box-shadow: 0 0 15px rgb(234, 179, 8, 0.5);
+  background-color: rgb(234, 179, 8, 0.3);
   animation: pulse 0.8s infinite;
 }
 
 .sequence-arrow.completed {
-  border-color: rgba(52, 211, 153, 0.8);
-  background-color: rgba(52, 211, 153, 0.3);
+  border-color: rgb(52, 211, 153, 0.8);
+  background-color: rgb(52, 211, 153, 0.3);
 }
 
 @keyframes pulse {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
+
   100% {
     transform: scale(1);
   }
@@ -451,9 +450,11 @@
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -463,9 +464,11 @@
   0%, 100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-5px);
   }
+
   75% {
     transform: translateX(5px);
   }
@@ -492,22 +495,21 @@
   width: 70px;
   height: 70px;
   border-radius: 10px;
-  background-color: rgba(30, 30, 30, 0.7);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background-color: rgb(30, 30, 30, 0.7);
+  border: 2px solid rgb(255, 255, 255, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   transition: all 0.1s ease;
   cursor: pointer;
-  -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 .touch-arrow-btn i {
   font-size: 1.8rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgb(255, 255, 255, 0.7);
 }
 
 .touch-arrow-btn .note-label {
@@ -515,24 +517,24 @@
   bottom: 8px;
   font-size: 12px;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgb(255, 255, 255, 0.9);
 }
 
 .touch-arrow-btn.active {
-  border-color: rgba(79, 70, 229, 0.8);
-  box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
-  background-color: rgba(79, 70, 229, 0.3);
+  border-color: rgb(79, 70, 229, 0.8);
+  box-shadow: 0 0 15px rgb(79, 70, 229, 0.5);
+  background-color: rgb(79, 70, 229, 0.3);
 }
 
 .touch-arrow-btn.correct {
-  border-color: rgba(52, 211, 153, 0.8);
-  box-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
-  background-color: rgba(52, 211, 153, 0.3);
+  border-color: rgb(52, 211, 153, 0.8);
+  box-shadow: 0 0 15px rgb(52, 211, 153, 0.5);
+  background-color: rgb(52, 211, 153, 0.3);
   animation: pulse-green 0.3s;
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   #memory-game {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -578,7 +580,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   #memory-game {
     grid-template-columns: repeat(2, 1fr);
   }
