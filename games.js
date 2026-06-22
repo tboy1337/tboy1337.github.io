@@ -9,92 +9,92 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
   
-  // Global reference to the snake keyboard handler
-  window.snakeKeyboardHandler = null;
+    // Global reference to the snake keyboard handler
+    window.snakeKeyboardHandler = null;
   
-  // Function to switch between games
-  function switchGame(gameName) {
+    // Function to switch between games
+    function switchGame(gameName) {
     // Stop all active games before switching
     // Memory game cleanup
-    if (gameName !== 'memory' && window.memoryGameTimer) {
-      clearInterval(window.memoryGameTimer);
-      window.memoryGameTimer = null;
-      window.memoryGameActive = false;
-    }
-
-    // Snake game cleanup
-    if (gameName !== 'snake') {
-      if (window.snakeGameInterval) {
-        clearInterval(window.snakeGameInterval);
-        window.snakeGameInterval = null;
+      if (gameName !== 'memory' && window.memoryGameTimer) {
+        clearInterval(window.memoryGameTimer);
+        window.memoryGameTimer = null;
+        window.memoryGameActive = false;
       }
-      if (window.snakeKeyboardHandler) {
-        document.removeEventListener('keydown', window.snakeKeyboardHandler);
-        window.snakeKeyboardHandler = null;
-      }
-      window.snakeGameActive = false;
-    }
 
-    // Typing game cleanup
-    if (gameName !== 'typing' && window.typingTimerInterval) {
-      clearInterval(window.typingTimerInterval);
-      window.typingTimerInterval = null;
-      window.typingGameActive = false;
-    }
-
-    // Music Studio cleanup
-    if (gameName !== 'arrow') {
-      if (typeof window.cleanupMusicStudio === 'function') {
-        window.cleanupMusicStudio();
-      }
-    }
-
-    // Hide all game sections
-    gameSections.forEach(section => {
-      section.classList.add('hidden');
-    });
-
-    // Deactivate all menu items and update aria-pressed
-    menuItems.forEach(item => {
-      item.classList.remove('active');
-      const button = item.querySelector('button');
-      if (button) {
-        button.setAttribute('aria-pressed', 'false');
-      }
-    });
-
-    // Show selected game and activate menu item
-    const gameSection = document.getElementById(`${gameName}-section`);
-    if (gameSection) {
-      gameSection.classList.remove('hidden');
-    }
-
-    const activeMenuItem = document.querySelector(`.game-menu-item[data-game="${gameName}"]`);
-    if (activeMenuItem) {
-      activeMenuItem.classList.add('active');
-
-      // Update aria-pressed for active button
-      const activeButton = activeMenuItem.querySelector('button');
-      if (activeButton) {
-        activeButton.setAttribute('aria-pressed', 'true');
-        activeButton.focus();
-      }
-    }
-  }
-  
-  // Add click event listeners to menu items
-  menuItems.forEach(item => {
-    item.addEventListener('click', function() {
-      try {
-        const gameName = this.getAttribute('data-game');
-        if (gameName) {
-          switchGame(gameName);
+      // Snake game cleanup
+      if (gameName !== 'snake') {
+        if (window.snakeGameInterval) {
+          clearInterval(window.snakeGameInterval);
+          window.snakeGameInterval = null;
         }
-      } catch (error) {
-        console.error('Error switching games:', error);
+        if (window.snakeKeyboardHandler) {
+          document.removeEventListener('keydown', window.snakeKeyboardHandler);
+          window.snakeKeyboardHandler = null;
+        }
+        window.snakeGameActive = false;
       }
+
+      // Typing game cleanup
+      if (gameName !== 'typing' && window.typingTimerInterval) {
+        clearInterval(window.typingTimerInterval);
+        window.typingTimerInterval = null;
+        window.typingGameActive = false;
+      }
+
+      // Music Studio cleanup
+      if (gameName !== 'arrow') {
+        if (typeof window.cleanupMusicStudio === 'function') {
+          window.cleanupMusicStudio();
+        }
+      }
+
+      // Hide all game sections
+      gameSections.forEach(section => {
+        section.classList.add('hidden');
+      });
+
+      // Deactivate all menu items and update aria-pressed
+      menuItems.forEach(item => {
+        item.classList.remove('active');
+        const button = item.querySelector('button');
+        if (button) {
+          button.setAttribute('aria-pressed', 'false');
+        }
+      });
+
+      // Show selected game and activate menu item
+      const gameSection = document.getElementById(`${gameName}-section`);
+      if (gameSection) {
+        gameSection.classList.remove('hidden');
+      }
+
+      const activeMenuItem = document.querySelector(`.game-menu-item[data-game="${gameName}"]`);
+      if (activeMenuItem) {
+        activeMenuItem.classList.add('active');
+
+        // Update aria-pressed for active button
+        const activeButton = activeMenuItem.querySelector('button');
+        if (activeButton) {
+          activeButton.setAttribute('aria-pressed', 'true');
+          activeButton.focus();
+        }
+      }
+    }
+  
+    // Add click event listeners to menu items
+    menuItems.forEach(item => {
+      item.addEventListener('click', function() {
+        try {
+          const gameName = this.getAttribute('data-game');
+          if (gameName) {
+            switchGame(gameName);
+          }
+        } catch (error) {
+          console.error('Error switching games:', error);
+        }
+      });
     });
-  });
   
   } catch (error) {
     console.error('Error initializing game menu:', error);
@@ -115,209 +115,207 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
   
-  let cards = [];
-  let hasFlippedCard = false;
-  let lockBoard = false;
-  let firstCard, secondCard;
-  let score = 0;
-  let timeLeft = 60;
-  window.memoryGameTimer = null;
-  window.memoryGameActive = false;
+    let cards = [];
+    let hasFlippedCard = false;
+    let lockBoard = false;
+    let firstCard, secondCard;
+    let score = 0;
+    let timeLeft = 60;
+    window.memoryGameTimer = null;
+    window.memoryGameActive = false;
   
-  // Card icons (using Font Awesome 6 naming)
-  const icons = [
-    { name: 'code', prefix: 'fa-solid' },
-    { name: 'terminal', prefix: 'fa-solid' },
-    { name: 'database', prefix: 'fa-solid' },
-    { name: 'cloud', prefix: 'fa-solid' },
-    { name: 'square-js', prefix: 'fa-brands' }, // javascript
-    { name: 'html5', prefix: 'fa-brands' },
-    { name: 'css3-alt', prefix: 'fa-brands' }, // css3
-    { name: 'github', prefix: 'fa-brands' }     // git replacement
-  ];
+    // Card icons (using Font Awesome 6 naming)
+    const icons = [
+      { name: 'code', prefix: 'fa-solid' },
+      { name: 'terminal', prefix: 'fa-solid' },
+      { name: 'database', prefix: 'fa-solid' },
+      { name: 'cloud', prefix: 'fa-solid' },
+      { name: 'square-js', prefix: 'fa-brands' }, // javascript
+      { name: 'html5', prefix: 'fa-brands' },
+      { name: 'css3-alt', prefix: 'fa-brands' }, // css3
+      { name: 'github', prefix: 'fa-brands' }     // git replacement
+    ];
   
-  // Initialize with a centered start message instead of the grid
-  function initializeGameDisplay() {
+    // Initialize with a centered start message instead of the grid
+    function initializeGameDisplay() {
     // First add the centered-content class to change the display mode
-    gameContainer.classList.add('centered-content');
+      gameContainer.classList.add('centered-content');
     
-    gameContainer.innerHTML = `
+      gameContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
         <p class="text-xl mb-4">Memory Card Game</p>
         <p>Test your memory by matching pairs of tech icons!</p>
         <p class="mt-4">Click "Start Game" to begin</p>
       </div>
     `;
-  }
-  
-  // Run initialization
-  initializeGameDisplay();
-  
-  function startGame() {
-    if (window.memoryGameActive) return;
-
-    window.memoryGameActive = true;
-    score = 0;
-    timeLeft = 60;
-    scoreElement.textContent = score;
-    timeElement.textContent = timeLeft;
-    
-    // Remove the centered-content class before creating the grid
-    gameContainer.classList.remove('centered-content');
-    
-    // Create cards
-    createCards();
-    
-    // Start timer
-    window.memoryGameTimer = setInterval(() => {
-      timeLeft--;
-      timeElement.textContent = timeLeft;
-      
-      if (timeLeft <= 0) {
-        endGame(false); // Game lost - time ran out
-      }
-    }, 1000);
-    
-    startButton.disabled = true;
-    resetButton.disabled = false;
-  }
-  
-  function createCards() {
-    gameContainer.innerHTML = '';
-    cards = [];
-    
-    // Double the icons to create pairs
-    const cardIcons = [...icons, ...icons];
-    
-    // Shuffle the icons
-    shuffleArray(cardIcons);
-    
-    // Create card elements
-    cardIcons.forEach((icon) => {
-      const card = document.createElement('div');
-      card.classList.add('memory-card');
-      card.dataset.icon = icon.name;
-      
-      // Create front face (icon)
-      const frontFace = document.createElement('div');
-      frontFace.classList.add('card-front');
-      const frontIcon = document.createElement('i');
-      frontIcon.className = `${icon.prefix} fa-${icon.name}`;
-      frontFace.appendChild(frontIcon);
-      
-      // Create back face (question mark)
-      const backFace = document.createElement('div');
-      backFace.classList.add('card-back');
-      const backIcon = document.createElement('i');
-      backIcon.className = 'fa-solid fa-question';
-      backFace.appendChild(backIcon);
-      
-      // Add faces to card
-      card.appendChild(frontFace);
-      card.appendChild(backFace);
-      
-      card.addEventListener('click', flipCard);
-      gameContainer.appendChild(card);
-      cards.push(card);
-    });
-  }
-  
-  function flipCard() {
-    if (lockBoard) return;
-    if (this === firstCard) return;
-    
-    this.classList.add('flipped');
-    
-    if (!hasFlippedCard) {
-      // First card flipped
-      hasFlippedCard = true;
-      firstCard = this;
-      return;
     }
-    
-    // Second card flipped
-    secondCard = this;
-    checkForMatch();
-  }
   
-  function checkForMatch() {
-    const isMatch = firstCard.dataset.icon === secondCard.dataset.icon;
-    
-    if (isMatch) {
-      disableCards();
-      score += 10;
-      scoreElement.textContent = score;
-    } else {
-      unflipCards();
-    }
-  }
-  
-  function disableCards() {
-    firstCard.removeEventListener('click', flipCard);
-    secondCard.removeEventListener('click', flipCard);
-    
-    firstCard.classList.add('matched');
-    secondCard.classList.add('matched');
-    
-    resetBoard();
-    
-    // Check if all cards are matched
-    if (document.querySelectorAll('.memory-card.matched').length === cards.length) {
-      endGame(true); // Game won - all cards matched
-    }
-  }
-  
-  function unflipCards() {
-    lockBoard = true;
-    
-    setTimeout(() => {
-      firstCard.classList.remove('flipped');
-      secondCard.classList.remove('flipped');
-      
-      resetBoard();
-    }, 1000);
-  }
-  
-  function resetBoard() {
-    [hasFlippedCard, lockBoard] = [false, false];
-    [firstCard, secondCard] = [null, null];
-  }
-  
-  function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }
-  
-  function resetGame() {
-    clearInterval(window.memoryGameTimer);
-    window.memoryGameActive = false;
-    
-    // Reset to initial display
+    // Run initialization
     initializeGameDisplay();
-    
-    startButton.disabled = false;
-    resetButton.disabled = true;
-    
-    score = 0;
-    timeLeft = 60;
-    scoreElement.textContent = score;
-    timeElement.textContent = timeLeft;
-    
-    resetBoard();
-  }
   
-  function endGame(won = false) {
-    clearInterval(window.memoryGameTimer);
-    window.memoryGameActive = false;
-    lockBoard = true;
+    function startGame() {
+      if (window.memoryGameActive) return;
+
+      window.memoryGameActive = true;
+      score = 0;
+      timeLeft = 60;
+      scoreElement.textContent = score;
+      timeElement.textContent = timeLeft;
     
-    // Show result message
-    gameContainer.classList.add('centered-content');
-    if (won) {
-      gameContainer.innerHTML = `
+      // Remove the centered-content class before creating the grid
+      gameContainer.classList.remove('centered-content');
+    
+      // Create cards
+      createCards();
+    
+      // Start timer
+      window.memoryGameTimer = setInterval(() => {
+        timeLeft--;
+        timeElement.textContent = timeLeft;
+      
+        if (timeLeft <= 0) {
+          endGame(false); // Game lost - time ran out
+        }
+      }, 1000);
+    
+      startButton.disabled = true;
+      resetButton.disabled = false;
+    }
+  
+    function createCards() {
+      gameContainer.innerHTML = '';
+      cards = [];
+    
+      // Double the icons to create pairs
+      const cardIcons = [...icons, ...icons];
+    
+      // Shuffle the icons
+      window.GameUtils.shuffleArray(cardIcons);
+    
+      // Create card elements
+      cardIcons.forEach((icon) => {
+        const card = document.createElement('div');
+        card.classList.add('memory-card');
+        card.dataset.icon = icon.name;
+      
+        // Create front face (icon)
+        const frontFace = document.createElement('div');
+        frontFace.classList.add('card-front');
+        const frontIcon = document.createElement('i');
+        frontIcon.className = `${icon.prefix} fa-${icon.name}`;
+        frontFace.appendChild(frontIcon);
+      
+        // Create back face (question mark)
+        const backFace = document.createElement('div');
+        backFace.classList.add('card-back');
+        const backIcon = document.createElement('i');
+        backIcon.className = 'fa-solid fa-question';
+        backFace.appendChild(backIcon);
+      
+        // Add faces to card
+        card.appendChild(frontFace);
+        card.appendChild(backFace);
+      
+        card.addEventListener('click', flipCard);
+        gameContainer.appendChild(card);
+        cards.push(card);
+      });
+    }
+  
+    function flipCard() {
+      if (lockBoard) return;
+      if (this === firstCard) return;
+    
+      this.classList.add('flipped');
+    
+      if (!hasFlippedCard) {
+      // First card flipped
+        hasFlippedCard = true;
+        firstCard = this;
+        return;
+      }
+    
+      // Second card flipped
+      secondCard = this;
+      checkForMatch();
+    }
+  
+    function checkForMatch() {
+      const isMatch = window.MemoryGameUtils.isMemoryMatch(
+        firstCard.dataset.icon,
+        secondCard.dataset.icon
+      );
+
+      if (isMatch) {
+        disableCards();
+        score = window.MemoryGameUtils.updateMemoryScore(score, true);
+        scoreElement.textContent = score;
+      } else {
+        unflipCards();
+      }
+    }
+  
+    function disableCards() {
+      firstCard.removeEventListener('click', flipCard);
+      secondCard.removeEventListener('click', flipCard);
+    
+      firstCard.classList.add('matched');
+      secondCard.classList.add('matched');
+    
+      resetBoard();
+    
+      // Check if all cards are matched
+      if (window.MemoryGameUtils.isMemoryGameComplete(
+        document.querySelectorAll('.memory-card.matched').length,
+        cards.length
+      )) {
+        endGame(true); // Game won - all cards matched
+      }
+    }
+  
+    function unflipCards() {
+      lockBoard = true;
+    
+      setTimeout(() => {
+        firstCard.classList.remove('flipped');
+        secondCard.classList.remove('flipped');
+      
+        resetBoard();
+      }, 1000);
+    }
+  
+    function resetBoard() {
+      [hasFlippedCard, lockBoard] = [false, false];
+      [firstCard, secondCard] = [null, null];
+    }
+  
+    function resetGame() {
+      clearInterval(window.memoryGameTimer);
+      window.memoryGameActive = false;
+    
+      // Reset to initial display
+      initializeGameDisplay();
+    
+      startButton.disabled = false;
+      resetButton.disabled = true;
+    
+      score = 0;
+      timeLeft = 60;
+      scoreElement.textContent = score;
+      timeElement.textContent = timeLeft;
+    
+      resetBoard();
+    }
+  
+    function endGame(won = false) {
+      clearInterval(window.memoryGameTimer);
+      window.memoryGameActive = false;
+      lockBoard = true;
+    
+      // Show result message
+      gameContainer.classList.add('centered-content');
+      if (won) {
+        gameContainer.innerHTML = `
         <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
           <p class="text-2xl mb-4 text-green-400">🎉 You Won!</p>
           <p class="text-lg mb-2">All cards matched!</p>
@@ -326,8 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <p class="mt-4 text-gray-300">Click "Reset" to play again</p>
         </div>
       `;
-    } else {
-      gameContainer.innerHTML = `
+      } else {
+        gameContainer.innerHTML = `
         <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
           <p class="text-2xl mb-4 text-red-400">⏰ Time's Up!</p>
           <p class="text-lg mb-2">Better luck next time!</p>
@@ -335,17 +333,17 @@ document.addEventListener('DOMContentLoaded', () => {
           <p class="mt-4 text-gray-300">Click "Reset" to try again</p>
         </div>
       `;
-    }
+      }
     
-    startButton.disabled = false;
-    resetButton.disabled = false; // Enable reset so user can play again
-  }
+      startButton.disabled = false;
+      resetButton.disabled = false; // Enable reset so user can play again
+    }
   
-  // Event listeners
-  if (startButton && resetButton) {
-    startButton.addEventListener('click', startGame);
-    resetButton.addEventListener('click', resetGame);
-  }
+    // Event listeners
+    if (startButton && resetButton) {
+      startButton.addEventListener('click', startGame);
+      resetButton.addEventListener('click', resetGame);
+    }
   
   } catch (error) {
     console.error('Error initializing memory game:', error);
@@ -365,21 +363,21 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
   
-  let canvas, ctx;
-  let snake = [];
-  let food = {};
-  let direction = 'right';
-  let nextDirection = 'right'; // Buffer for next direction change
-  let gameSpeed = 150;
-  let snakeSize = 20;
-  let snakeScore = 0;
-  window.snakeGameInterval = null;
-  window.snakeGameActive = false;
+    let canvas, ctx;
+    let snake = [];
+    let food = {};
+    let direction = 'right';
+    let nextDirection = 'right'; // Buffer for next direction change
+    let gameSpeed = 150;
+    let snakeSize = 20;
+    let snakeScore = 0;
+    window.snakeGameInterval = null;
+    window.snakeGameActive = false;
   
-  // Initialize with a centered start message
-  function initSnakeDisplay() {
-    snakeContainer.classList.add('centered-content');
-    snakeContainer.innerHTML = `
+    // Initialize with a centered start message
+    function initSnakeDisplay() {
+      snakeContainer.classList.add('centered-content');
+      snakeContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
         <p class="text-xl mb-4">Snake Game</p>
         <p>Control the snake using arrow keys or touch controls</p>
@@ -387,344 +385,287 @@ document.addEventListener('DOMContentLoaded', () => {
         <p class="mt-4">Click "Start Game" to begin</p>
       </div>
     `;
-  }
+    }
   
-  function initSnakeGame() {
+    function initSnakeGame() {
     // Remove the centered-content class
-    snakeContainer.classList.remove('centered-content');
+      snakeContainer.classList.remove('centered-content');
     
-    // Calculate responsive canvas size
-    const containerWidth = snakeContainer.offsetWidth || 400; // Fallback if container not ready
-    const maxCanvasSize = Math.min(400, containerWidth - 40); // 40px for padding
-    const canvasSize = Math.max(snakeSize * 10, Math.floor(maxCanvasSize / snakeSize) * snakeSize); // Ensure minimum size
+      // Calculate responsive canvas size
+      const containerWidth = snakeContainer.offsetWidth || 400; // Fallback if container not ready
+      const maxCanvasSize = Math.min(400, containerWidth - 40); // 40px for padding
+      const canvasSize = Math.max(snakeSize * 10, Math.floor(maxCanvasSize / snakeSize) * snakeSize); // Ensure minimum size
     
-    // Create canvas
-    canvas = document.createElement('canvas');
-    canvas.width = canvasSize;
-    canvas.height = canvasSize;
-    canvas.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
-    canvas.style.border = '1px solid rgba(255, 255, 255, 0.1)';
-    canvas.style.borderRadius = '0.25rem';
-    canvas.style.maxWidth = '100%';
-    canvas.style.height = 'auto';
+      // Create canvas
+      canvas = document.createElement('canvas');
+      canvas.width = canvasSize;
+      canvas.height = canvasSize;
+      canvas.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
+      canvas.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+      canvas.style.borderRadius = '0.25rem';
+      canvas.style.maxWidth = '100%';
+      canvas.style.height = 'auto';
     
-    ctx = canvas.getContext('2d');
-    snakeContainer.innerHTML = '';
-    snakeContainer.appendChild(canvas);
+      ctx = canvas.getContext('2d');
+      snakeContainer.innerHTML = '';
+      snakeContainer.appendChild(canvas);
     
-    // Initialize snake (ensure it's properly aligned to grid)
-    snake = [
-      { x: 3 * snakeSize, y: 3 * snakeSize },
-      { x: 2 * snakeSize, y: 3 * snakeSize },
-      { x: 1 * snakeSize, y: 3 * snakeSize }
-    ];
+      // Initialize snake (ensure it's properly aligned to grid)
+      snake = [
+        { x: 3 * snakeSize, y: 3 * snakeSize },
+        { x: 2 * snakeSize, y: 3 * snakeSize },
+        { x: 1 * snakeSize, y: 3 * snakeSize }
+      ];
     
-    // Reset direction
-    direction = 'right';
-    nextDirection = 'right';
-    
-    // Create first food
-    createFood();
-  }
-  
-  function startSnakeGame() {
-    if (window.snakeGameActive) return;
-    
-    window.snakeGameActive = true;
-    snakeScore = 0;
-    snakeScoreElement.textContent = snakeScore;
-    
-    // Reset direction to ensure consistent start
-    direction = 'right';
-    nextDirection = 'right';
-    
-    // Initial setup
-    initSnakeGame();
-    
-    // Define and store the keyboard handler
-    window.snakeKeyboardHandler = changeDirection;
-    
-    // Add keyboard controls
-    document.addEventListener('keydown', window.snakeKeyboardHandler);
-    
-    // Add touch controls for mobile
-    addTouchControls();
-    
-    // Start game loop
-    window.snakeGameInterval = setInterval(gameLoop, gameSpeed);
-    
-    snakeStartButton.disabled = true;
-    snakeResetButton.disabled = false;
-  }
-  
-  function addTouchControls() {
-    const touchControlsContainer = document.createElement('div');
-    touchControlsContainer.className = 'touch-controls';
-    
-    const directions = [
-      { dir: 'up', icon: 'fa-arrow-up' },
-      { dir: 'left', icon: 'fa-arrow-left' },
-      { dir: 'right', icon: 'fa-arrow-right' },
-      { dir: 'down', icon: 'fa-arrow-down' }
-    ];
-    
-    directions.forEach(d => {
-      const btn = document.createElement('button');
-      btn.className = 'touch-btn';
-      btn.innerHTML = `<i class="fas ${d.icon}"></i>`;
-      btn.setAttribute('data-direction', d.dir);
-      btn.addEventListener('click', function() {
-        const dir = this.getAttribute('data-direction');
-        handleDirectionChange(dir);
-      });
-      touchControlsContainer.appendChild(btn);
-    });
-    
-    snakeContainer.appendChild(touchControlsContainer);
-  }
-  
-  function handleDirectionChange(newDirection) {
-    // Only allow direction changes if no change is already queued
-    if (direction !== nextDirection) {
-      return;
-    }
-    
-    if (
-      (newDirection === 'up' && direction !== 'down') ||
-      (newDirection === 'down' && direction !== 'up') ||
-      (newDirection === 'left' && direction !== 'right') ||
-      (newDirection === 'right' && direction !== 'left')
-    ) {
-      nextDirection = newDirection;
-    }
-  }
-  
-  function changeDirection(e) {
-    // Prevent default browser scrolling behavior for arrow keys
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || 
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      e.preventDefault();
-    }
-    
-    // Only allow direction changes if no change is already queued
-    // This prevents multiple rapid direction changes within one game loop cycle
-    if (direction !== nextDirection) {
-      return;
-    }
-    
-    // Validate against current direction to prevent immediate reversal
-    if (e.key === 'ArrowUp' && direction !== 'down') {
-      nextDirection = 'up';
-    } else if (e.key === 'ArrowDown' && direction !== 'up') {
-      nextDirection = 'down';
-    } else if (e.key === 'ArrowLeft' && direction !== 'right') {
-      nextDirection = 'left';
-    } else if (e.key === 'ArrowRight' && direction !== 'left') {
+      // Reset direction
+      direction = 'right';
       nextDirection = 'right';
-    } else {
-    }
-  }
-  
-  function gameLoop() {
-    if (!window.snakeGameActive) return;
     
-    // Apply queued direction change at the start of each game loop
-    const previousDirection = direction;
-    direction = nextDirection;
-    if (previousDirection !== direction) {
-    }
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Move snake
-    moveSnake();
-    
-    // Check if food eaten (before collision check to avoid issues)
-    let foodEaten = false;
-    if (snake[0].x === food.x && snake[0].y === food.y) {
-      // Increase score
-      snakeScore += 10;
-      snakeScoreElement.textContent = snakeScore;
-      
-      // Create new food
+      // Create first food
       createFood();
-      foodEaten = true;
     }
-    
-    // Check collisions
-    if (checkCollision()) {
-      endSnakeGame();
-      return;
-    }
-    
-    // Remove tail only if no food was eaten (this makes snake grow when food eaten)
-    if (!foodEaten) {
-      snake.pop();
-    }
-    
-    // Draw food
-    drawFood();
-    
-    // Draw snake
-    drawSnake();
-  }
   
-  function moveSnake() {
-    // Calculate new head position
-    const head = { x: snake[0].x, y: snake[0].y };
+    function startSnakeGame() {
+      if (window.snakeGameActive) return;
     
-    switch (direction) {
-      case 'up':
-        head.y -= snakeSize;
-        break;
-      case 'down':
-        head.y += snakeSize;
-        break;
-      case 'left':
-        head.x -= snakeSize;
-        break;
-      case 'right':
-        head.x += snakeSize;
-        break;
+      window.snakeGameActive = true;
+      snakeScore = 0;
+      snakeScoreElement.textContent = snakeScore;
+    
+      // Reset direction to ensure consistent start
+      direction = 'right';
+      nextDirection = 'right';
+    
+      // Initial setup
+      initSnakeGame();
+    
+      // Define and store the keyboard handler
+      window.snakeKeyboardHandler = changeDirection;
+    
+      // Add keyboard controls
+      document.addEventListener('keydown', window.snakeKeyboardHandler);
+    
+      // Add touch controls for mobile
+      addTouchControls();
+    
+      // Start game loop
+      window.snakeGameInterval = setInterval(gameLoop, gameSpeed);
+    
+      snakeStartButton.disabled = true;
+      snakeResetButton.disabled = false;
     }
-    
-    // Add new head to beginning of snake array
-    snake.unshift(head);
-  }
   
-  function checkCollision() {
-    const head = snake[0];
+    function addTouchControls() {
+      const touchControlsContainer = document.createElement('div');
+      touchControlsContainer.className = 'touch-controls';
     
-    // Check wall collision
-    if (
-      head.x < 0 ||
-      head.y < 0 ||
-      head.x >= canvas.width ||
-      head.y >= canvas.height
-    ) {
-      return true;
+      const directions = [
+        { dir: 'up', icon: 'fa-arrow-up' },
+        { dir: 'left', icon: 'fa-arrow-left' },
+        { dir: 'right', icon: 'fa-arrow-right' },
+        { dir: 'down', icon: 'fa-arrow-down' }
+      ];
+    
+      directions.forEach(d => {
+        const btn = document.createElement('button');
+        btn.className = 'touch-btn';
+        btn.innerHTML = `<i class="fas ${d.icon}"></i>`;
+        btn.setAttribute('data-direction', d.dir);
+        btn.addEventListener('click', function() {
+          const dir = this.getAttribute('data-direction');
+          handleDirectionChange(dir);
+        });
+        touchControlsContainer.appendChild(btn);
+      });
+    
+      snakeContainer.appendChild(touchControlsContainer);
     }
-    
-    // Check self collision (skip the head)
-    for (let i = 1; i < snake.length; i++) {
-      if (head.x === snake[i].x && head.y === snake[i].y) {
-        return true;
+  
+    function handleDirectionChange(newDirection) {
+      nextDirection = window.SnakeLogic.resolveDirectionChange(
+        direction,
+        nextDirection,
+        newDirection
+      );
+    }
+  
+    function changeDirection(e) {
+    // Prevent default browser scrolling behavior for arrow keys
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || 
+        e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
       }
-    }
     
-    return false;
-  }
+      nextDirection = window.SnakeLogic.resolveKeyboardDirection(
+        e.key,
+        direction,
+        nextDirection
+      );
+    }
   
-  function createFood() {
+    function gameLoop() {
+      if (!window.snakeGameActive) return;
+    
+      // Apply queued direction change at the start of each game loop
+      const previousDirection = direction;
+      direction = nextDirection;
+      if (previousDirection !== direction) {
+      }
+    
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+      // Move snake
+      moveSnake();
+    
+      // Check if food eaten (before collision check to avoid issues)
+      let foodEaten = false;
+      if (window.SnakeLogic.isFoodEaten(snake[0], food)) {
+      // Increase score
+        snakeScore += 10;
+        snakeScoreElement.textContent = snakeScore;
+      
+        // Create new food
+        createFood();
+        foodEaten = true;
+      }
+    
+      // Check collisions
+      if (checkCollision()) {
+        endSnakeGame();
+        return;
+      }
+    
+      // Remove tail only if no food was eaten (this makes snake grow when food eaten)
+      if (!foodEaten) {
+        snake.pop();
+      }
+    
+      // Draw food
+      drawFood();
+    
+      // Draw snake
+      drawSnake();
+    }
+  
+    function moveSnake() {
+      const head = window.SnakeLogic.getNextHead(snake[0], direction, snakeSize);
+      snake.unshift(head);
+    }
+
+    function checkCollision() {
+      return window.SnakeLogic.hasCollision(snake[0], snake, canvas.width, canvas.height);
+    }
+  
+    function createFood() {
     // Create food at random position (aligned to grid)
-    const gridWidth = canvas.width / snakeSize;
-    const gridHeight = canvas.height / snakeSize;
+      const gridWidth = canvas.width / snakeSize;
+      const gridHeight = canvas.height / snakeSize;
     
-    let attempts = 0;
-    const maxAttempts = gridWidth * gridHeight; // Prevent infinite recursion
+      let attempts = 0;
+      const maxAttempts = gridWidth * gridHeight; // Prevent infinite recursion
     
-    do {
-      food = {
-        x: Math.floor(Math.random() * gridWidth) * snakeSize,
-        y: Math.floor(Math.random() * gridHeight) * snakeSize
-      };
-      attempts++;
+      do {
+        food = {
+          x: Math.floor(Math.random() * gridWidth) * snakeSize,
+          y: Math.floor(Math.random() * gridHeight) * snakeSize
+        };
+        attempts++;
       
-      // Check if food position conflicts with snake
-      let conflictFound = false;
-      for (let i = 0; i < snake.length; i++) {
-        if (food.x === snake[i].x && food.y === snake[i].y) {
-          conflictFound = true;
-          break;
+        // Check if food position conflicts with snake
+        let conflictFound = false;
+        for (let i = 0; i < snake.length; i++) {
+          if (food.x === snake[i].x && food.y === snake[i].y) {
+            conflictFound = true;
+            break;
+          }
         }
-      }
       
-      if (!conflictFound) {
-        return; // Found valid position
-      }
+        if (!conflictFound) {
+          return; // Found valid position
+        }
       
-    } while (attempts < maxAttempts);
+      } while (attempts < maxAttempts);
     
-    // If we can't find a valid position (game nearly won), place food at 0,0
-    food = { x: 0, y: 0 };
-  }
+      // If we can't find a valid position (game nearly won), place food at 0,0
+      food = { x: 0, y: 0 };
+    }
   
-  function drawSnake() {
-    snake.forEach((segment, index) => {
+    function drawSnake() {
+      snake.forEach((segment, index) => {
       // Make head a different color
-      if (index === 0) {
-        ctx.fillStyle = '#22c55e'; // Green
-      } else {
-        ctx.fillStyle = '#4ade80'; // Light green
-      }
+        if (index === 0) {
+          ctx.fillStyle = '#22c55e'; // Green
+        } else {
+          ctx.fillStyle = '#4ade80'; // Light green
+        }
       
-      ctx.fillRect(segment.x, segment.y, snakeSize, snakeSize);
+        ctx.fillRect(segment.x, segment.y, snakeSize, snakeSize);
       
+        // Add border
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.strokeRect(segment.x, segment.y, snakeSize, snakeSize);
+      });
+    }
+  
+    function drawFood() {
+      ctx.fillStyle = '#f87171'; // Red
+      ctx.fillRect(food.x, food.y, snakeSize, snakeSize);
+    
       // Add border
       ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-      ctx.strokeRect(segment.x, segment.y, snakeSize, snakeSize);
-    });
-  }
-  
-  function drawFood() {
-    ctx.fillStyle = '#f87171'; // Red
-    ctx.fillRect(food.x, food.y, snakeSize, snakeSize);
-    
-    // Add border
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-    ctx.strokeRect(food.x, food.y, snakeSize, snakeSize);
-  }
-  
-  function resetSnakeGame() {
-    endSnakeGame();
-    
-    // Reset to initial display
-    initSnakeDisplay();
-    
-    // Reset game state
-    snake = [];
-    food = {};
-    snakeScore = 0;
-    snakeScoreElement.textContent = snakeScore;
-    direction = 'right';
-    nextDirection = 'right';
-    gameSpeed = 150;
-    
-    snakeStartButton.disabled = false;
-    snakeResetButton.disabled = true;
-  }
-  
-  function endSnakeGame() {
-    clearInterval(window.snakeGameInterval);
-    
-    // Remove keyboard event listener
-    if (window.snakeKeyboardHandler) {
-      document.removeEventListener('keydown', window.snakeKeyboardHandler);
+      ctx.strokeRect(food.x, food.y, snakeSize, snakeSize);
     }
+  
+    function resetSnakeGame() {
+      endSnakeGame();
     
-    window.snakeGameActive = false;
+      // Reset to initial display
+      initSnakeDisplay();
     
-    if (canvas && ctx) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Reset game state
+      snake = [];
+      food = {};
+      snakeScore = 0;
+      snakeScoreElement.textContent = snakeScore;
+      direction = 'right';
+      nextDirection = 'right';
+      gameSpeed = 150;
+    
+      snakeStartButton.disabled = false;
+      snakeResetButton.disabled = true;
+    }
+  
+    function endSnakeGame() {
+      clearInterval(window.snakeGameInterval);
+    
+      // Remove keyboard event listener
+      if (window.snakeKeyboardHandler) {
+        document.removeEventListener('keydown', window.snakeKeyboardHandler);
+      }
+    
+      window.snakeGameActive = false;
+    
+      if (canvas && ctx) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      ctx.fillStyle = 'white';
-      ctx.font = '20px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 10);
-      ctx.fillText(`Score: ${snakeScore}`, canvas.width / 2, canvas.height / 2 + 20);
-    }
+        ctx.fillStyle = 'white';
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 10);
+        ctx.fillText(`Score: ${snakeScore}`, canvas.width / 2, canvas.height / 2 + 20);
+      }
     
-    snakeStartButton.disabled = false;
-    snakeResetButton.disabled = false; // Keep reset button enabled so user can reset after game over
-  }
+      snakeStartButton.disabled = false;
+      snakeResetButton.disabled = false; // Keep reset button enabled so user can reset after game over
+    }
   
-  // Event listeners
-  if (snakeStartButton && snakeResetButton) {
-    snakeStartButton.addEventListener('click', startSnakeGame);
-    snakeResetButton.addEventListener('click', resetSnakeGame);
-  }
+    // Event listeners
+    if (snakeStartButton && snakeResetButton) {
+      snakeStartButton.addEventListener('click', startSnakeGame);
+      snakeResetButton.addEventListener('click', resetSnakeGame);
+    }
   
   } catch (error) {
     console.error('Error initializing snake game:', error);
@@ -745,272 +686,270 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
   
-  let startTime;
-  window.typingTimerInterval = null;
-  window.typingGameActive = false;
-  let totalTyped = 0;
-  let correctTyped = 0;
-  let currentSentence = 0;
-  let sentencesCompleted = 0;
-  let totalWordsTyped = 0;
-  let totalCharactersTyped = 0;
-  let totalCorrectCharacters = 0;
+    let startTime;
+    window.typingTimerInterval = null;
+    window.typingGameActive = false;
+    let totalTyped = 0;
+    let correctTyped = 0;
+    let sentencesCompleted = 0;
+    let totalCharactersTyped = 0;
+    let totalCorrectCharacters = 0;
   
-  // Collection of text prompts for typing test
-  const textPrompts = [
-    "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the English alphabet.",
-    "Programming is the process of creating a set of instructions that tell a computer how to perform a task.",
-    "The greatest glory in living lies not in never falling, but in rising every time we fall. -Nelson Mandela",
-    "Good code is its own best documentation. As you're about to add a comment, ask yourself if you can improve the code instead.",
-    "Any fool can write code that a computer can understand. Good programmers write code that humans can understand. -Martin Fowler"
-  ];
+    // Collection of text prompts for typing test
+    const textPrompts = [
+      'The quick brown fox jumps over the lazy dog. This pangram contains every letter of the English alphabet.',
+      'Programming is the process of creating a set of instructions that tell a computer how to perform a task.',
+      'The greatest glory in living lies not in never falling, but in rising every time we fall. -Nelson Mandela',
+      "Good code is its own best documentation. As you're about to add a comment, ask yourself if you can improve the code instead.",
+      'Any fool can write code that a computer can understand. Good programmers write code that humans can understand. -Martin Fowler'
+    ];
   
-  // Initialize with a centered start message
-  function initTypingDisplay() {
-    typingContainer.classList.add('centered-content');
-    typingContainer.innerHTML = `
+    // Initialize with a centered start message
+    function initTypingDisplay() {
+      typingContainer.classList.add('centered-content');
+      typingContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
         <p class="text-xl mb-4">Typing Speed Test</p>
         <p>Test your typing speed and accuracy!</p>
         <p class="mt-4">Click "Start Test" to begin</p>
       </div>
     `;
-  }
+    }
   
-  function initTypingGame() {
+    function initTypingGame() {
     // Remove the centered-content class
-    typingContainer.classList.remove('centered-content');
-    typingContainer.innerHTML = '';
+      typingContainer.classList.remove('centered-content');
+      typingContainer.innerHTML = '';
     
-    // Create typing game elements
-    const gameWrapper = document.createElement('div');
-    gameWrapper.className = 'typing-wrapper';
+      // Create typing game elements
+      const gameWrapper = document.createElement('div');
+      gameWrapper.className = 'typing-wrapper';
     
-    // Text display area
-    const textDisplay = document.createElement('div');
-    textDisplay.id = 'text-display';
-    textDisplay.className = 'text-display';
+      // Text display area
+      const textDisplay = document.createElement('div');
+      textDisplay.id = 'text-display';
+      textDisplay.className = 'text-display';
     
-    // Typing input
-    const typingInput = document.createElement('input');
-    typingInput.type = 'text';
-    typingInput.id = 'typing-input';
-    typingInput.className = 'typing-input';
-    typingInput.disabled = true;
-    typingInput.placeholder = 'Type here when the game starts...';
+      // Typing input
+      const typingInput = document.createElement('input');
+      typingInput.type = 'text';
+      typingInput.id = 'typing-input';
+      typingInput.className = 'typing-input';
+      typingInput.disabled = true;
+      typingInput.placeholder = 'Type here when the game starts...';
     
-    // Timer display
-    const timerDisplay = document.createElement('div');
-    timerDisplay.id = 'timer-display';
-    timerDisplay.className = 'timer-display';
-    timerDisplay.textContent = '60';
+      // Timer display
+      const timerDisplay = document.createElement('div');
+      timerDisplay.id = 'timer-display';
+      timerDisplay.className = 'timer-display';
+      timerDisplay.textContent = '60';
     
-    // Sentences counter display
-    const sentenceCounter = document.createElement('div');
-    sentenceCounter.id = 'sentence-counter';
-    sentenceCounter.className = 'sentence-counter';
-    sentenceCounter.textContent = 'Sentences: 0';
+      // Sentences counter display
+      const sentenceCounter = document.createElement('div');
+      sentenceCounter.id = 'sentence-counter';
+      sentenceCounter.className = 'sentence-counter';
+      sentenceCounter.textContent = 'Sentences: 0';
     
-    // Create a stats row for timer and counter
-    const statsRow = document.createElement('div');
-    statsRow.className = 'typing-stats-row';
-    statsRow.appendChild(timerDisplay);
-    statsRow.appendChild(sentenceCounter);
+      // Create a stats row for timer and counter
+      const statsRow = document.createElement('div');
+      statsRow.className = 'typing-stats-row';
+      statsRow.appendChild(timerDisplay);
+      statsRow.appendChild(sentenceCounter);
     
-    // Append elements
-    gameWrapper.appendChild(textDisplay);
-    gameWrapper.appendChild(typingInput);
-    gameWrapper.appendChild(statsRow);
-    typingContainer.appendChild(gameWrapper);
-  }
+      // Append elements
+      gameWrapper.appendChild(textDisplay);
+      gameWrapper.appendChild(typingInput);
+      gameWrapper.appendChild(statsRow);
+      typingContainer.appendChild(gameWrapper);
+    }
   
-  function startTypingGame() {
-    if (window.typingGameActive) return;
+    function startTypingGame() {
+      if (window.typingGameActive) return;
     
-    window.typingGameActive = true;
-    totalTyped = 0;
-    correctTyped = 0;
-    currentSentence = 0;
-    sentencesCompleted = 0;
-    totalWordsTyped = 0;
-    totalCharactersTyped = 0;
-    totalCorrectCharacters = 0;
-    
-    // Initialize game
-    initTypingGame();
-    
-    // Load first sentence
-    loadNewSentence();
-    
-    // Get elements
-    const typingInput = document.getElementById('typing-input');
-    const timerDisplay = document.getElementById('timer-display');
-    
-    // Enable input and focus
-    typingInput.disabled = false;
-    typingInput.value = '';
-    typingInput.focus();
-    
-    // Start timer (60 seconds)
-    let timeLeft = 60;
-    timerDisplay.textContent = timeLeft;
-    
-    startTime = new Date();
-    window.typingTimerInterval = setInterval(() => {
-      timeLeft--;
-      timerDisplay.textContent = timeLeft;
-      
-      if (timeLeft <= 0) {
-        endTypingGame();
-      }
-    }, 1000);
-    
-    // Add input event listener
-    typingInput.addEventListener('input', checkTyping);
-    
-    typingStartButton.disabled = true;
-    typingResetButton.disabled = false;
-  }
-  
-  function loadNewSentence() {
-    const textDisplay = document.getElementById('text-display');
-    const typingInput = document.getElementById('typing-input');
-    
-    // Select random prompt
-    const randomIndex = Math.floor(Math.random() * textPrompts.length);
-    const currentPrompt = textPrompts[randomIndex];
-    
-    // Display text character by character with spans for tracking
-    textDisplay.innerHTML = '';
-    currentPrompt.split('').forEach(char => {
-      const charSpan = document.createElement('span');
-      charSpan.textContent = char;
-      textDisplay.appendChild(charSpan);
-    });
-    
-    // Clear input for new sentence
-    if (typingInput) {
-      typingInput.value = '';
+      window.typingGameActive = true;
       totalTyped = 0;
       correctTyped = 0;
-    }
-  }
-  
-  function checkTyping() {
-    const textDisplay = document.getElementById('text-display');
-    const typingInput = document.getElementById('typing-input');
+      sentencesCompleted = 0;
+      totalCharactersTyped = 0;
+      totalCorrectCharacters = 0;
     
-    const arrayPrompt = textDisplay.querySelectorAll('span');
-    const arrayValue = typingInput.value.split('');
+      // Initialize game
+      initTypingGame();
     
-    let correct = true;
+      // Load first sentence
+      loadNewSentence();
     
-    totalTyped = arrayValue.length;
-    correctTyped = 0;
+      // Get elements
+      const typingInput = document.getElementById('typing-input');
+      const timerDisplay = document.getElementById('timer-display');
     
-    arrayPrompt.forEach((characterSpan, index) => {
-      const character = arrayValue[index];
+      // Enable input and focus
+      typingInput.disabled = false;
+      typingInput.value = '';
+      typingInput.focus();
+    
+      // Start timer (60 seconds)
+      let timeLeft = 60;
+      timerDisplay.textContent = timeLeft;
+    
+      startTime = new Date();
+      window.typingTimerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = timeLeft;
       
-      // If character hasn't been typed yet
-      if (character == null) {
-        characterSpan.classList.remove('correct');
-        characterSpan.classList.remove('incorrect');
-        correct = false;
-      }
-      // If character is correct
-      else if (character === characterSpan.textContent) {
-        characterSpan.classList.add('correct');
-        characterSpan.classList.remove('incorrect');
-        correctTyped++;
-      }
-      // If character is incorrect
-      else {
-        characterSpan.classList.remove('correct');
-        characterSpan.classList.add('incorrect');
-        correct = false;
-      }
-    });
+        if (timeLeft <= 0) {
+          endTypingGame();
+        }
+      }, 1000);
     
-    // If all characters are correct, load new sentence instead of ending
-    if (correct && arrayValue.length === arrayPrompt.length) {
+      // Add input event listener
+      typingInput.addEventListener('input', checkTyping);
+    
+      typingStartButton.disabled = true;
+      typingResetButton.disabled = false;
+    }
+  
+    function loadNewSentence() {
+      const textDisplay = document.getElementById('text-display');
+      const typingInput = document.getElementById('typing-input');
+    
+      // Select random prompt
+      const randomIndex = Math.floor(Math.random() * textPrompts.length);
+      const currentPrompt = textPrompts[randomIndex];
+    
+      // Display text character by character with spans for tracking
+      textDisplay.innerHTML = '';
+      currentPrompt.split('').forEach(char => {
+        const charSpan = document.createElement('span');
+        charSpan.textContent = char;
+        textDisplay.appendChild(charSpan);
+      });
+    
+      // Clear input for new sentence
+      if (typingInput) {
+        typingInput.value = '';
+        totalTyped = 0;
+        correctTyped = 0;
+      }
+    }
+  
+    function checkTyping() {
+      const textDisplay = document.getElementById('text-display');
+      const typingInput = document.getElementById('typing-input');
+    
+      const arrayPrompt = textDisplay.querySelectorAll('span');
+      const arrayValue = typingInput.value.split('');
+    
+      let correct = true;
+    
+      totalTyped = arrayValue.length;
+      correctTyped = 0;
+    
+      arrayPrompt.forEach((characterSpan, index) => {
+        const character = arrayValue[index];
+      
+        // If character hasn't been typed yet
+        if (character == null) {
+          characterSpan.classList.remove('correct');
+          characterSpan.classList.remove('incorrect');
+          correct = false;
+        }
+        // If character is correct
+        else if (character === characterSpan.textContent) {
+          characterSpan.classList.add('correct');
+          characterSpan.classList.remove('incorrect');
+          correctTyped++;
+        }
+        // If character is incorrect
+        else {
+          characterSpan.classList.remove('correct');
+          characterSpan.classList.add('incorrect');
+          correct = false;
+        }
+      });
+    
+      // If all characters are correct, load new sentence instead of ending
+      if (correct && arrayValue.length === arrayPrompt.length) {
       // Update cumulative stats
-      totalCharactersTyped += totalTyped;
-      totalCorrectCharacters += correctTyped;
-      sentencesCompleted++;
+        totalCharactersTyped += totalTyped;
+        totalCorrectCharacters += correctTyped;
+        sentencesCompleted++;
       
-      // Update sentence counter display
-      const sentenceCounter = document.getElementById('sentence-counter');
-      if (sentenceCounter) {
-        sentenceCounter.textContent = `Sentences: ${sentencesCompleted}`;
-      }
+        // Update sentence counter display
+        const sentenceCounter = document.getElementById('sentence-counter');
+        if (sentenceCounter) {
+          sentenceCounter.textContent = `Sentences: ${sentencesCompleted}`;
+        }
       
-      // Load new sentence if game is still active
-      if (window.typingGameActive) {
-        setTimeout(() => {
-          loadNewSentence();
-        }, 500); // Brief pause before new sentence
+        // Load new sentence if game is still active
+        if (window.typingGameActive) {
+          setTimeout(() => {
+            loadNewSentence();
+          }, 500); // Brief pause before new sentence
+        }
       }
-    }
     
-    // Update stats in real-time
-    updateStats();
-  }
+      // Update stats in real-time
+      updateStats();
+    }
   
-  function updateStats() {
+    function updateStats() {
     // Calculate words per minute (WPM) based on cumulative stats
     // Assuming 5 characters = 1 word, which is a common standard
-    const timeInMinutes = (new Date() - startTime) / 1000 / 60;
-    const totalCorrectWords = (totalCorrectCharacters + correctTyped) / 5;
-    const wpm = Math.round(totalCorrectWords / timeInMinutes) || 0;
+      const elapsedMs = new Date() - startTime;
+      const wpm = window.TypingStats.calculateWpm(totalCorrectCharacters, correctTyped, elapsedMs);
+      const accuracy = window.TypingStats.calculateAccuracy(
+        totalCharactersTyped,
+        totalTyped,
+        totalCorrectCharacters,
+        correctTyped
+      );
     
-    // Calculate cumulative accuracy
-    const totalCharsSoFar = totalCharactersTyped + totalTyped;
-    const totalCorrectSoFar = totalCorrectCharacters + correctTyped;
-    const accuracy = totalCharsSoFar > 0 ? Math.round((totalCorrectSoFar / totalCharsSoFar) * 100) : 0;
-    
-    // Update displays
-    wpmElement.textContent = wpm;
-    accuracyElement.textContent = accuracy;
-  }
-  
-  function resetTypingGame() {
-    clearInterval(window.typingTimerInterval);
-    
-    window.typingGameActive = false;
-    typingStartButton.disabled = false;
-    typingResetButton.disabled = true;
-    
-    // Reset to initial display
-    initTypingDisplay();
-    
-    // Reset statistics
-    wpmElement.textContent = '0';
-    accuracyElement.textContent = '0';
-  }
-  
-  function endTypingGame() {
-    clearInterval(window.typingTimerInterval);
-    window.typingGameActive = false;
-    
-    const typingInput = document.getElementById('typing-input');
-    if (typingInput) {
-      typingInput.disabled = true;
-      typingInput.removeEventListener('input', checkTyping);
+      // Update displays
+      wpmElement.textContent = wpm;
+      accuracyElement.textContent = accuracy;
     }
+  
+    function resetTypingGame() {
+      clearInterval(window.typingTimerInterval);
     
-    // Add current sentence stats to totals if user was in middle of typing
-    totalCharactersTyped += totalTyped;
-    totalCorrectCharacters += correctTyped;
+      window.typingGameActive = false;
+      typingStartButton.disabled = false;
+      typingResetButton.disabled = true;
     
-    // Final statistics calculation
-    const timeInMinutes = (new Date() - startTime) / 1000 / 60;
-    const totalCorrectWords = totalCorrectCharacters / 5;
-    const finalWpm = Math.round(totalCorrectWords / timeInMinutes) || 0;
-    const finalAccuracy = totalCharactersTyped > 0 ? Math.round((totalCorrectCharacters / totalCharactersTyped) * 100) : 0;
+      // Reset to initial display
+      initTypingDisplay();
     
-    // Show final score display
-    typingContainer.classList.add('centered-content');
-    typingContainer.innerHTML = `
+      // Reset statistics
+      wpmElement.textContent = '0';
+      accuracyElement.textContent = '0';
+    }
+  
+    function endTypingGame() {
+      clearInterval(window.typingTimerInterval);
+      window.typingGameActive = false;
+    
+      const typingInput = document.getElementById('typing-input');
+      if (typingInput) {
+        typingInput.disabled = true;
+        typingInput.removeEventListener('input', checkTyping);
+      }
+    
+      // Add current sentence stats to totals if user was in middle of typing
+      totalCharactersTyped += totalTyped;
+      totalCorrectCharacters += correctTyped;
+    
+      // Final statistics calculation
+      const elapsedMs = new Date() - startTime;
+      const { wpm: finalWpm, accuracy: finalAccuracy } = window.TypingStats.calculateFinalStats(
+        totalCorrectCharacters,
+        totalCharactersTyped,
+        elapsedMs
+      );
+    
+      // Show final score display
+      typingContainer.classList.add('centered-content');
+      typingContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
         <p class="text-2xl mb-4 text-blue-400">🎯 Typing Test Complete!</p>
         <div class="text-lg space-y-2">
@@ -1022,26 +961,26 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="mt-6">
           ${finalWpm >= 60 ? '<p class="text-green-400">🎉 Excellent typing speed!</p>' : 
-            finalWpm >= 40 ? '<p class="text-yellow-400">⭐ Good typing speed!</p>' : 
-            '<p class="text-blue-400">📝 Keep practicing to improve!</p>'}
+    finalWpm >= 40 ? '<p class="text-yellow-400">⭐ Good typing speed!</p>' : 
+      '<p class="text-blue-400">📝 Keep practicing to improve!</p>'}
         </div>
         <p class="mt-4 text-gray-300">Click "Reset" to try again</p>
       </div>
     `;
     
-    typingStartButton.disabled = false;
-    typingResetButton.disabled = false;
+      typingStartButton.disabled = false;
+      typingResetButton.disabled = false;
     
-    // Update final displays one more time
-    wpmElement.textContent = finalWpm;
-    accuracyElement.textContent = finalAccuracy;
-  }
+      // Update final displays one more time
+      wpmElement.textContent = finalWpm;
+      accuracyElement.textContent = finalAccuracy;
+    }
   
-  // Event listeners
-  if (typingStartButton && typingResetButton) {
-    typingStartButton.addEventListener('click', startTypingGame);
-    typingResetButton.addEventListener('click', resetTypingGame);
-  }
+    // Event listeners
+    if (typingStartButton && typingResetButton) {
+      typingStartButton.addEventListener('click', startTypingGame);
+      typingResetButton.addEventListener('click', resetTypingGame);
+    }
   
   } catch (error) {
     console.error('Error initializing typing game:', error);
@@ -1060,70 +999,70 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
   
-  let isGameActive = false;
-  window.arrowGameAudioContext = null;
-  let notesPlayed = 0;
+    let isGameActive = false;
+    window.arrowGameAudioContext = null;
+    let notesPlayed = 0;
   
-  // Define comprehensive note frequencies (full chromatic scale with multiple octaves)
-  const noteFrequencies = {
+    // Define comprehensive note frequencies (full chromatic scale with multiple octaves)
+    const noteFrequencies = {
     // Octave 3
-    'C3': 130.81, 'C#3': 138.59, 'Db3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'Eb3': 155.56,
-    'E3': 164.81, 'F3': 174.61, 'F#3': 185.00, 'Gb3': 185.00, 'G3': 196.00, 'G#3': 207.65,
-    'Ab3': 207.65, 'A3': 220.00, 'A#3': 233.08, 'Bb3': 233.08, 'B3': 246.94,
-    // Octave 4 (Middle)
-    'C4': 261.63, 'C#4': 277.18, 'Db4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'Eb4': 311.13,
-    'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'Gb4': 369.99, 'G4': 392.00, 'G#4': 415.30,
-    'Ab4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'Bb4': 466.16, 'B4': 493.88,
-    // Octave 5
-    'C5': 523.25, 'C#5': 554.37, 'Db5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'Eb5': 622.25,
-    'E5': 659.25, 'F5': 698.46, 'F#5': 739.99, 'Gb5': 739.99, 'G5': 783.99, 'G#5': 830.61,
-    'Ab5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'Bb5': 932.33, 'B5': 987.77
-  };
+      'C3': 130.81, 'C#3': 138.59, 'Db3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'Eb3': 155.56,
+      'E3': 164.81, 'F3': 174.61, 'F#3': 185.00, 'Gb3': 185.00, 'G3': 196.00, 'G#3': 207.65,
+      'Ab3': 207.65, 'A3': 220.00, 'A#3': 233.08, 'Bb3': 233.08, 'B3': 246.94,
+      // Octave 4 (Middle)
+      'C4': 261.63, 'C#4': 277.18, 'Db4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'Eb4': 311.13,
+      'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'Gb4': 369.99, 'G4': 392.00, 'G#4': 415.30,
+      'Ab4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'Bb4': 466.16, 'B4': 493.88,
+      // Octave 5
+      'C5': 523.25, 'C#5': 554.37, 'Db5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'Eb5': 622.25,
+      'E5': 659.25, 'F5': 698.46, 'F#5': 739.99, 'Gb5': 739.99, 'G5': 783.99, 'G#5': 830.61,
+      'Ab5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'Bb5': 932.33, 'B5': 987.77
+    };
 
-  // Enhanced keyboard mapping for piano-style playing
-  const keyboardMapping = {
+    // Enhanced keyboard mapping for piano-style playing
+    const keyboardMapping = {
     // Lower row (white keys) - Major scale starting from C4
-    'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4', 'g': 'G4', 'h': 'A4', 'j': 'B4', 'k': 'C5',
-    // Upper row (black keys) - Sharps/flats
-    'w': 'C#4', 'e': 'D#4', 't': 'F#4', 'y': 'G#4', 'u': 'A#4', 'o': 'C#5', 'p': 'D#5',
-    // Number row for octave 3
-    '1': 'C3', '2': 'D3', '3': 'E3', '4': 'F3', '5': 'G3', '6': 'A3', '7': 'B3',
-    // Arrow keys for special effects and octave 5
-    'ArrowUp': 'C5', 'ArrowLeft': 'G4', 'ArrowDown': 'E4', 'ArrowRight': 'A4'
-  };
+      'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4', 'g': 'G4', 'h': 'A4', 'j': 'B4', 'k': 'C5',
+      // Upper row (black keys) - Sharps/flats
+      'w': 'C#4', 'e': 'D#4', 't': 'F#4', 'y': 'G#4', 'u': 'A#4', 'o': 'C#5', 'p': 'D#5',
+      // Number row for octave 3
+      '1': 'C3', '2': 'D3', '3': 'E3', '4': 'F3', '5': 'G3', '6': 'A3', '7': 'B3',
+      // Arrow keys for special effects and octave 5
+      'ArrowUp': 'C5', 'ArrowLeft': 'G4', 'ArrowDown': 'E4', 'ArrowRight': 'A4'
+    };
 
-  // Effect types and parameters - ALL ENABLED BY DEFAULT
-  let currentEffects = {
-    reverb: { enabled: true, roomSize: 0.3, damping: 0.5, wetness: 0.3 },
-    delay: { enabled: true, time: 0.3, feedback: 0.3, wetness: 0.3 },
-    chorus: { enabled: true, rate: 1.5, depth: 0.3, wetness: 0.5 },
-    distortion: { enabled: true, amount: 25, wetness: 0.5 },
-    filter: { enabled: true, frequency: 1000, Q: 8, type: 'lowpass' }
-  };
+    // Effect types and parameters - ALL ENABLED BY DEFAULT
+    let currentEffects = {
+      reverb: { enabled: true, roomSize: 0.3, damping: 0.5, wetness: 0.3 },
+      delay: { enabled: true, time: 0.3, feedback: 0.3, wetness: 0.3 },
+      chorus: { enabled: true, rate: 1.5, depth: 0.3, wetness: 0.5 },
+      distortion: { enabled: true, amount: 25, wetness: 0.5 },
+      filter: { enabled: true, frequency: 1000, Q: 8, type: 'lowpass' }
+    };
 
-  // Current instrument type
-  let currentInstrument = 'synth'; // synth, piano, strings, bass
+    // Current instrument type
+    let currentInstrument = 'synth'; // synth, piano, strings, bass
 
-  // Multi-layer recording system
-  let isRecording = false;
-  let recordedNotes = [];
-  let recordingStartTime = 0;
-  let isLooping = false;
-  let loopInterval = null;
-  let currentTempo = 120; // BPM
-  let masterVolume = 0.3;
+    // Multi-layer recording system
+    let isRecording = false;
+    let recordedNotes = [];
+    let recordingStartTime = 0;
+    let isLooping = false;
+    let loopInterval = null;
+    let currentTempo = 120; // BPM
+    let masterVolume = 0.3;
   
-  // Multi-layer loop system with individual tempos
-  let loopLayers = []; // Array of loop tracks with individual tempo settings
-  let activeLoopLayers = new Set(); // Which layers are currently playing
-  let maxLoopLayers = 4; // Maximum number of simultaneous loops
-  let layerTempos = [120, 120, 120, 120]; // Individual BPM for each layer
-  let currentLayerIndex = 0;
+    // Multi-layer loop system with individual tempos
+    let loopLayers = []; // Array of loop tracks with individual tempo settings
+    let activeLoopLayers = new Set(); // Which layers are currently playing
+    let maxLoopLayers = 4; // Maximum number of simultaneous loops
+    let layerTempos = [120, 120, 120, 120]; // Individual BPM for each layer
+    let currentLayerIndex = 0;
   
-  // Initialize the advanced music studio
-  function initArrowDisplay() {
-    gameContainer.classList.add('centered-content');
-    gameContainer.innerHTML = `
+    // Initialize the advanced music studio
+    function initArrowDisplay() {
+      gameContainer.classList.add('centered-content');
+      gameContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
         <p class="text-xl mb-4">🎹 Advanced Music Studio</p>
         <p class="mb-2">Create music with a full chromatic keyboard!</p>
@@ -1133,22 +1072,22 @@ document.addEventListener('DOMContentLoaded', () => {
         <p class="mt-4">Click "Start" to begin composing!</p>
       </div>
     `;
-  }
+    }
   
-  // Initialize when loaded
-  initArrowDisplay();
+    // Initialize when loaded
+    initArrowDisplay();
   
-  // Initialize notes counter
-  const notesElement = document.getElementById('arrow-notes');
-  if (notesElement) {
-    notesElement.textContent = '0';
-  }
+    // Initialize notes counter
+    const notesElement = document.getElementById('arrow-notes');
+    if (notesElement) {
+      notesElement.textContent = '0';
+    }
   
-  // Create the advanced music studio UI
-  function createArrowGameUI() {
-    gameContainer.classList.remove('centered-content');
+    // Create the advanced music studio UI
+    function createArrowGameUI() {
+      gameContainer.classList.remove('centered-content');
     
-    gameContainer.innerHTML = `
+      gameContainer.innerHTML = `
       <div class="music-studio">
         <!-- Piano Keyboard Visual -->
         <div class="piano-container">
@@ -1277,1294 +1216,1251 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // Generate piano keyboard visual
-    generatePianoKeyboard();
+      // Generate piano keyboard visual
+      generatePianoKeyboard();
     
-    // Setup control event listeners
-    setupControlListeners();
+      // Setup control event listeners
+      setupControlListeners();
     
-    // Setup touch controls for mobile
-    setupTouchControls();
+      // Setup touch controls for mobile
+      setupTouchControls();
     
-    // IMPORTANT: Initialize effects after DOM elements are created
-    setTimeout(() => {
-      initializeEffectStates();
-    }, 100);
-  }
-  
-  // Handle touch events for mobile
-  function handleTouchStart(event) {
-    if (!isGameActive) return;
-    
-    // Prevent default behavior to avoid scrolling
-    event.preventDefault();
-    
-    const noteName = this.dataset.note;
-    if (!noteName) return;
-    
-    // Visual effect for button press
-    this.classList.add('active');
-    setTimeout(() => {
-      this.classList.remove('active');
-    }, 100);
-    
-    // Play the note
-    playNoteByName(noteName);
-    
-    // Add visual feedback animation
-    this.classList.add('correct');
-    setTimeout(() => this.classList.remove('correct'), 300);
-    
-    // Record if recording is active
-    if (isRecording) {
-      recordNote(noteName);
+      // IMPORTANT: Initialize effects after DOM elements are created
+      setTimeout(() => {
+        initializeEffectStates();
+      }, 100);
     }
-  }
   
-  // Handle enhanced key press events
-  function handleKeyPress(event) {
-    if (!isGameActive) return;
+    // Handle touch events for mobile
+    function handleTouchStart(event) {
+      if (!isGameActive) return;
     
-    const key = event.key.toLowerCase();
-    
-    // Check if key is mapped to a note
-    if (keyboardMapping[key]) {
-      // Prevent default browser behavior
+      // Prevent default behavior to avoid scrolling
       event.preventDefault();
-      
-      const noteName = keyboardMapping[key];
-      
+    
+      const noteName = this.dataset.note;
+      if (!noteName) return;
+    
+      // Visual effect for button press
+      this.classList.add('active');
+      setTimeout(() => {
+        this.classList.remove('active');
+      }, 100);
+    
       // Play the note
       playNoteByName(noteName);
-      
-      // Visual feedback
-      highlightKey(key, noteName);
-      
+    
+      // Add visual feedback animation
+      this.classList.add('correct');
+      setTimeout(() => this.classList.remove('correct'), 300);
+    
       // Record if recording is active
       if (isRecording) {
         recordNote(noteName);
       }
     }
-  }
   
-  // Initialize Web Audio API
-  function initAudio() {
-    try {
-      window.arrowGameAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-      // Resume audio context if it's suspended (required by browser policies)
-      if (window.arrowGameAudioContext.state === 'suspended') {
-        window.arrowGameAudioContext.resume().catch(err => {
-          console.warn('Failed to resume audio context:', err);
+    // Handle enhanced key press events
+    function handleKeyPress(event) {
+      if (!isGameActive) return;
+    
+      const key = event.key.toLowerCase();
+    
+      // Check if key is mapped to a note
+      if (keyboardMapping[key]) {
+      // Prevent default browser behavior
+        event.preventDefault();
+      
+        const noteName = keyboardMapping[key];
+      
+        // Play the note
+        playNoteByName(noteName);
+      
+        // Visual feedback
+        highlightKey(key, noteName);
+      
+        // Record if recording is active
+        if (isRecording) {
+          recordNote(noteName);
+        }
+      }
+    }
+  
+    // Initialize Web Audio API
+    function initAudio() {
+      try {
+        window.arrowGameAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Resume audio context if it's suspended (required by browser policies)
+        if (window.arrowGameAudioContext.state === 'suspended') {
+          window.arrowGameAudioContext.resume().catch(err => {
+            console.warn('Failed to resume audio context:', err);
+          });
+        }
+      } catch (error) {
+        console.warn('Web Audio API not supported in this browser:', error);
+        window.arrowGameAudioContext = null;
+      }
+    }
+  
+    // Play a note by name with advanced synthesis
+    function playNoteByName(noteName) {
+      if (!window.arrowGameAudioContext) return;
+    
+      // Update notes counter
+      notesPlayed++;
+      const notesElement = document.getElementById('arrow-notes');
+      if (notesElement) {
+        notesElement.textContent = notesPlayed;
+      }
+    
+      const frequency = noteFrequencies[noteName];
+      if (!frequency) return;
+    
+      // Create base oscillator based on instrument type
+      const oscillator = createInstrumentOscillator(frequency);
+    
+      // Create effect chain
+      const effectChain = createEffectChain();
+    
+      // Create master gain
+      const masterGain = window.arrowGameAudioContext.createGain();
+      masterGain.gain.value = masterVolume;
+    
+      // Connect the audio chain
+      oscillator.connect(effectChain.input);
+      effectChain.output.connect(masterGain);
+      masterGain.connect(window.arrowGameAudioContext.destination);
+    
+      // Start the oscillator
+      oscillator.start();
+    
+      // Apply envelope based on instrument type
+      applyEnvelope(effectChain.output, currentInstrument);
+    
+      // Stop the oscillator after note duration
+      const noteDuration = getNoteDuration(currentInstrument);
+      setTimeout(() => {
+        try {
+          oscillator.stop();
+        } catch {
+        // Oscillator may have already stopped
+        }
+      }, noteDuration);
+    }
+  
+    // Create oscillator based on instrument type
+    function createInstrumentOscillator(frequency) {
+      const oscillator = window.arrowGameAudioContext.createOscillator();
+      oscillator.frequency.value = frequency;
+    
+      switch (currentInstrument) {
+        case 'piano':
+          oscillator.type = 'triangle';
+          break;
+        case 'strings':
+          oscillator.type = 'sawtooth';
+          break;
+        case 'bass':
+          oscillator.type = 'square';
+          break;
+        case 'synth':
+        default:
+          oscillator.type = 'sawtooth';
+          break;
+      }
+    
+      return oscillator;
+    }
+  
+    // Create comprehensive effect chain
+    function createEffectChain() {
+      let input = window.arrowGameAudioContext.createGain();
+      let output = input;
+    
+      // Filter
+      if (currentEffects.filter.enabled) {
+        const filter = window.arrowGameAudioContext.createBiquadFilter();
+        filter.type = currentEffects.filter.type;
+        filter.frequency.value = currentEffects.filter.frequency;
+        filter.Q.value = currentEffects.filter.Q;
+      
+        // Add filter envelope for sweep effect
+        filter.frequency.setValueAtTime(currentEffects.filter.frequency * 0.5, window.arrowGameAudioContext.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(
+          currentEffects.filter.frequency * 2, 
+          window.arrowGameAudioContext.currentTime + 0.1
+        );
+        filter.frequency.exponentialRampToValueAtTime(
+          currentEffects.filter.frequency, 
+          window.arrowGameAudioContext.currentTime + 0.3
+        );
+      
+        output.connect(filter);
+        output = filter;
+      }
+    
+      // Distortion with proper wet/dry mix
+      if (currentEffects.distortion.enabled) {
+        const distortion = window.arrowGameAudioContext.createWaveShaper();
+        distortion.curve = makeDistortionCurve(currentEffects.distortion.amount);
+        distortion.oversample = '4x';
+      
+        const dryGain = window.arrowGameAudioContext.createGain();
+        const wetGain = window.arrowGameAudioContext.createGain();
+        const mixGain = window.arrowGameAudioContext.createGain();
+      
+        dryGain.gain.value = 1 - currentEffects.distortion.wetness;
+        wetGain.gain.value = currentEffects.distortion.wetness;
+      
+        // Split signal
+        output.connect(dryGain);
+        output.connect(distortion);
+        distortion.connect(wetGain);
+      
+        // Mix back together
+        dryGain.connect(mixGain);
+        wetGain.connect(mixGain);
+        output = mixGain;
+      
+      }
+    
+      // Delay effect (FIXED: tempo should NOT affect delay characteristics)
+      if (currentEffects.delay.enabled) {
+        const delayTime = currentEffects.delay.time; // Fixed delay time, not tempo-dependent
+        const delayNode = window.arrowGameAudioContext.createDelay(1);
+        const delayGain = window.arrowGameAudioContext.createGain();
+        const feedbackGain = window.arrowGameAudioContext.createGain();
+        const wetGain = window.arrowGameAudioContext.createGain();
+        const dryGain = window.arrowGameAudioContext.createGain();
+        const mixGain = window.arrowGameAudioContext.createGain();
+      
+        delayNode.delayTime.value = Math.min(delayTime, 0.8);
+        wetGain.gain.value = currentEffects.delay.wetness;
+        dryGain.gain.value = 1 - currentEffects.delay.wetness;
+        feedbackGain.gain.value = currentEffects.delay.feedback;
+      
+        // Create delay chain
+        output.connect(dryGain);
+        output.connect(delayGain);
+        delayGain.connect(delayNode);
+        delayNode.connect(wetGain);
+        delayNode.connect(feedbackGain);
+        feedbackGain.connect(delayGain); // Feedback loop
+      
+        // Mix signals
+        dryGain.connect(mixGain);
+        wetGain.connect(mixGain);
+        output = mixGain;
+      
+      }
+    
+      // Simple reverb (using multiple delays)
+      if (currentEffects.reverb.enabled) {
+        const reverbGain = window.arrowGameAudioContext.createGain();
+        const dryGain = window.arrowGameAudioContext.createGain();
+        const mixGain = window.arrowGameAudioContext.createGain();
+      
+        reverbGain.gain.value = currentEffects.reverb.wetness;
+        dryGain.gain.value = 1 - currentEffects.reverb.wetness;
+      
+        // Create multiple short delays to simulate reverb
+        void [0.03, 0.05, 0.07, 0.09].map(time => {
+          const delay = window.arrowGameAudioContext.createDelay();
+          const gain = window.arrowGameAudioContext.createGain();
+          delay.delayTime.value = time * currentEffects.reverb.roomSize;
+          gain.gain.value = 0.3 * (1 - currentEffects.reverb.damping);
+        
+          output.connect(delay);
+          delay.connect(gain);
+          gain.connect(reverbGain);
+          return { delay, gain };
+        });
+      
+        // Mix dry and wet
+        output.connect(dryGain);
+        dryGain.connect(mixGain);
+        reverbGain.connect(mixGain);
+        output = mixGain;
+      
+      }
+    
+      // Simple chorus effect (using modulated delay)
+      if (currentEffects.chorus.enabled) {
+        const chorusDelay = window.arrowGameAudioContext.createDelay(0.05);
+        const chorusLFO = window.arrowGameAudioContext.createOscillator();
+        const chorusGain = window.arrowGameAudioContext.createGain();
+        const chorusDepth = window.arrowGameAudioContext.createGain();
+        const dryGain = window.arrowGameAudioContext.createGain();
+        const mixGain = window.arrowGameAudioContext.createGain();
+      
+        // Set up LFO for chorus modulation
+        chorusLFO.frequency.value = currentEffects.chorus.rate;
+        chorusLFO.type = 'sine';
+        chorusDepth.gain.value = currentEffects.chorus.depth * 0.002; // Small modulation
+      
+        // Connect LFO to delay time
+        chorusLFO.connect(chorusDepth);
+        chorusDepth.connect(chorusDelay.delayTime);
+      
+        // Set base delay time
+        chorusDelay.delayTime.value = 0.02;
+      
+        // Set gains
+        chorusGain.gain.value = currentEffects.chorus.wetness;
+        dryGain.gain.value = 1 - currentEffects.chorus.wetness;
+      
+        // Connect audio path
+        output.connect(chorusDelay);
+        chorusDelay.connect(chorusGain);
+        output.connect(dryGain);
+      
+        // Mix signals
+        dryGain.connect(mixGain);
+        chorusGain.connect(mixGain);
+      
+        // Start LFO
+        chorusLFO.start();
+      
+        output = mixGain;
+      }
+    
+      return { input, output };
+    }
+  
+    // Create distortion curve
+    function makeDistortionCurve(amount) {
+      const k = typeof amount === 'number' ? amount : 50;
+      const samples = 44100;
+      const curve = new Float32Array(samples);
+      const deg = Math.PI / 180;
+    
+      for (let i = 0; i < samples; ++i) {
+        const x = (i * 2 / samples) - 1;
+        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+      }
+    
+      return curve;
+    }
+  
+    // Apply envelope based on instrument type (FIXED: tempo should NOT affect sound quality)
+    function applyEnvelope(gainNode, instrument) {
+      const now = window.arrowGameAudioContext.currentTime;
+    
+      switch (instrument) {
+        case 'piano':
+          gainNode.gain.setValueAtTime(0.01, now);
+          gainNode.gain.exponentialRampToValueAtTime(1, now + 0.01);
+          gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2);
+          break;
+        case 'strings':
+          gainNode.gain.setValueAtTime(0.01, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3);
+          gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3);
+          break;
+        case 'bass':
+          gainNode.gain.setValueAtTime(0.01, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
+          break;
+        case 'synth':
+        default:
+          gainNode.gain.setValueAtTime(0.01, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+          break;
+      }
+    }
+  
+    // Get note duration based on instrument (FIXED: tempo should NOT affect individual note length)
+    function getNoteDuration(instrument) {
+      switch (instrument) {
+        case 'piano': return 2000;
+        case 'strings': return 3000;
+        case 'bass': return 1000;
+        case 'synth':
+        default: return 800;
+      }
+    }
+  
+    // Tempo-based metronome click (visual feedback)
+    function addTempoFeedback() {
+      const tempoDisplay = document.getElementById('tempo-display');
+      if (tempoDisplay && currentTempo > 0) {
+        const beatInterval = 60000 / currentTempo; // ms per beat
+      
+        // Clear existing tempo feedback
+        if (window.tempoFeedbackInterval) {
+          clearInterval(window.tempoFeedbackInterval);
+        }
+      
+        // Add visual beat indicator
+        window.tempoFeedbackInterval = setInterval(() => {
+          if (tempoDisplay) {
+            tempoDisplay.style.color = '#4ade80';
+            setTimeout(() => {
+              if (tempoDisplay) {
+                tempoDisplay.style.color = '#e0e0e0';
+              }
+            }, 100);
+          }
+        }, beatInterval);
+      }
+    }
+  
+    // Generate piano keyboard visual
+    function generatePianoKeyboard() {
+      const pianoKeyboard = document.getElementById('piano-keyboard');
+      if (!pianoKeyboard) return;
+    
+      const whiteKeys = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+      const blackKeys = [['C#4'], ['D#4'], [], ['F#4'], ['G#4'], ['A#4'], []];
+    
+      pianoKeyboard.innerHTML = '';
+    
+      // Create white keys
+      whiteKeys.forEach((note, index) => {
+        const key = document.createElement('div');
+        key.className = 'piano-key white-key';
+        key.dataset.note = note;
+        key.textContent = note;
+      
+        // Add black key if it exists
+        if (blackKeys[index] && blackKeys[index].length > 0) {
+          const blackKey = document.createElement('div');
+          blackKey.className = 'piano-key black-key';
+          blackKey.dataset.note = blackKeys[index][0];
+          blackKey.textContent = blackKeys[index][0];
+          key.appendChild(blackKey);
+        }
+      
+        pianoKeyboard.appendChild(key);
+      });
+    
+      // Add click event listeners to piano keys
+      pianoKeyboard.addEventListener('click', (e) => {
+        if (e.target.classList.contains('piano-key')) {
+          const noteName = e.target.dataset.note;
+          if (noteName) {
+            playNoteByName(noteName);
+            highlightPianoKey(noteName);
+          
+            if (isRecording) {
+              recordNote(noteName);
+            }
+          }
+        }
+      });
+    }
+
+    // Start the music maker
+    function startArrowGame() {
+      if (isGameActive) return;
+    
+      isGameActive = true;
+    
+      // Reset notes counter
+      notesPlayed = 0;
+      const notesElement = document.getElementById('arrow-notes');
+      if (notesElement) {
+        notesElement.textContent = notesPlayed;
+      }
+    
+      // Create the UI
+      createArrowGameUI();
+    
+      // Init audio context
+      initAudio();
+    
+      // Set up keyboard event handler
+      window.arrowKeyboardHandler = handleKeyPress;
+      document.addEventListener('keydown', window.arrowKeyboardHandler);
+    
+      // Start tempo feedback
+      addTempoFeedback();
+    
+      // Log initial state for debugging
+    
+      startButton.disabled = true;
+      resetButton.disabled = false;
+    }
+  
+    // Setup control panel event listeners
+    function setupControlListeners() {
+    // Instrument selector
+      const instrumentSelect = document.getElementById('instrument-select');
+      if (instrumentSelect) {
+        instrumentSelect.addEventListener('change', (e) => {
+          currentInstrument = e.target.value;
         });
       }
-    } catch (error) {
-      console.warn('Web Audio API not supported in this browser:', error);
-      window.arrowGameAudioContext = null;
-    }
-  }
-  
-  // Play a note by name with advanced synthesis
-  function playNoteByName(noteName) {
-    if (!window.arrowGameAudioContext) return;
     
-    // Update notes counter
-    notesPlayed++;
-    const notesElement = document.getElementById('arrow-notes');
-    if (notesElement) {
-      notesElement.textContent = notesPlayed;
-    }
-    
-    const frequency = noteFrequencies[noteName];
-    if (!frequency) return;
-    
-    // Create base oscillator based on instrument type
-    const oscillator = createInstrumentOscillator(frequency);
-    
-    // Create effect chain
-    const effectChain = createEffectChain();
-    
-    // Create master gain
-    const masterGain = window.arrowGameAudioContext.createGain();
-    masterGain.gain.value = masterVolume;
-    
-    // Connect the audio chain
-    oscillator.connect(effectChain.input);
-    effectChain.output.connect(masterGain);
-    masterGain.connect(window.arrowGameAudioContext.destination);
-    
-    // Start the oscillator
-    oscillator.start();
-    
-    // Apply envelope based on instrument type
-    applyEnvelope(effectChain.output, currentInstrument);
-    
-    // Stop the oscillator after note duration
-    const noteDuration = getNoteDuration(currentInstrument);
-    setTimeout(() => {
-      try {
-        oscillator.stop();
-      } catch (e) {
-        // Oscillator may have already stopped
+      // Volume control
+      const volumeSlider = document.getElementById('volume-slider');
+      const volumeDisplay = document.getElementById('volume-display');
+      if (volumeSlider && volumeDisplay) {
+        volumeSlider.addEventListener('input', (e) => {
+          masterVolume = e.target.value / 100;
+          volumeDisplay.textContent = e.target.value + '%';
+        });
       }
-    }, noteDuration);
-  }
+    
+      // Tempo control
+      const tempoSlider = document.getElementById('tempo-slider');
+      const tempoDisplay = document.getElementById('tempo-display');
+      if (tempoSlider && tempoDisplay) {
+        tempoSlider.addEventListener('input', (e) => {
+          currentTempo = parseInt(e.target.value);
+          tempoDisplay.textContent = e.target.value + ' BPM';
+          addTempoFeedback(); // Start visual tempo feedback
+        });
+      }
+    
+      // Effect toggles and sliders
+      setupEffectControls();
+    
+      // Recording controls
+      setupRecordingControls();
+    }
   
-  // Create oscillator based on instrument type
-  function createInstrumentOscillator(frequency) {
-    const oscillator = window.arrowGameAudioContext.createOscillator();
-    oscillator.frequency.value = frequency;
+    // Initialize effect states after DOM is ready
+    function initializeEffectStates() {
+      const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
     
-    switch (currentInstrument) {
-      case 'piano':
-        oscillator.type = 'triangle';
-        break;
-      case 'strings':
-        oscillator.type = 'sawtooth';
-        break;
-      case 'bass':
-        oscillator.type = 'square';
-        break;
-      case 'synth':
-      default:
-        oscillator.type = 'sawtooth';
-        break;
-    }
     
-    return oscillator;
-  }
-  
-  // Create comprehensive effect chain
-  function createEffectChain() {
-    let input = window.arrowGameAudioContext.createGain();
-    let output = input;
-    
-    // Filter
-    if (currentEffects.filter.enabled) {
-      const filter = window.arrowGameAudioContext.createBiquadFilter();
-      filter.type = currentEffects.filter.type;
-      filter.frequency.value = currentEffects.filter.frequency;
-      filter.Q.value = currentEffects.filter.Q;
+      effects.forEach(effect => {
+        const toggle = document.getElementById(`${effect}-toggle`);
+        const slider = document.getElementById(`${effect}-amount`);
       
-      // Add filter envelope for sweep effect
-      filter.frequency.setValueAtTime(currentEffects.filter.frequency * 0.5, window.arrowGameAudioContext.currentTime);
-      filter.frequency.exponentialRampToValueAtTime(
-        currentEffects.filter.frequency * 2, 
-        window.arrowGameAudioContext.currentTime + 0.1
-      );
-      filter.frequency.exponentialRampToValueAtTime(
-        currentEffects.filter.frequency, 
-        window.arrowGameAudioContext.currentTime + 0.3
-      );
-      
-      output.connect(filter);
-      output = filter;
-    }
-    
-    // Distortion with proper wet/dry mix
-    if (currentEffects.distortion.enabled) {
-      const distortion = window.arrowGameAudioContext.createWaveShaper();
-      distortion.curve = makeDistortionCurve(currentEffects.distortion.amount);
-      distortion.oversample = '4x';
-      
-      const dryGain = window.arrowGameAudioContext.createGain();
-      const wetGain = window.arrowGameAudioContext.createGain();
-      const mixGain = window.arrowGameAudioContext.createGain();
-      
-      dryGain.gain.value = 1 - currentEffects.distortion.wetness;
-      wetGain.gain.value = currentEffects.distortion.wetness;
-      
-      // Split signal
-      output.connect(dryGain);
-      output.connect(distortion);
-      distortion.connect(wetGain);
-      
-      // Mix back together
-      dryGain.connect(mixGain);
-      wetGain.connect(mixGain);
-      output = mixGain;
-      
-    }
-    
-    // Delay effect (FIXED: tempo should NOT affect delay characteristics)
-    if (currentEffects.delay.enabled) {
-      const delayTime = currentEffects.delay.time; // Fixed delay time, not tempo-dependent
-      const delayNode = window.arrowGameAudioContext.createDelay(1);
-      const delayGain = window.arrowGameAudioContext.createGain();
-      const feedbackGain = window.arrowGameAudioContext.createGain();
-      const wetGain = window.arrowGameAudioContext.createGain();
-      const dryGain = window.arrowGameAudioContext.createGain();
-      const mixGain = window.arrowGameAudioContext.createGain();
-      
-      delayNode.delayTime.value = Math.min(delayTime, 0.8);
-      wetGain.gain.value = currentEffects.delay.wetness;
-      dryGain.gain.value = 1 - currentEffects.delay.wetness;
-      feedbackGain.gain.value = currentEffects.delay.feedback;
-      
-      // Create delay chain
-      output.connect(dryGain);
-      output.connect(delayGain);
-      delayGain.connect(delayNode);
-      delayNode.connect(wetGain);
-      delayNode.connect(feedbackGain);
-      feedbackGain.connect(delayGain); // Feedback loop
-      
-      // Mix signals
-      dryGain.connect(mixGain);
-      wetGain.connect(mixGain);
-      output = mixGain;
-      
-    }
-    
-    // Simple reverb (using multiple delays)
-    if (currentEffects.reverb.enabled) {
-      const reverbGain = window.arrowGameAudioContext.createGain();
-      const dryGain = window.arrowGameAudioContext.createGain();
-      const mixGain = window.arrowGameAudioContext.createGain();
-      
-      reverbGain.gain.value = currentEffects.reverb.wetness;
-      dryGain.gain.value = 1 - currentEffects.reverb.wetness;
-      
-      // Create multiple short delays to simulate reverb
-      const delays = [0.03, 0.05, 0.07, 0.09].map(time => {
-        const delay = window.arrowGameAudioContext.createDelay();
-        const gain = window.arrowGameAudioContext.createGain();
-        delay.delayTime.value = time * currentEffects.reverb.roomSize;
-        gain.gain.value = 0.3 * (1 - currentEffects.reverb.damping);
+        if (toggle && currentEffects[effect]) {
+        // Set toggle to match currentEffects state
+          toggle.checked = currentEffects[effect].enabled;
         
-        output.connect(delay);
-        delay.connect(gain);
-        gain.connect(reverbGain);
-        return { delay, gain };
+          if (slider) {
+          // Set slider state based on toggle
+            slider.disabled = !currentEffects[effect].enabled;
+          
+            // Set slider value
+            if (effect === 'distortion') {
+              slider.value = currentEffects[effect].amount;
+            } else if (effect === 'filter') {
+              slider.value = currentEffects[effect].frequency / 50;
+            } else {
+              slider.value = currentEffects[effect].wetness * 100;
+            }
+          }
+        } else {
+        }
       });
-      
-      // Mix dry and wet
-      output.connect(dryGain);
-      dryGain.connect(mixGain);
-      reverbGain.connect(mixGain);
-      output = mixGain;
-      
     }
+
+    // Setup effect controls (event listeners only)
+    function setupEffectControls() {
+      const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
     
-    // Simple chorus effect (using modulated delay)
-    if (currentEffects.chorus.enabled) {
-      const chorusDelay = window.arrowGameAudioContext.createDelay(0.05);
-      const chorusLFO = window.arrowGameAudioContext.createOscillator();
-      const chorusGain = window.arrowGameAudioContext.createGain();
-      const chorusDepth = window.arrowGameAudioContext.createGain();
-      const dryGain = window.arrowGameAudioContext.createGain();
-      const mixGain = window.arrowGameAudioContext.createGain();
+      effects.forEach(effect => {
+        const toggle = document.getElementById(`${effect}-toggle`);
+        const slider = document.getElementById(`${effect}-amount`);
       
-      // Set up LFO for chorus modulation
-      chorusLFO.frequency.value = currentEffects.chorus.rate;
-      chorusLFO.type = 'sine';
-      chorusDepth.gain.value = currentEffects.chorus.depth * 0.002; // Small modulation
+        if (toggle) {
+          toggle.addEventListener('change', (e) => {
+            currentEffects[effect].enabled = e.target.checked;
+            if (slider) {
+              slider.disabled = !e.target.checked;
+            }
+          });
+        }
       
-      // Connect LFO to delay time
-      chorusLFO.connect(chorusDepth);
-      chorusDepth.connect(chorusDelay.delayTime);
-      
-      // Set base delay time
-      chorusDelay.delayTime.value = 0.02;
-      
-      // Set gains
-      chorusGain.gain.value = currentEffects.chorus.wetness;
-      dryGain.gain.value = 1 - currentEffects.chorus.wetness;
-      
-      // Connect audio path
-      output.connect(chorusDelay);
-      chorusDelay.connect(chorusGain);
-      output.connect(dryGain);
-      
-      // Mix signals
-      dryGain.connect(mixGain);
-      chorusGain.connect(mixGain);
-      
-      // Start LFO
-      chorusLFO.start();
-      
-      output = mixGain;
+        if (slider) {
+          slider.addEventListener('input', (e) => {
+            const value = e.target.value / 100;
+            if (effect === 'distortion') {
+              currentEffects[effect].amount = parseInt(e.target.value);
+              currentEffects[effect].wetness = value;
+            } else if (effect === 'filter') {
+              currentEffects[effect].frequency = parseInt(e.target.value) * 50;
+            } else {
+              currentEffects[effect].wetness = value;
+            }
+          });
+        }
+      });
     }
-    
-    return { input, output };
-  }
-  
-  // Create distortion curve
-  function makeDistortionCurve(amount) {
-    const k = typeof amount === 'number' ? amount : 50;
-    const samples = 44100;
-    const curve = new Float32Array(samples);
-    const deg = Math.PI / 180;
-    
-    for (let i = 0; i < samples; ++i) {
-      const x = (i * 2 / samples) - 1;
-      curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+
+    function stopAllLoops() {
+      [...activeLoopLayers].forEach(layerIndex => {
+        stopLayerLoop(layerIndex);
+      });
+
+      const loopAllBtn = document.getElementById('loop-all-btn');
+      if (loopAllBtn) {
+        loopAllBtn.textContent = '🔄 Loop All';
+        loopAllBtn.classList.remove('active');
+      }
     }
-    
-    return curve;
-  }
-  
-  // Apply envelope based on instrument type (FIXED: tempo should NOT affect sound quality)
-  function applyEnvelope(gainNode, instrument) {
-    const now = window.arrowGameAudioContext.currentTime;
-    
-    switch (instrument) {
-      case 'piano':
-        gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(1, now + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2);
-        break;
-      case 'strings':
-        gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3);
-        gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3);
-        break;
-      case 'bass':
-        gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
-        break;
-      case 'synth':
-      default:
-        gainNode.gain.setValueAtTime(0.01, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
-        break;
-    }
-  }
-  
-  // Get note duration based on instrument (FIXED: tempo should NOT affect individual note length)
-  function getNoteDuration(instrument) {
-    switch (instrument) {
-      case 'piano': return 2000;
-      case 'strings': return 3000;
-      case 'bass': return 1000;
-      case 'synth':
-      default: return 800;
-    }
-  }
-  
-  // Tempo-based metronome click (visual feedback)
-  function addTempoFeedback() {
-    const tempoDisplay = document.getElementById('tempo-display');
-    if (tempoDisplay && currentTempo > 0) {
-      const beatInterval = 60000 / currentTempo; // ms per beat
-      
-      // Clear existing tempo feedback
+
+    function resetMusicStudioState() {
+      stopAllLoops();
+      activeLoopLayers.clear();
+
+      if (window.layerIntervals) {
+        window.layerIntervals.forEach(intervalId => clearInterval(intervalId));
+        window.layerIntervals.clear();
+      }
+
+      if (loopInterval) {
+        clearInterval(loopInterval);
+        loopInterval = null;
+      }
+
       if (window.tempoFeedbackInterval) {
         clearInterval(window.tempoFeedbackInterval);
+        window.tempoFeedbackInterval = null;
       }
-      
-      // Add visual beat indicator
-      window.tempoFeedbackInterval = setInterval(() => {
-        if (tempoDisplay) {
-          tempoDisplay.style.color = '#4ade80';
-          setTimeout(() => {
-            if (tempoDisplay) {
-              tempoDisplay.style.color = '#e0e0e0';
-            }
-          }, 100);
-        }
-      }, beatInterval);
-    }
-  }
-  
-  // Generate piano keyboard visual
-  function generatePianoKeyboard() {
-    const pianoKeyboard = document.getElementById('piano-keyboard');
-    if (!pianoKeyboard) return;
-    
-    const whiteKeys = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
-    const blackKeys = [['C#4'], ['D#4'], [], ['F#4'], ['G#4'], ['A#4'], []];
-    
-    pianoKeyboard.innerHTML = '';
-    
-    // Create white keys
-    whiteKeys.forEach((note, index) => {
-      const key = document.createElement('div');
-      key.className = 'piano-key white-key';
-      key.dataset.note = note;
-      key.textContent = note;
-      
-      // Add black key if it exists
-      if (blackKeys[index] && blackKeys[index].length > 0) {
-        const blackKey = document.createElement('div');
-        blackKey.className = 'piano-key black-key';
-        blackKey.dataset.note = blackKeys[index][0];
-        blackKey.textContent = blackKeys[index][0];
-        key.appendChild(blackKey);
-      }
-      
-      pianoKeyboard.appendChild(key);
-    });
-    
-    // Add click event listeners to piano keys
-    pianoKeyboard.addEventListener('click', (e) => {
-      if (e.target.classList.contains('piano-key')) {
-        const noteName = e.target.dataset.note;
-        if (noteName) {
-          playNoteByName(noteName);
-          highlightPianoKey(noteName);
-          
-          if (isRecording) {
-            recordNote(noteName);
-          }
-        }
-      }
-    });
-  }
 
-  // Start the music maker
-  function startArrowGame() {
-    if (isGameActive) return;
-    
-    isGameActive = true;
-    
-    // Reset notes counter
-    notesPlayed = 0;
-    const notesElement = document.getElementById('arrow-notes');
-    if (notesElement) {
-      notesElement.textContent = notesPlayed;
+      loopLayers = [];
+      layerTempos = [120, 120, 120, 120];
+      currentLayerIndex = 0;
+      recordedNotes = [];
+      isLooping = false;
+      isRecording = false;
     }
-    
-    // Create the UI
-    createArrowGameUI();
-    
-    // Init audio context
-    initAudio();
-    
-    // Set up keyboard event handler
-    window.arrowKeyboardHandler = handleKeyPress;
-    document.addEventListener('keydown', window.arrowKeyboardHandler);
-    
-    // Start tempo feedback
-    addTempoFeedback();
-    
-    // Log initial state for debugging
-    
-    startButton.disabled = true;
-    resetButton.disabled = false;
-  }
+
+    function closeMusicStudioAudio() {
+      if (window.arrowGameAudioContext && window.arrowGameAudioContext.state !== 'closed') {
+        window.arrowGameAudioContext.close().catch(err => {
+          console.warn('Failed to close music studio audio context:', err);
+        });
+        window.arrowGameAudioContext = null;
+      }
+    }
+
+    function cleanupMusicStudio() {
+      if (window.arrowKeyboardHandler) {
+        document.removeEventListener('keydown', window.arrowKeyboardHandler);
+        window.arrowKeyboardHandler = null;
+      }
+
+      resetMusicStudioState();
+      closeMusicStudioAudio();
+      isGameActive = false;
+    }
+
+    window.cleanupMusicStudio = cleanupMusicStudio;
+
+    // Reset the music maker
+    function resetArrowGame() {
+      cleanupMusicStudio();
+      notesPlayed = 0;
+
+      const notesElement = document.getElementById('arrow-notes');
+      if (notesElement) {
+        notesElement.textContent = '0';
+      }
+
+      initArrowDisplay();
+
+      startButton.disabled = false;
+      resetButton.disabled = true;
+    }
   
-  // Setup control panel event listeners
-  function setupControlListeners() {
-    // Instrument selector
-    const instrumentSelect = document.getElementById('instrument-select');
-    if (instrumentSelect) {
-      instrumentSelect.addEventListener('change', (e) => {
-        currentInstrument = e.target.value;
-      });
-    }
+    // Setup recording controls
+    function setupRecordingControls() {
+      const recordBtn = document.getElementById('record-btn');
+      const playBtn = document.getElementById('play-btn');
+      const loopBtn = document.getElementById('loop-btn');
+      const loopAllBtn = document.getElementById('loop-all-btn');
+      const clearBtn = document.getElementById('clear-btn');
+      const clearAllBtn = document.getElementById('clear-all-btn');
+      const saveBtn = document.getElementById('save-btn');
+      const loadBtn = document.getElementById('load-btn');
+      const prevLayerBtn = document.getElementById('prev-layer-btn');
+      const nextLayerBtn = document.getElementById('next-layer-btn');
     
-    // Volume control
-    const volumeSlider = document.getElementById('volume-slider');
-    const volumeDisplay = document.getElementById('volume-display');
-    if (volumeSlider && volumeDisplay) {
-      volumeSlider.addEventListener('input', (e) => {
-        masterVolume = e.target.value / 100;
-        volumeDisplay.textContent = e.target.value + '%';
-      });
-    }
+      if (recordBtn) {
+        recordBtn.addEventListener('click', toggleRecording);
+      }
+      if (playBtn) {
+        playBtn.addEventListener('click', playRecording);
+      }
+      if (loopBtn) {
+        loopBtn.addEventListener('click', toggleLoop);
+      }
+      if (loopAllBtn) {
+        loopAllBtn.addEventListener('click', toggleLoopAll);
+      }
+      if (clearBtn) {
+        clearBtn.addEventListener('click', clearCurrentLayer);
+      }
+      if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', clearAllLayers);
+      }
+      if (saveBtn) {
+        saveBtn.addEventListener('click', saveRecording);
+      }
+      if (loadBtn) {
+        loadBtn.addEventListener('click', loadRecording);
+      }
+      if (prevLayerBtn) {
+        prevLayerBtn.addEventListener('click', switchToPrevLayer);
+      }
+      if (nextLayerBtn) {
+        nextLayerBtn.addEventListener('click', switchToNextLayer);
+      }
     
-    // Tempo control
-    const tempoSlider = document.getElementById('tempo-slider');
-    const tempoDisplay = document.getElementById('tempo-display');
-    if (tempoSlider && tempoDisplay) {
-      tempoSlider.addEventListener('input', (e) => {
-        currentTempo = parseInt(e.target.value);
-        tempoDisplay.textContent = e.target.value + ' BPM';
-        addTempoFeedback(); // Start visual tempo feedback
-      });
-    }
-    
-    // Effect toggles and sliders
-    setupEffectControls();
-    
-    // Recording controls
-    setupRecordingControls();
-  }
-  
-  // Initialize effect states after DOM is ready
-  function initializeEffectStates() {
-    const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
-    
-    
-    effects.forEach(effect => {
-      const toggle = document.getElementById(`${effect}-toggle`);
-      const slider = document.getElementById(`${effect}-amount`);
-      
-      if (toggle && currentEffects[effect]) {
-        // Set toggle to match currentEffects state
-        toggle.checked = currentEffects[effect].enabled;
-        
-        if (slider) {
-          // Set slider state based on toggle
-          slider.disabled = !currentEffects[effect].enabled;
-          
-          // Set slider value
-          if (effect === 'distortion') {
-            slider.value = currentEffects[effect].amount;
-          } else if (effect === 'filter') {
-            slider.value = currentEffects[effect].frequency / 50;
-          } else {
-            slider.value = currentEffects[effect].wetness * 100;
+      // Layer tempo control
+      const layerTempoSlider = document.getElementById('layer-tempo-slider');
+      if (layerTempoSlider) {
+        const tempoHandler = (e) => {
+          const newTempo = parseInt(e.target.value, 10);
+          layerTempos[currentLayerIndex] = newTempo;
+          const layerTempoDisplay = document.getElementById('layer-tempo');
+          if (layerTempoDisplay) {
+            layerTempoDisplay.textContent = newTempo;
           }
+
+          if (activeLoopLayers.has(currentLayerIndex)) {
+            stopLayerLoop(currentLayerIndex);
+
+            const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
+              (loopLayers[currentLayerIndex] ? loopLayers[currentLayerIndex].notes : []);
+
+            if (notesToPlay.length > 0) {
+              setTimeout(() => {
+                startLayerLoop(currentLayerIndex, notesToPlay);
+              }, 200);
+            }
+          }
+        };
+
+        layerTempoSlider.addEventListener('input', tempoHandler);
+        layerTempoSlider.addEventListener('change', tempoHandler);
+      }
+    }
+  
+    // Setup touch controls for mobile
+    function setupTouchControls() {
+      document.querySelectorAll('.touch-key').forEach(key => {
+        key.addEventListener('touchstart', handleTouchStart);
+        key.addEventListener('click', handleTouchStart);
+      });
+    }
+  
+    // Highlight key visual feedback
+    function highlightKey(keyCode, noteName) {
+    // Highlight keyboard key mapping visualization if present
+      const keyElement = document.querySelector(`[data-key=\"${keyCode}\"]`);
+      if (keyElement) {
+        keyElement.classList.add('active');
+        setTimeout(() => keyElement.classList.remove('active'), 100);
+      }
+    
+      // Highlight piano key
+      highlightPianoKey(noteName);
+    }
+  
+    // Highlight piano key
+    function highlightPianoKey(noteName) {
+      const pianoKey = document.querySelector(`[data-note=\"${noteName}\"]`);
+      if (pianoKey) {
+        pianoKey.classList.add('active');
+        setTimeout(() => pianoKey.classList.remove('active'), 200);
+      }
+    }
+  
+    // Recording functions
+    function toggleRecording() {
+      const recordBtn = document.getElementById('record-btn');
+      const statusElement = document.getElementById('recording-status');
+    
+      if (isRecording) {
+      // Stop recording and save to current layer
+        isRecording = false;
+        recordBtn.textContent = '⏺️ Record Layer';
+        recordBtn.classList.remove('recording');
+      
+        // Save the current recording to the layer
+        if (recordedNotes.length > 0) {
+          saveCurrentRecordingToLayer();
+          statusElement.textContent = `Layer ${currentLayerIndex + 1}: ${recordedNotes.length} notes recorded`;
+        
+          // Enable controls
+          document.getElementById('play-btn').disabled = false;
+          document.getElementById('loop-btn').disabled = false;
+          document.getElementById('loop-all-btn').disabled = false;
+          document.getElementById('clear-btn').disabled = false;
+          document.getElementById('save-btn').disabled = false;
         }
       } else {
-      }
-    });
-  }
-
-  // Setup effect controls (event listeners only)
-  function setupEffectControls() {
-    const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
-    
-    effects.forEach(effect => {
-      const toggle = document.getElementById(`${effect}-toggle`);
-      const slider = document.getElementById(`${effect}-amount`);
-      
-      if (toggle) {
-        toggle.addEventListener('change', (e) => {
-          currentEffects[effect].enabled = e.target.checked;
-          if (slider) {
-            slider.disabled = !e.target.checked;
-          }
-        });
-      }
-      
-      if (slider) {
-        slider.addEventListener('input', (e) => {
-          const value = e.target.value / 100;
-          if (effect === 'distortion') {
-            currentEffects[effect].amount = parseInt(e.target.value);
-            currentEffects[effect].wetness = value;
-          } else if (effect === 'filter') {
-            currentEffects[effect].frequency = parseInt(e.target.value) * 50;
-          } else {
-            currentEffects[effect].wetness = value;
-          }
-        });
-      }
-    });
-  }
-
-  function stopAllLoops() {
-    [...activeLoopLayers].forEach(layerIndex => {
-      stopLayerLoop(layerIndex);
-    });
-
-    const loopAllBtn = document.getElementById('loop-all-btn');
-    if (loopAllBtn) {
-      loopAllBtn.textContent = '🔄 Loop All';
-      loopAllBtn.classList.remove('active');
-    }
-  }
-
-  function resetMusicStudioState() {
-    stopAllLoops();
-    activeLoopLayers.clear();
-
-    if (window.layerIntervals) {
-      window.layerIntervals.forEach(intervalId => clearInterval(intervalId));
-      window.layerIntervals.clear();
-    }
-
-    if (loopInterval) {
-      clearInterval(loopInterval);
-      loopInterval = null;
-    }
-
-    if (window.tempoFeedbackInterval) {
-      clearInterval(window.tempoFeedbackInterval);
-      window.tempoFeedbackInterval = null;
-    }
-
-    loopLayers = [];
-    layerTempos = [120, 120, 120, 120];
-    currentLayerIndex = 0;
-    recordedNotes = [];
-    isLooping = false;
-    isRecording = false;
-  }
-
-  function closeMusicStudioAudio() {
-    if (window.arrowGameAudioContext && window.arrowGameAudioContext.state !== 'closed') {
-      window.arrowGameAudioContext.close().catch(err => {
-        console.warn('Failed to close music studio audio context:', err);
-      });
-      window.arrowGameAudioContext = null;
-    }
-  }
-
-  function cleanupMusicStudio() {
-    if (window.arrowKeyboardHandler) {
-      document.removeEventListener('keydown', window.arrowKeyboardHandler);
-      window.arrowKeyboardHandler = null;
-    }
-
-    resetMusicStudioState();
-    closeMusicStudioAudio();
-    isGameActive = false;
-  }
-
-  window.cleanupMusicStudio = cleanupMusicStudio;
-
-  // Reset the music maker
-  function resetArrowGame() {
-    cleanupMusicStudio();
-    notesPlayed = 0;
-
-    const notesElement = document.getElementById('arrow-notes');
-    if (notesElement) {
-      notesElement.textContent = '0';
-    }
-
-    initArrowDisplay();
-
-    startButton.disabled = false;
-    resetButton.disabled = true;
-  }
-  
-  // Setup recording controls
-  function setupRecordingControls() {
-    const recordBtn = document.getElementById('record-btn');
-    const playBtn = document.getElementById('play-btn');
-    const loopBtn = document.getElementById('loop-btn');
-    const loopAllBtn = document.getElementById('loop-all-btn');
-    const clearBtn = document.getElementById('clear-btn');
-    const clearAllBtn = document.getElementById('clear-all-btn');
-    const saveBtn = document.getElementById('save-btn');
-    const loadBtn = document.getElementById('load-btn');
-    const prevLayerBtn = document.getElementById('prev-layer-btn');
-    const nextLayerBtn = document.getElementById('next-layer-btn');
-    
-    if (recordBtn) {
-      recordBtn.addEventListener('click', toggleRecording);
-    }
-    if (playBtn) {
-      playBtn.addEventListener('click', playRecording);
-    }
-    if (loopBtn) {
-      loopBtn.addEventListener('click', toggleLoop);
-    }
-    if (loopAllBtn) {
-      loopAllBtn.addEventListener('click', toggleLoopAll);
-    }
-    if (clearBtn) {
-      clearBtn.addEventListener('click', clearCurrentLayer);
-    }
-    if (clearAllBtn) {
-      clearAllBtn.addEventListener('click', clearAllLayers);
-    }
-    if (saveBtn) {
-      saveBtn.addEventListener('click', saveRecording);
-    }
-    if (loadBtn) {
-      loadBtn.addEventListener('click', loadRecording);
-    }
-    if (prevLayerBtn) {
-      prevLayerBtn.addEventListener('click', switchToPrevLayer);
-    }
-    if (nextLayerBtn) {
-      nextLayerBtn.addEventListener('click', switchToNextLayer);
-    }
-    
-    // Layer tempo control
-    const layerTempoSlider = document.getElementById('layer-tempo-slider');
-    if (layerTempoSlider) {
-      const tempoHandler = (e) => {
-        const newTempo = parseInt(e.target.value, 10);
-        layerTempos[currentLayerIndex] = newTempo;
-        const layerTempoDisplay = document.getElementById('layer-tempo');
-        if (layerTempoDisplay) {
-          layerTempoDisplay.textContent = newTempo;
-        }
-
-        if (activeLoopLayers.has(currentLayerIndex)) {
-          stopLayerLoop(currentLayerIndex);
-
-          const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
-            (loopLayers[currentLayerIndex] ? loopLayers[currentLayerIndex].notes : []);
-
-          if (notesToPlay.length > 0) {
-            setTimeout(() => {
-              startLayerLoop(currentLayerIndex, notesToPlay);
-            }, 200);
-          }
-        }
-      };
-
-      layerTempoSlider.addEventListener('input', tempoHandler);
-      layerTempoSlider.addEventListener('change', tempoHandler);
-    }
-  }
-  
-  // Setup touch controls for mobile
-  function setupTouchControls() {
-    document.querySelectorAll('.touch-key').forEach(key => {
-      key.addEventListener('touchstart', handleTouchStart);
-      key.addEventListener('click', handleTouchStart);
-    });
-  }
-  
-  // Highlight key visual feedback
-  function highlightKey(keyCode, noteName) {
-    // Highlight keyboard key mapping visualization if present
-    const keyElement = document.querySelector(`[data-key=\"${keyCode}\"]`);
-    if (keyElement) {
-      keyElement.classList.add('active');
-      setTimeout(() => keyElement.classList.remove('active'), 100);
-    }
-    
-    // Highlight piano key
-    highlightPianoKey(noteName);
-  }
-  
-  // Highlight piano key
-  function highlightPianoKey(noteName) {
-    const pianoKey = document.querySelector(`[data-note=\"${noteName}\"]`);
-    if (pianoKey) {
-      pianoKey.classList.add('active');
-      setTimeout(() => pianoKey.classList.remove('active'), 200);
-    }
-  }
-  
-  // Recording functions
-  function toggleRecording() {
-    const recordBtn = document.getElementById('record-btn');
-    const statusElement = document.getElementById('recording-status');
-    
-    if (isRecording) {
-      // Stop recording and save to current layer
-      isRecording = false;
-      recordBtn.textContent = '⏺️ Record Layer';
-      recordBtn.classList.remove('recording');
-      
-      // Save the current recording to the layer
-      if (recordedNotes.length > 0) {
-        saveCurrentRecordingToLayer();
-        statusElement.textContent = `Layer ${currentLayerIndex + 1}: ${recordedNotes.length} notes recorded`;
-        
-        // Enable controls
-        document.getElementById('play-btn').disabled = false;
-        document.getElementById('loop-btn').disabled = false;
-        document.getElementById('loop-all-btn').disabled = false;
-        document.getElementById('clear-btn').disabled = false;
-        document.getElementById('save-btn').disabled = false;
-      }
-    } else {
       // Start recording new layer
-      isRecording = true;
-      recordedNotes = [];
-      recordingStartTime = Date.now();
-      recordBtn.textContent = '⏹️ Stop Recording';
-      recordBtn.classList.add('recording');
-      statusElement.textContent = `Recording layer ${currentLayerIndex + 1}...`;
+        isRecording = true;
+        recordedNotes = [];
+        recordingStartTime = Date.now();
+        recordBtn.textContent = '⏹️ Stop Recording';
+        recordBtn.classList.add('recording');
+        statusElement.textContent = `Recording layer ${currentLayerIndex + 1}...`;
+      }
     }
-  }
   
-  function saveCurrentRecordingToLayer() {
+    function saveCurrentRecordingToLayer() {
     // Ensure we have enough layers
-    while (loopLayers.length <= currentLayerIndex) {
-      loopLayers.push({ notes: [], name: `Layer ${loopLayers.length + 1}` });
+      while (loopLayers.length <= currentLayerIndex) {
+        loopLayers.push({ notes: [], name: `Layer ${loopLayers.length + 1}` });
+      }
+    
+      // Save current recording to the layer
+      loopLayers[currentLayerIndex].notes = [...recordedNotes];
+    
+      updateLayerDisplay();
+      updateLayerCounts();
     }
-    
-    // Save current recording to the layer
-    loopLayers[currentLayerIndex].notes = [...recordedNotes];
-    
-    updateLayerDisplay();
-    updateLayerCounts();
-  }
   
-  function updateLayerDisplay() {
-    const layersDisplay = document.getElementById('layers-display');
-    if (!layersDisplay) return;
+    function updateLayerDisplay() {
+      const layersDisplay = document.getElementById('layers-display');
+      if (!layersDisplay) return;
     
-    layersDisplay.innerHTML = '';
+      layersDisplay.innerHTML = '';
     
-    loopLayers.forEach((layer, index) => {
-      const layerElement = document.createElement('div');
-      layerElement.className = `layer-indicator ${index === currentLayerIndex ? 'current' : ''}`;
-      layerElement.innerHTML = `
+      loopLayers.forEach((layer, index) => {
+        const layerElement = document.createElement('div');
+        layerElement.className = `layer-indicator ${index === currentLayerIndex ? 'current' : ''}`;
+        layerElement.innerHTML = `
         <span class="layer-number">${index + 1}</span>
         <span class="layer-notes">${layer.notes.length} notes</span>
         <span class="layer-status ${activeLoopLayers.has(index) ? 'playing' : 'stopped'}">
           ${activeLoopLayers.has(index) ? '▶️' : '⏸️'}
         </span>
       `;
-      layersDisplay.appendChild(layerElement);
-    });
-  }
-  
-  function updateLayerCounts() {
-    document.getElementById('current-layer').textContent = currentLayerIndex + 1;
-    document.getElementById('total-layers').textContent = loopLayers.length;
-    
-    // Update navigation buttons
-    document.getElementById('prev-layer-btn').disabled = currentLayerIndex === 0;
-    document.getElementById('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
-    document.getElementById('clear-all-btn').disabled = loopLayers.length === 0;
-  }
-  
-  function switchToPrevLayer() {
-    if (currentLayerIndex > 0) {
-      currentLayerIndex--;
-      switchToLayer(currentLayerIndex);
-    }
-  }
-  
-  function switchToNextLayer() {
-    if (currentLayerIndex < maxLoopLayers - 1) {
-      currentLayerIndex++;
-      switchToLayer(currentLayerIndex);
-    }
-  }
-  
-  function switchToLayer(layerIndex) {
-    currentLayerIndex = layerIndex;
-    
-    // Load the layer's recorded notes
-    if (loopLayers[layerIndex]) {
-      recordedNotes = [...loopLayers[layerIndex].notes];
-    } else {
-      recordedNotes = [];
-    }
-    
-    // Update UI
-    updateLayerDisplay();
-    updateLayerCounts();
-    
-    // Update layer tempo display and slider
-    const layerTempo = layerTempos[layerIndex] || 120;
-    document.getElementById('layer-tempo').textContent = layerTempo;
-    const layerTempoSlider = document.getElementById('layer-tempo-slider');
-    if (layerTempoSlider) {
-      layerTempoSlider.value = layerTempo;
-    }
-    
-    const statusElement = document.getElementById('recording-status');
-    if (recordedNotes.length > 0) {
-      statusElement.textContent = `Layer ${layerIndex + 1}: ${recordedNotes.length} notes @ ${layerTempo} BPM`;
-      document.getElementById('play-btn').disabled = false;
-      document.getElementById('loop-btn').disabled = false;
-      document.getElementById('clear-btn').disabled = false;
-    } else {
-      statusElement.textContent = `Ready to record layer ${layerIndex + 1} @ ${layerTempo} BPM`;
-      document.getElementById('play-btn').disabled = true;
-      document.getElementById('loop-btn').disabled = true;
-      document.getElementById('clear-btn').disabled = true;
-    }
-    
-    // Update loop button state
-    const loopBtn = document.getElementById('loop-btn');
-    if (activeLoopLayers.has(layerIndex)) {
-      loopBtn.textContent = '⏹️ Stop Current';
-      loopBtn.classList.add('active');
-      isLooping = true;
-    } else {
-      loopBtn.textContent = '🔄 Loop Current';
-      loopBtn.classList.remove('active');
-      isLooping = false;
-    }
-    
-  }
-  
-  function clearCurrentLayer() {
-    if (confirm(`Clear layer ${currentLayerIndex + 1}?`)) {
-      // Stop loop if playing
-      if (activeLoopLayers.has(currentLayerIndex)) {
-        stopLayerLoop(currentLayerIndex);
-      }
-      
-      // Clear the layer
-      if (loopLayers[currentLayerIndex]) {
-        loopLayers[currentLayerIndex].notes = [];
-      }
-      recordedNotes = [];
-      
-      // Update UI
-      updateLayerDisplay();
-      document.getElementById('recording-status').textContent = `Layer ${currentLayerIndex + 1} cleared`;
-      document.getElementById('play-btn').disabled = true;
-      document.getElementById('loop-btn').disabled = true;
-      document.getElementById('clear-btn').disabled = true;
-    }
-  }
-  
-  function clearAllLayers() {
-    if (confirm('Clear all layers? This cannot be undone!')) {
-      // Stop all loops
-      stopAllLoops();
-      
-      // Clear all data
-      loopLayers = [];
-      recordedNotes = [];
-      currentLayerIndex = 0;
-      isRecording = false;
-      
-      // Reset UI
-      const recordBtn = document.getElementById('record-btn');
-      recordBtn.textContent = '⏺️ Record Layer';
-      recordBtn.classList.remove('recording');
-      
-      updateLayerDisplay();
-      updateLayerCounts();
-      
-      document.getElementById('recording-status').textContent = 'All layers cleared - ready to record layer 1';
-      document.getElementById('play-btn').disabled = true;
-      document.getElementById('loop-btn').disabled = true;
-      document.getElementById('loop-all-btn').disabled = true;
-      document.getElementById('clear-btn').disabled = true;
-      document.getElementById('clear-all-btn').disabled = true;
-      document.getElementById('save-btn').disabled = true;
-    }
-  }
-  
-  function recordNote(noteName) {
-    if (!isRecording) return;
-    
-    const timestamp = Date.now() - recordingStartTime;
-    recordedNotes.push({ note: noteName, time: timestamp });
-    
-    // Update recording length display
-    const lengthElement = document.getElementById('recording-length');
-    if (lengthElement) {
-      const seconds = Math.floor(timestamp / 1000);
-      const minutes = Math.floor(seconds / 60);
-      lengthElement.textContent = `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
-    }
-  }
-  
-  function playRecording() {
-    if (recordedNotes.length === 0) return;
-    
-    const playBtn = document.getElementById('play-btn');
-    playBtn.textContent = '⏸️ Stop';
-    playBtn.disabled = true;
-    
-    // Use current layer's tempo instead of global tempo
-    const layerTempo = layerTempos[currentLayerIndex] || 120;
-    const tempoScale = 120 / layerTempo;
-    
-    // Play each recorded note at tempo-adjusted time
-    recordedNotes.forEach(({ note, time }) => {
-      const adjustedTime = time * tempoScale;
-      setTimeout(() => {
-        playNoteByName(note);
-        highlightPianoKey(note);
-      }, adjustedTime);
-    });
-    
-    // Reset play button after playback (also tempo-adjusted)
-    const totalDuration = (recordedNotes[recordedNotes.length - 1].time * tempoScale) + 1000;
-    setTimeout(() => {
-      playBtn.textContent = '▶️ Play';
-      playBtn.disabled = false;
-    }, totalDuration);
-    
-  }
-  
-  // Multi-layer loop management
-  function toggleLoop() {
-    const loopBtn = document.getElementById('loop-btn');
-    
-    
-    if (isLooping) {
-      // Stop current layer loop
-      stopLayerLoop(currentLayerIndex);
-      isLooping = false;
-      loopBtn.textContent = '🔄 Loop Current';
-      loopBtn.classList.remove('active');
-    } else {
-      // Start current layer loop
-      const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
-                         (loopLayers[currentLayerIndex] ? loopLayers[currentLayerIndex].notes : []);
-
-      if (notesToPlay.length === 0) {
-        return;
-      }
-
-      startLayerLoop(currentLayerIndex, notesToPlay);
-      isLooping = true;
-      loopBtn.textContent = '⏹️ Stop Current';
-      loopBtn.classList.add('active');
-    }
-  }
-  
-  function toggleLoopAll() {
-    const loopAllBtn = document.getElementById('loop-all-btn');
-    
-    if (activeLoopLayers.size > 0) {
-      // Stop all loops
-      stopAllLoops();
-      loopAllBtn.textContent = '🔄 Loop All';
-      loopAllBtn.classList.remove('active');
-    } else {
-      // Start all layer loops
-      if (loopLayers.length === 0) return;
-      startAllLoops();
-      loopAllBtn.textContent = '⏹️ Stop All';
-      loopAllBtn.classList.add('active');
-    }
-  }
-  
-  function startLayerLoop(layerIndex, notes) {
-    if (activeLoopLayers.has(layerIndex)) {
-      stopLayerLoop(layerIndex);
-      return;
-    }
-    if (!notes || notes.length === 0) {
-      return;
-    }
-    
-    activeLoopLayers.add(layerIndex);
-    
-    // Use layer-specific tempo instead of global tempo
-    const layerTempo = layerTempos[layerIndex] || 120;
-    const tempoScale = 120 / layerTempo;
-    
-    
-    const playLoop = () => {
-      if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
-      
-      notes.forEach(({ note, time }, index) => {
-        const adjustedTime = time * tempoScale;
-        setTimeout(() => {
-          if (activeLoopLayers.has(layerIndex)) {
-            playNoteByName(note);
-            highlightPianoKey(note);
-          }
-        }, adjustedTime);
+        layersDisplay.appendChild(layerElement);
       });
-    };
-    
-    // Start immediately
-    playLoop();
-    
-    // Set up interval for looping (tempo-adjusted)
-    const loopDuration = (notes[notes.length - 1].time * tempoScale) + 500;
-    
-    const intervalId = setInterval(() => {
-      if (activeLoopLayers.has(layerIndex)) {
-        playLoop();
-      } else {
-        clearInterval(intervalId);
-      }
-    }, loopDuration);
-    
-    // Store interval ID for this layer
-    if (!window.layerIntervals) window.layerIntervals = new Map();
-    window.layerIntervals.set(layerIndex, intervalId);
-    
-    updateLayerDisplay();
-  }
+    }
   
-  function stopLayerLoop(layerIndex) {
-    activeLoopLayers.delete(layerIndex);
+    function updateLayerCounts() {
+      document.getElementById('current-layer').textContent = currentLayerIndex + 1;
+      document.getElementById('total-layers').textContent = loopLayers.length;
     
-    if (window.layerIntervals && window.layerIntervals.has(layerIndex)) {
-      clearInterval(window.layerIntervals.get(layerIndex));
-      window.layerIntervals.delete(layerIndex);
-    }
-    
-    if (layerIndex === currentLayerIndex) {
-      isLooping = false;
-      const loopBtn = document.getElementById('loop-btn');
-      if (loopBtn) {
-        loopBtn.textContent = '🔄 Loop Current';
-        loopBtn.classList.remove('active');
-      }
-    }
-    
-    updateLayerDisplay();
-  }
-  
-  function startAllLoops() {
-    loopLayers.forEach((layer, index) => {
-      if (layer.notes.length > 0) {
-        startLayerLoop(index, layer.notes);
-      }
-    });
-  }
-
-  function clearRecording() {
-    if (confirm('Are you sure you want to clear the recording?')) {
-      recordedNotes = [];
-      isRecording = false;
-      isLooping = false;
-      
-      if (loopInterval) {
-        clearInterval(loopInterval);
-        loopInterval = null;
-      }
-      
-      // Reset UI
-      document.getElementById('record-btn').textContent = '⏺️ Record';
-      document.getElementById('record-btn').classList.remove('recording');
-      document.getElementById('play-btn').disabled = true;
-      document.getElementById('loop-btn').disabled = true;
-      document.getElementById('clear-btn').disabled = true;
-      document.getElementById('save-btn').disabled = true;
-      document.getElementById('loop-btn').textContent = '🔄 Loop';
-      document.getElementById('loop-btn').classList.remove('active');
-      document.getElementById('recording-status').textContent = 'Ready to record';
-      document.getElementById('recording-length').textContent = '0:00';
-    }
-  }
-  
-  function hasRecordableContent() {
-    if (recordedNotes.length > 0) {
-      return true;
-    }
-    return loopLayers.some(layer => layer.notes && layer.notes.length > 0);
-  }
-
-  function saveRecording() {
-    if (!hasRecordableContent()) return;
-
-    const name = prompt('Enter a name for your composition:');
-    if (!name) return;
-
-    if (recordedNotes.length > 0) {
-      saveCurrentRecordingToLayer();
-    }
-
-    const composition = {
-      name,
-      version: 2,
-      loopLayers: loopLayers.map(layer => ({
-        notes: [...layer.notes],
-        name: layer.name
-      })),
-      layerTempos: [...layerTempos],
-      currentLayerIndex,
-      instrument: currentInstrument,
-      effects: JSON.parse(JSON.stringify(currentEffects)),
-      tempo: currentTempo,
-      timestamp: new Date().toISOString()
-    };
-
-    try {
-      const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
-      saved.push(composition);
-      localStorage.setItem('musicCompositions', JSON.stringify(saved));
-      alert(`Composition "${name}" saved successfully!`);
-    } catch (error) {
-      alert('Failed to save composition. Storage may be full.');
-    }
-  }
-  
-  function loadRecording() {
-    try {
-      const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
-      
-      if (saved.length === 0) {
-        alert('No saved compositions found.');
-        return;
-      }
-      
-      const names = saved.map((comp, index) => `${index + 1}. ${comp.name} (${new Date(comp.timestamp).toLocaleString()})`);
-      const choice = prompt(`Select a composition to load:\n\n${names.join('\n')}\n\nEnter the number:`);
-      
-      const index = parseInt(choice) - 1;
-      if (isNaN(index) || index < 0 || index >= saved.length) {
-        alert('Invalid selection.');
-        return;
-      }
-      
-      const composition = saved[index];
-
-      if (composition.version === 2 && Array.isArray(composition.loopLayers)) {
-        loopLayers = composition.loopLayers.map((layer, layerIndex) => ({
-          notes: [...(layer.notes || [])],
-          name: layer.name || `Layer ${layerIndex + 1}`
-        }));
-        layerTempos = composition.layerTempos || [120, 120, 120, 120];
-        currentLayerIndex = composition.currentLayerIndex || 0;
-        recordedNotes = loopLayers[currentLayerIndex]?.notes ? [...loopLayers[currentLayerIndex].notes] : [];
-      } else {
-        loopLayers = [{ notes: [...(composition.notes || [])], name: 'Layer 1' }];
-        layerTempos = [composition.tempo || 120, 120, 120, 120];
-        currentLayerIndex = 0;
-        recordedNotes = [...(composition.notes || [])];
-      }
-
-      currentInstrument = composition.instrument;
-      currentEffects = composition.effects;
-      currentTempo = composition.tempo;
-      
-      // Update UI
-      document.getElementById('instrument-select').value = currentInstrument;
-      document.getElementById('tempo-slider').value = currentTempo;
-      document.getElementById('tempo-display').textContent = currentTempo + ' BPM';
-      
-      // Update effect controls
-      Object.keys(currentEffects).forEach(effect => {
-        const toggle = document.getElementById(`${effect}-toggle`);
-        const slider = document.getElementById(`${effect}-amount`);
-        
-        if (toggle) {
-          toggle.checked = currentEffects[effect].enabled;
-          if (slider) {
-            slider.disabled = !currentEffects[effect].enabled;
-          }
-        }
-        
-        if (slider && effect === 'distortion') {
-          slider.value = currentEffects[effect].amount;
-        } else if (slider) {
-          slider.value = currentEffects[effect].wetness * 100;
-        }
-      });
-      
-      // Enable playback buttons
-      document.getElementById('play-btn').disabled = false;
-      document.getElementById('loop-btn').disabled = false;
-      document.getElementById('loop-all-btn').disabled = loopLayers.length === 0;
-      document.getElementById('clear-btn').disabled = false;
-      document.getElementById('clear-all-btn').disabled = loopLayers.length === 0;
-      document.getElementById('save-btn').disabled = false;
+      // Update navigation buttons
       document.getElementById('prev-layer-btn').disabled = currentLayerIndex === 0;
       document.getElementById('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
-
+      document.getElementById('clear-all-btn').disabled = loopLayers.length === 0;
+    }
+  
+    function switchToPrevLayer() {
+      if (currentLayerIndex > 0) {
+        currentLayerIndex--;
+        switchToLayer(currentLayerIndex);
+      }
+    }
+  
+    function switchToNextLayer() {
+      if (currentLayerIndex < maxLoopLayers - 1) {
+        currentLayerIndex++;
+        switchToLayer(currentLayerIndex);
+      }
+    }
+  
+    function switchToLayer(layerIndex) {
+      currentLayerIndex = layerIndex;
+    
+      // Load the layer's recorded notes
+      if (loopLayers[layerIndex]) {
+        recordedNotes = [...loopLayers[layerIndex].notes];
+      } else {
+        recordedNotes = [];
+      }
+    
+      // Update UI
+      updateLayerDisplay();
+      updateLayerCounts();
+    
+      // Update layer tempo display and slider
+      const layerTempo = layerTempos[layerIndex] || 120;
+      document.getElementById('layer-tempo').textContent = layerTempo;
       const layerTempoSlider = document.getElementById('layer-tempo-slider');
-      const layerTempo = layerTempos[currentLayerIndex] || currentTempo;
       if (layerTempoSlider) {
         layerTempoSlider.value = layerTempo;
       }
-      const layerTempoDisplay = document.getElementById('layer-tempo');
-      if (layerTempoDisplay) {
-        layerTempoDisplay.textContent = layerTempo;
-      }
-
-      updateLayerDisplay();
-      updateLayerCounts();
-
-      document.getElementById('recording-status').textContent = `Loaded "${composition.name}"`;
-
-      const notesForDuration = recordedNotes.length > 0
-        ? recordedNotes
-        : (loopLayers[currentLayerIndex]?.notes || []);
-      if (notesForDuration.length > 0) {
-        const totalTime = notesForDuration[notesForDuration.length - 1].time;
-        const seconds = Math.floor(totalTime / 1000);
-        const minutes = Math.floor(seconds / 60);
-        document.getElementById('recording-length').textContent =
-          `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+    
+      const statusElement = document.getElementById('recording-status');
+      if (recordedNotes.length > 0) {
+        statusElement.textContent = `Layer ${layerIndex + 1}: ${recordedNotes.length} notes @ ${layerTempo} BPM`;
+        document.getElementById('play-btn').disabled = false;
+        document.getElementById('loop-btn').disabled = false;
+        document.getElementById('clear-btn').disabled = false;
       } else {
-        document.getElementById('recording-length').textContent = '0:00';
+        statusElement.textContent = `Ready to record layer ${layerIndex + 1} @ ${layerTempo} BPM`;
+        document.getElementById('play-btn').disabled = true;
+        document.getElementById('loop-btn').disabled = true;
+        document.getElementById('clear-btn').disabled = true;
       }
-      
-      alert(`Composition "${composition.name}" loaded successfully!`);
-    } catch (error) {
-      alert('Failed to load compositions.');
+    
+      // Update loop button state
+      const loopBtn = document.getElementById('loop-btn');
+      if (activeLoopLayers.has(layerIndex)) {
+        loopBtn.textContent = '⏹️ Stop Current';
+        loopBtn.classList.add('active');
+        isLooping = true;
+      } else {
+        loopBtn.textContent = '🔄 Loop Current';
+        loopBtn.classList.remove('active');
+        isLooping = false;
+      }
+    
     }
-  }
+  
+    function clearCurrentLayer() {
+      if (confirm(`Clear layer ${currentLayerIndex + 1}?`)) {
+      // Stop loop if playing
+        if (activeLoopLayers.has(currentLayerIndex)) {
+          stopLayerLoop(currentLayerIndex);
+        }
+      
+        // Clear the layer
+        if (loopLayers[currentLayerIndex]) {
+          loopLayers[currentLayerIndex].notes = [];
+        }
+        recordedNotes = [];
+      
+        // Update UI
+        updateLayerDisplay();
+        document.getElementById('recording-status').textContent = `Layer ${currentLayerIndex + 1} cleared`;
+        document.getElementById('play-btn').disabled = true;
+        document.getElementById('loop-btn').disabled = true;
+        document.getElementById('clear-btn').disabled = true;
+      }
+    }
+  
+    function clearAllLayers() {
+      if (confirm('Clear all layers? This cannot be undone!')) {
+      // Stop all loops
+        stopAllLoops();
+      
+        // Clear all data
+        loopLayers = [];
+        recordedNotes = [];
+        currentLayerIndex = 0;
+        isRecording = false;
+      
+        // Reset UI
+        const recordBtn = document.getElementById('record-btn');
+        recordBtn.textContent = '⏺️ Record Layer';
+        recordBtn.classList.remove('recording');
+      
+        updateLayerDisplay();
+        updateLayerCounts();
+      
+        document.getElementById('recording-status').textContent = 'All layers cleared - ready to record layer 1';
+        document.getElementById('play-btn').disabled = true;
+        document.getElementById('loop-btn').disabled = true;
+        document.getElementById('loop-all-btn').disabled = true;
+        document.getElementById('clear-btn').disabled = true;
+        document.getElementById('clear-all-btn').disabled = true;
+        document.getElementById('save-btn').disabled = true;
+      }
+    }
+  
+    function recordNote(noteName) {
+      if (!isRecording) return;
+    
+      const timestamp = Date.now() - recordingStartTime;
+      recordedNotes.push({ note: noteName, time: timestamp });
+    
+      // Update recording length display
+      const lengthElement = document.getElementById('recording-length');
+      if (lengthElement) {
+        const seconds = Math.floor(timestamp / 1000);
+        const minutes = Math.floor(seconds / 60);
+        lengthElement.textContent = `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+      }
+    }
+  
+    function playRecording() {
+      if (recordedNotes.length === 0) return;
+    
+      const playBtn = document.getElementById('play-btn');
+      playBtn.textContent = '⏸️ Stop';
+      playBtn.disabled = true;
+    
+      // Use current layer's tempo instead of global tempo
+      const layerTempo = layerTempos[currentLayerIndex] || 120;
+      const tempoScale = 120 / layerTempo;
+    
+      // Play each recorded note at tempo-adjusted time
+      recordedNotes.forEach(({ note, time }) => {
+        const adjustedTime = time * tempoScale;
+        setTimeout(() => {
+          playNoteByName(note);
+          highlightPianoKey(note);
+        }, adjustedTime);
+      });
+    
+      // Reset play button after playback (also tempo-adjusted)
+      const totalDuration = (recordedNotes[recordedNotes.length - 1].time * tempoScale) + 1000;
+      setTimeout(() => {
+        playBtn.textContent = '▶️ Play';
+        playBtn.disabled = false;
+      }, totalDuration);
+    
+    }
+  
+    // Multi-layer loop management
+    function toggleLoop() {
+      const loopBtn = document.getElementById('loop-btn');
+    
+    
+      if (isLooping) {
+      // Stop current layer loop
+        stopLayerLoop(currentLayerIndex);
+        isLooping = false;
+        loopBtn.textContent = '🔄 Loop Current';
+        loopBtn.classList.remove('active');
+      } else {
+      // Start current layer loop
+        const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
+          (loopLayers[currentLayerIndex] ? loopLayers[currentLayerIndex].notes : []);
 
-  // Event listeners
-  startButton.addEventListener('click', startArrowGame);
-  resetButton.addEventListener('click', resetArrowGame);
+        if (notesToPlay.length === 0) {
+          return;
+        }
+
+        startLayerLoop(currentLayerIndex, notesToPlay);
+        isLooping = true;
+        loopBtn.textContent = '⏹️ Stop Current';
+        loopBtn.classList.add('active');
+      }
+    }
+  
+    function toggleLoopAll() {
+      const loopAllBtn = document.getElementById('loop-all-btn');
+    
+      if (activeLoopLayers.size > 0) {
+      // Stop all loops
+        stopAllLoops();
+        loopAllBtn.textContent = '🔄 Loop All';
+        loopAllBtn.classList.remove('active');
+      } else {
+      // Start all layer loops
+        if (loopLayers.length === 0) return;
+        startAllLoops();
+        loopAllBtn.textContent = '⏹️ Stop All';
+        loopAllBtn.classList.add('active');
+      }
+    }
+  
+    function startLayerLoop(layerIndex, notes) {
+      if (activeLoopLayers.has(layerIndex)) {
+        stopLayerLoop(layerIndex);
+        return;
+      }
+      if (!notes || notes.length === 0) {
+        return;
+      }
+    
+      activeLoopLayers.add(layerIndex);
+    
+      // Use layer-specific tempo instead of global tempo
+      const layerTempo = layerTempos[layerIndex] || 120;
+
+      const playLoop = () => {
+        if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
+
+        notes.forEach(({ note, time }) => {
+          const adjustedTime = window.GameUtils.scaleNoteTime(time, layerTempo);
+          setTimeout(() => {
+            if (activeLoopLayers.has(layerIndex)) {
+              playNoteByName(note);
+              highlightPianoKey(note);
+            }
+          }, adjustedTime);
+        });
+      };
+    
+      // Start immediately
+      playLoop();
+    
+      // Set up interval for looping (tempo-adjusted)
+      const loopDuration = window.GameUtils.calculateLoopDuration(
+        layerTempo,
+        notes[notes.length - 1].time
+      );
+    
+      const intervalId = setInterval(() => {
+        if (activeLoopLayers.has(layerIndex)) {
+          playLoop();
+        } else {
+          clearInterval(intervalId);
+        }
+      }, loopDuration);
+    
+      // Store interval ID for this layer
+      if (!window.layerIntervals) window.layerIntervals = new Map();
+      window.layerIntervals.set(layerIndex, intervalId);
+    
+      updateLayerDisplay();
+    }
+  
+    function stopLayerLoop(layerIndex) {
+      activeLoopLayers.delete(layerIndex);
+    
+      if (window.layerIntervals && window.layerIntervals.has(layerIndex)) {
+        clearInterval(window.layerIntervals.get(layerIndex));
+        window.layerIntervals.delete(layerIndex);
+      }
+    
+      if (layerIndex === currentLayerIndex) {
+        isLooping = false;
+        const loopBtn = document.getElementById('loop-btn');
+        if (loopBtn) {
+          loopBtn.textContent = '🔄 Loop Current';
+          loopBtn.classList.remove('active');
+        }
+      }
+    
+      updateLayerDisplay();
+    }
+  
+    function startAllLoops() {
+      loopLayers.forEach((layer, index) => {
+        if (layer.notes.length > 0) {
+          startLayerLoop(index, layer.notes);
+        }
+      });
+    }
+
+    function hasRecordableContent() {
+      return window.GameUtils.hasRecordableContent(loopLayers, recordedNotes);
+    }
+
+    function saveRecording() {
+      if (!hasRecordableContent()) return;
+
+      const name = prompt('Enter a name for your composition:');
+      if (!name) return;
+
+      if (recordedNotes.length > 0) {
+        saveCurrentRecordingToLayer();
+      }
+
+      const composition = window.GameUtils.buildCompositionPayload({
+        name,
+        loopLayers,
+        layerTempos,
+        currentLayerIndex,
+        instrument: currentInstrument,
+        effects: currentEffects,
+        tempo: currentTempo,
+        timestamp: new Date().toISOString()
+      });
+
+      try {
+        const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
+        saved.push(composition);
+        localStorage.setItem('musicCompositions', JSON.stringify(saved));
+        alert(`Composition "${name}" saved successfully!`);
+      } catch {
+        alert('Failed to save composition. Storage may be full.');
+      }
+    }
+  
+    function loadRecording() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
+      
+        if (saved.length === 0) {
+          alert('No saved compositions found.');
+          return;
+        }
+      
+        const names = saved.map((comp, index) => `${index + 1}. ${comp.name} (${new Date(comp.timestamp).toLocaleString()})`);
+        const choice = prompt(`Select a composition to load:\n\n${names.join('\n')}\n\nEnter the number:`);
+      
+        const index = window.GameUtils.parseCompositionSelection(choice, saved.length);
+        if (index === null) {
+          alert('Invalid selection.');
+          return;
+        }
+      
+        const composition = saved[index];
+        const restored = window.GameUtils.restoreCompositionState(composition);
+        loopLayers = restored.loopLayers;
+        layerTempos = restored.layerTempos;
+        currentLayerIndex = restored.currentLayerIndex;
+        recordedNotes = restored.recordedNotes;
+
+        currentInstrument = composition.instrument;
+        currentEffects = composition.effects;
+        currentTempo = composition.tempo;
+      
+        // Update UI
+        document.getElementById('instrument-select').value = currentInstrument;
+        document.getElementById('tempo-slider').value = currentTempo;
+        document.getElementById('tempo-display').textContent = currentTempo + ' BPM';
+      
+        // Update effect controls
+        Object.keys(currentEffects).forEach(effect => {
+          const toggle = document.getElementById(`${effect}-toggle`);
+          const slider = document.getElementById(`${effect}-amount`);
+        
+          if (toggle) {
+            toggle.checked = currentEffects[effect].enabled;
+            if (slider) {
+              slider.disabled = !currentEffects[effect].enabled;
+            }
+          }
+        
+          if (slider && effect === 'distortion') {
+            slider.value = currentEffects[effect].amount;
+          } else if (slider) {
+            slider.value = currentEffects[effect].wetness * 100;
+          }
+        });
+      
+        // Enable playback buttons
+        document.getElementById('play-btn').disabled = false;
+        document.getElementById('loop-btn').disabled = false;
+        document.getElementById('loop-all-btn').disabled = loopLayers.length === 0;
+        document.getElementById('clear-btn').disabled = false;
+        document.getElementById('clear-all-btn').disabled = loopLayers.length === 0;
+        document.getElementById('save-btn').disabled = false;
+        document.getElementById('prev-layer-btn').disabled = currentLayerIndex === 0;
+        document.getElementById('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
+
+        const layerTempoSlider = document.getElementById('layer-tempo-slider');
+        const layerTempo = layerTempos[currentLayerIndex] || currentTempo;
+        if (layerTempoSlider) {
+          layerTempoSlider.value = layerTempo;
+        }
+        const layerTempoDisplay = document.getElementById('layer-tempo');
+        if (layerTempoDisplay) {
+          layerTempoDisplay.textContent = layerTempo;
+        }
+
+        updateLayerDisplay();
+        updateLayerCounts();
+
+        document.getElementById('recording-status').textContent = `Loaded "${composition.name}"`;
+
+        const notesForDuration = recordedNotes.length > 0
+          ? recordedNotes
+          : (loopLayers[currentLayerIndex]?.notes || []);
+        if (notesForDuration.length > 0) {
+          const totalTime = notesForDuration[notesForDuration.length - 1].time;
+          document.getElementById('recording-length').textContent =
+          window.GameUtils.formatRecordingLength(totalTime);
+        } else {
+          document.getElementById('recording-length').textContent = '0:00';
+        }
+      
+        alert(`Composition "${composition.name}" loaded successfully!`);
+      } catch {
+        alert('Failed to load compositions.');
+      }
+    }
+
+    // Event listeners
+    startButton.addEventListener('click', startArrowGame);
+    resetButton.addEventListener('click', resetArrowGame);
   
   } catch (error) {
     console.error('Error initializing arrow game:', error);

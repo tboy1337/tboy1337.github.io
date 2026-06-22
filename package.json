@@ -1,0 +1,35 @@
+{
+  "name": "tboy1337-portfolio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint:js": "eslint games.js translation.js sw.js lib/**/*.mjs tests/**/*.js",
+    "lint:css": "stylelint \"**/*.css\"",
+    "lint": "npm run lint:js && npm run lint:css",
+    "typecheck": "tsc --noEmit",
+    "validate:html": "html-validate index.html",
+    "validate": "npm run validate:html",
+    "test:unit": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:coverage": "node scripts/merge-coverage.mjs",
+    "test": "npm run test:unit && npm run test:e2e && npm run test:coverage",
+    "check": "npm run lint && npm run typecheck && npm run validate && npm run test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@types/node": "^26.0.0",
+    "@vitest/coverage-istanbul": "^4.1.9",
+    "@vitest/coverage-v8": "^4.1.9",
+    "eslint": "^10.5.0",
+    "html-validate": "^11.5.3",
+    "istanbul-lib-coverage": "^3.2.2",
+    "istanbul-lib-report": "^3.0.1",
+    "istanbul-reports": "^3.2.0",
+    "stylelint": "^17.13.0",
+    "stylelint-config-standard": "^40.0.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16",
+    "vite-plugin-istanbul": "^9.0.1",
+    "vitest": "^4.1.9"
+  }
+}

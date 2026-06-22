@@ -9,14 +9,14 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tboy1337.github.io/">
-    <meta property="og:title" content="tboy1337 | Developer & Innovator">
+    <meta property="og:title" content="tboy1337 | Developer &amp; Innovator">
     <meta property="og:description" content="Portfolio of tboy1337 - Software developer and innovator. Explore my projects including networking tools, multimedia utilities, system administration scripts, and more.">
     <meta property="og:image" content="https://tboy1337.github.io/android-chrome-512x512.png">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://tboy1337.github.io/">
-    <meta name="twitter:title" content="tboy1337 | Developer & Innovator">
+    <meta name="twitter:title" content="tboy1337 | Developer &amp; Innovator">
     <meta name="twitter:description" content="Portfolio of tboy1337 - Software developer and innovator. Explore my projects including networking tools, multimedia utilities, system administration scripts, and more.">
     <meta name="twitter:image" content="https://tboy1337.github.io/android-chrome-512x512.png">
     
@@ -586,7 +586,7 @@
                         <p class="text-xl mb-4">🎹 Advanced Music Studio</p>
                         <p class="mb-2">Create music with a full chromatic keyboard!</p>
                         <p class="mb-2">🎵 Use A-K keys for white notes, Q-P for black notes</p>
-                        <p class="mb-2">🎛️ Apply effects: reverb, delay, chorus & more</p>
+                        <p class="mb-2">🎛️ Apply effects: reverb, delay, chorus &amp; more</p>
                         <p class="mb-2">🔄 Record and loop your compositions</p>
                         <p class="mt-4">Click "Start Studio" to begin composing!</p>
                     </div>
@@ -643,14 +643,16 @@
         </div>
     </footer>
 
+    <!-- Game utilities (module loads before deferred games.js) -->
+    <script type="module" src="lib/bootstrap-site-utils.mjs"></script>
     <!-- Game script -->
-    <script src="games.js"></script>
+    <script defer src="games.js"></script>
     
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/sw.js', { type: 'module' })
                     .then(function(registration) {
                         console.log('ServiceWorker registration successful');
                         
@@ -690,21 +692,19 @@
 
             // Form validation functions
             function validateName(name) {
-                const nameRegex = /^[a-zA-Z\s'-]{2,50}$/;
-                return nameRegex.test(name.trim());
+                return window.ContactValidation.validateName(name);
             }
 
             function validateEmail(email) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(email.trim());
+                return window.ContactValidation.validateEmail(email);
             }
 
             function validateSubject(subject) {
-                return subject.trim().length >= 3 && subject.trim().length <= 100;
+                return window.ContactValidation.validateSubject(subject);
             }
 
             function validateMessage(message) {
-                return message.trim().length >= 10 && message.trim().length <= 1000;
+                return window.ContactValidation.validateMessage(message);
             }
 
             function showError(fieldId, message) {

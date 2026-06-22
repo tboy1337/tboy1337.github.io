@@ -1,5 +1,13 @@
+/// <reference lib="webworker" />
+
 // Service Worker for tboy1337.github.io
 // Provides offline support and caching for better performance
+
+import {
+  shouldSkipFetch,
+  isHtmlRequest,
+  getStaleCacheNames
+} from './lib/sw-utils.mjs';
 
 const CACHE_NAME = 'tboy1337-v1.2.0';
 const STATIC_ASSETS = [
@@ -8,20 +16,24 @@ const STATIC_ASSETS = [
   '/games.css',
   '/games.js',
   '/translation.js',
-  '/site.webmanifest'
+  '/site.webmanifest',
+  '/lib/game-utils.mjs',
+  '/lib/bootstrap-site-utils.mjs',
+  '/lib/sw-utils.mjs'
 ];
 
 // Install event - cache static assets
 self.addEventListener('install', event => {
   console.log('Service Worker installing...');
-  // Skip waiting and immediately activate new service worker
   self.skipWaiting();
-  
+
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
+      .then(async (cache) => {
         console.log('Caching static assets...');
-        return cache.addAll(STATIC_ASSETS);
+        await Promise.allSettled(
+          STATIC_ASSETS.map((asset) => cache.add(asset))
+        );
       })
       .catch(error => {
         console.error('Failed to cache static assets:', error);
@@ -37,11 +49,9 @@ self.addEventListener('activate', event => {
       // Clean up old caches
       caches.keys().then(cacheNames => {
         return Promise.all(
-          cacheNames.map(cacheName => {
-            if (cacheName !== CACHE_NAME) {
-              console.log('Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
+          getStaleCacheNames(cacheNames, CACHE_NAME).map(cacheName => {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
           })
         );
       }),
@@ -53,19 +63,12 @@ self.addEventListener('activate', event => {
 
 // Fetch event - smart caching strategy
 self.addEventListener('fetch', event => {
-  // Skip non-GET requests and external APIs
-  if (event.request.method !== 'GET' || 
-      event.request.url.includes('translate.google') ||
-      event.request.url.includes('cdn.tailwindcss') ||
-      event.request.url.includes('cdnjs.cloudflare')) {
+  if (shouldSkipFetch(event.request.method, event.request.url)) {
     return;
   }
 
   const url = new URL(event.request.url);
-  const isHTML = event.request.destination === 'document' || 
-                 url.pathname.endsWith('.html') || 
-                 url.pathname === '/' || 
-                 !url.pathname.includes('.');
+  const isHTML = isHtmlRequest(url, event.request.destination);
 
   event.respondWith(
     isHTML ? handleHTMLRequest(event.request) : handleAssetRequest(event.request)
@@ -76,14 +79,14 @@ self.addEventListener('fetch', event => {
 async function handleHTMLRequest(request) {
   try {
     const networkResponse = await fetch(request);
-    
+
     if (networkResponse.status === 200) {
       // Cache the fresh response
       const responseClone = networkResponse.clone();
       const cache = await caches.open(CACHE_NAME);
       await cache.put(request, responseClone);
     }
-    
+
     return networkResponse;
   } catch {
     // Fallback to cache if network fails
@@ -100,7 +103,7 @@ async function handleHTMLRequest(request) {
 async function handleAssetRequest(request) {
   const cache = await caches.open(CACHE_NAME);
   const cachedResponse = await caches.match(request);
-  
+
   // Fetch fresh version in background
   const fetchPromise = fetch(request).then(response => {
     if (response.status === 200) {
@@ -110,12 +113,12 @@ async function handleAssetRequest(request) {
   }).catch(() => {
     return null;
   });
-  
+
   // Return cached version immediately if available, otherwise wait for network
   if (cachedResponse) {
     fetchPromise; // Update cache in background
     return cachedResponse;
-  } else {
-    return fetchPromise;
   }
+
+  return fetchPromise;
 }
