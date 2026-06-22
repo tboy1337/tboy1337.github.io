@@ -93,6 +93,71 @@ test.describe('Advanced Music Studio', () => {
     expect(loopState.timeoutMapEmpty).toBe(true);
   });
 
+  test('does not accumulate loop timeouts during active looping', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.keyboard.press('a');
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await page.getByRole('button', { name: '🔄 Loop Current' }).click();
+
+    const countTimeouts = () => page.evaluate(() => {
+      if (!window.layerLoopTimeouts) {
+        return 0;
+      }
+      let total = 0;
+      window.layerLoopTimeouts.forEach((timeouts) => {
+        total += timeouts.length;
+      });
+      return total;
+    });
+
+    const firstCount = await countTimeouts();
+    await page.waitForTimeout(2000);
+    const secondCount = await countTimeouts();
+
+    expect(firstCount).toBeLessThanOrEqual(1);
+    expect(secondCount).toBeLessThanOrEqual(1);
+
+    await page.getByRole('button', { name: '⏹️ Stop Current' }).click();
+  });
+
+  test('does not play notes when typing in composition save dialog', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.keyboard.press('f');
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    const notesBefore = await page.locator('#music-studio-notes').textContent();
+    await page.getByRole('button', { name: '💾 Save' }).click();
+    await page.getByLabel('Composition name').focus();
+    await page.keyboard.press('a');
+    await page.keyboard.press('s');
+    await page.keyboard.press('d');
+    await expect(page.locator('#music-studio-notes')).toHaveText(notesBefore ?? '');
+  });
+
+  test('renders stored composition names as plain text', async ({ page }) => {
+    const maliciousName = '<img src=x onerror=window.__xssTriggered=true>';
+    await page.evaluate((name) => {
+      localStorage.setItem('musicCompositions', JSON.stringify([{
+        name,
+        timestamp: new Date().toISOString(),
+        layers: [{ notes: [{ note: 'C4', time: 0 }], name: 'Layer 1' }],
+        layerTempos: [120],
+        currentInstrument: 'synth',
+        masterVolume: 0.3,
+        currentTempo: 120
+      }]));
+    }, maliciousName);
+
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: '📁 Load' }).click();
+    await expect(page.locator('.composition-list-name')).toHaveText(maliciousName);
+    const xssTriggered = await page.evaluate(() => {
+      return Object.prototype.hasOwnProperty.call(window, '__xssTriggered');
+    });
+    expect(xssTriggered).toBe(false);
+  });
+
   test('adjusts layer tempo via slider', async ({ page }) => {
     await startMusicStudio(page);
     const slider = page.locator('#layer-tempo-slider');

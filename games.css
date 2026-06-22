@@ -472,12 +472,20 @@
   user-select: none;
   transition: all 0.15s ease;
   border-radius: 0 0 8px 8px;
-  font-size: 12px;
-  font-weight: bold;
+}
+
+.piano-key-labels {
+  position: absolute;
+  inset: auto 0 0;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
   padding-bottom: 8px;
+  pointer-events: none;
+  text-align: center;
+  line-height: 1.1;
 }
 
 .piano-key.white-key {
@@ -487,19 +495,24 @@
   border: 1px solid #ddd;
   color: #333;
   z-index: 1;
-  flex-direction: column;
-  gap: 4px;
 }
 
-.piano-note-name {
-  font-size: 11px;
-  font-weight: bold;
+.piano-key.white-key .piano-key-labels {
+  padding-top: 72px;
+  padding-bottom: 6px;
 }
 
-.key-label {
-  font-size: 10px;
-  opacity: 0.65;
-  font-weight: normal;
+.piano-key.white-key .key-label {
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.piano-key.white-key .piano-note-name {
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.5;
+  letter-spacing: 0.02em;
 }
 
 .piano-key.white-key:hover {
@@ -526,17 +539,16 @@
   color: white;
   z-index: 2;
   border-radius: 0 0 6px 6px;
-  flex-direction: column;
-  gap: 2px;
-  padding-bottom: 4px;
 }
 
-.piano-key.black-key .piano-note-name {
-  font-size: 9px;
+.piano-key.black-key .piano-key-labels {
+  padding-bottom: 5px;
 }
 
 .piano-key.black-key .key-label {
-  font-size: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.95;
 }
 
 .piano-key.black-key:hover {
@@ -888,17 +900,32 @@
 }
 
 .touch-key {
+  position: relative;
   cursor: pointer;
   user-select: none;
   transition: all 0.15s ease;
-  font-size: 12px;
-  font-weight: bold;
-  text-align: center;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 4px;
   border-radius: 0 0 4px 4px;
+}
+
+.touch-key-note {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.touch-key.white-key .touch-key-note {
+  bottom: 12px;
+}
+
+.touch-key.black-key .touch-key-note {
+  bottom: 5px;
+  font-size: 8px;
 }
 
 .touch-key.white-key.active {
@@ -922,26 +949,6 @@
   .keyboard-legend,
   .keyboard-help {
     display: none;
-  }
-  
-  .piano-container {
-    padding: 1rem;
-  }
-  
-  .piano-keyboard {
-    padding: 0.5rem;
-  }
-  
-  .piano-key.white-key {
-    width: 40px;
-    height: 120px;
-    font-size: 10px;
-  }
-  
-  .piano-key.black-key {
-    width: 24px;
-    height: 80px;
-    font-size: 9px;
   }
   
   .control-panel {
@@ -1001,7 +1008,7 @@
 }
 
 /* Multi-layer Recording Styles */
-.layer-status {
+.layer-meta-panel {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1103,7 +1110,7 @@
 }
 
 @media (width <= 768px) {
-  .layer-status {
+  .layer-meta-panel {
     flex-direction: column;
     gap: 1rem;
   }
@@ -1335,4 +1342,51 @@
     height: 70px;
     font-size: 8px;
   }
+}
+
+/* Service worker update banner */
+.sw-update-banner {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  max-width: 320px;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgb(15, 12, 41, 0.98), rgb(36, 36, 62, 0.98));
+  border: 1px solid rgb(255, 255, 255, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgb(0, 0, 0, 0.45);
+  color: #f3f4f6;
+}
+
+.sw-update-banner-text {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.sw-update-banner-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sw-update-banner-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid rgb(255, 255, 255, 0.2);
+  background: rgb(0, 0, 0, 0.35);
+  color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.sw-update-banner-btn-primary {
+  background: linear-gradient(135deg, rgb(79, 70, 229, 0.9), rgb(48, 43, 99, 0.9));
+  border-color: rgb(129, 140, 248, 0.6);
+  color: #fff;
+}
+
+.sw-update-banner-btn:hover {
+  filter: brightness(1.08);
 }

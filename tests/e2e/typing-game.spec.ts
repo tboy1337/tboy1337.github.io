@@ -11,6 +11,7 @@ test.describe('Typing Speed Test', () => {
     await startTypingGame(page);
     await expect(page.locator('#timer-display')).toHaveText('60');
     await expect(page.locator('#text-display')).not.toBeEmpty();
+    await expect(page.getByRole('textbox', { name: 'Typing input' })).toBeVisible();
   });
 
   test('tracks typed characters and updates stats', async ({ page }) => {
@@ -37,5 +38,13 @@ test.describe('Typing Speed Test', () => {
     }));
     expect(typingState.active).toBe(false);
     expect(typingState.interval).toBeNull();
+  });
+
+  test('switching away resets typing welcome screen', async ({ page }) => {
+    await startTypingGame(page);
+    await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
+    await page.getByRole('button', { name: 'Play Typing Speed Test' }).click();
+    await expect(page.locator('#typing-game').getByText('Click "Start Test" to begin')).toBeVisible();
+    await expect(page.locator('#typing-input')).toHaveCount(0);
   });
 });

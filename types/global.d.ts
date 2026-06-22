@@ -14,6 +14,7 @@ declare global {
     ContactValidation: typeof ContactValidationModule;
     SnakeLogic: typeof SnakeLogicModule;
     cleanupMusicStudio?: () => void;
+    cleanupTypingGame?: () => void;
     musicStudioKeyboardHandler?: ((event: KeyboardEvent) => void) | null;
     snakeKeyboardHandler: ((event: KeyboardEvent) => void) | null;
     musicStudioAudioContext?: AudioContext | null;

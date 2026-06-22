@@ -79,8 +79,8 @@ function showTranslateError() {
   if (translateElement) {
     translateElement.innerHTML = `
             <div class="translate-error" title="Translation service unavailable">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span style="display: none;">Translation unavailable</span>
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                <span>Translation unavailable</span>
             </div>
         `;
     // Show the element even in error state
@@ -93,6 +93,15 @@ window.googleTranslateMutationObserver = null;
 
 const PENDING_HASH_KEY = 'tboy1337-pending-hash';
 let hashScrollRestored = false;
+let hashRestoreAttempts = 0;
+const MAX_HASH_RESTORE_ATTEMPTS = 30;
+
+function getHashScrollBehavior() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return 'auto';
+  }
+  return 'smooth';
+}
 
 function rememberHashForRestore() {
   if (window.location.hash) {
@@ -112,6 +121,10 @@ function restoreHashScroll() {
 
   const target = document.querySelector(hash);
   if (!target) {
+    hashRestoreAttempts += 1;
+    if (hashRestoreAttempts < MAX_HASH_RESTORE_ATTEMPTS) {
+      setTimeout(restoreHashScroll, 100);
+    }
     return;
   }
 
@@ -119,16 +132,19 @@ function restoreHashScroll() {
   window.sessionStorage.removeItem(PENDING_HASH_KEY);
 
   window.requestAnimationFrame(() => {
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.scrollIntoView({ behavior: getHashScrollBehavior(), block: 'start' });
   });
 }
 
 function markTranslateReady(translateElement) {
-  if (!translateElement || translateElement.classList.contains('customized')) {
+  if (!translateElement) {
     return;
   }
 
-  translateElement.classList.add('customized');
+  if (!translateElement.classList.contains('customized')) {
+    translateElement.classList.add('customized');
+  }
+
   restoreHashScroll();
 }
 
@@ -159,6 +175,29 @@ window.googleTranslateElementInit = function() {
     showTranslateError();
   }
 };
+
+function bindTranslateGadgetHover(gadget, applyForceStyle) {
+  if (gadget.getAttribute('data-hover-bound') === 'true') {
+    return;
+  }
+
+  gadget.setAttribute('data-hover-bound', 'true');
+  gadget.addEventListener('mouseenter', () => {
+    applyForceStyle(gadget, {
+      'transform': 'translateY(-1px)',
+      'box-shadow': '0 4px 18px rgba(0, 0, 0, 0.5)',
+      'background': 'linear-gradient(135deg, rgba(48, 43, 99, 0.9), rgba(79, 70, 229, 0.9))'
+    });
+  });
+
+  gadget.addEventListener('mouseleave', () => {
+    applyForceStyle(gadget, {
+      'transform': 'translateY(0)',
+      'box-shadow': '0 2px 12px rgba(0, 0, 0, 0.3)',
+      'background': 'linear-gradient(135deg, rgba(15, 12, 41, 0.9), rgba(36, 36, 62, 0.9))'
+    });
+  });
+}
 
 // Force Google Translate styling with maximum specificity
 function completeCustomization() {
@@ -295,21 +334,7 @@ function completeCustomization() {
         
     // Add hover effects via event listeners since CSS might not work
     gadgets.forEach(gadget => {
-      gadget.addEventListener('mouseenter', () => {
-        applyForceStyle(gadget, {
-          'transform': 'translateY(-1px)',
-          'box-shadow': '0 4px 18px rgba(0, 0, 0, 0.5)',
-          'background': 'linear-gradient(135deg, rgba(48, 43, 99, 0.9), rgba(79, 70, 229, 0.9))'
-        });
-      });
-            
-      gadget.addEventListener('mouseleave', () => {
-        applyForceStyle(gadget, {
-          'transform': 'translateY(0)',
-          'box-shadow': '0 2px 12px rgba(0, 0, 0, 0.3)',
-          'background': 'linear-gradient(135deg, rgba(15, 12, 41, 0.9), rgba(36, 36, 62, 0.9))'
-        });
-      });
+      bindTranslateGadgetHover(gadget, applyForceStyle);
     });
         
     // Disconnect any existing observer before creating a new one
@@ -388,6 +413,7 @@ function completeCustomization() {
                         
             // Mark this gadget as processed
             gadget.setAttribute('data-custom-styled', 'true');
+            bindTranslateGadgetHover(gadget, applyForceStyle);
           }
         });
       }, 200);
@@ -668,6 +694,7 @@ function cleanupGoogleElements() {
 // Initialize the translation functionality when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   rememberHashForRestore();
+  window.addEventListener('hashchange', rememberHashForRestore);
   initGoogleTranslate();
     
   // Clean up any Google elements periodically to ensure they don't interfere with the page

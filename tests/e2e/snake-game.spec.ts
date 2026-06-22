@@ -22,8 +22,9 @@ test.describe('Snake Game', () => {
 
   test('touch controls move the snake', async ({ page }) => {
     await startSnakeGame(page);
-    await page.locator('.touch-btn[data-direction="up"]').click();
-    await page.locator('.touch-btn[data-direction="right"]').click();
+    await expect(page.getByRole('button', { name: 'Move snake up' })).toBeVisible();
+    await page.getByRole('button', { name: 'Move snake up' }).click();
+    await page.getByRole('button', { name: 'Move snake right' }).click();
     await expect(page.locator('#snake-game canvas')).toBeVisible();
   });
 

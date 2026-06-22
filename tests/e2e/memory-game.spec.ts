@@ -26,6 +26,15 @@ test.describe('Memory Card Game', () => {
     await expect(page.locator('#score')).toHaveText('10');
   });
 
+  test('flips cards with keyboard', async ({ page }) => {
+    await startMemoryGame(page);
+    const firstCard = page.locator('.memory-card').first();
+    await firstCard.focus();
+    await page.keyboard.press('Enter');
+    await expect(firstCard).toHaveClass(/flipped/);
+    await expect(firstCard).toHaveAttribute('role', 'button');
+  });
+
   test('reset returns to welcome screen', async ({ page }) => {
     await startMemoryGame(page);
     await page.getByRole('button', { name: 'Reset Memory Card Game' }).click();

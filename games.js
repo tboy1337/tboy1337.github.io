@@ -105,12 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Typing game cleanup
-      if (gameName !== 'typing' && window.typingTimerInterval) {
+      if (gameName !== 'typing') {
         if (window.typingTimerInterval) {
           clearInterval(window.typingTimerInterval);
+          window.typingTimerInterval = null;
         }
-        window.typingTimerInterval = null;
         window.typingGameActive = false;
+        if (typeof window.cleanupTypingGame === 'function') {
+          window.cleanupTypingGame();
+        }
       }
 
       // Music Studio cleanup
@@ -277,10 +280,13 @@ document.addEventListener('DOMContentLoaded', () => {
       window.GameUtils.shuffleArray(cardIcons);
     
       // Create card elements
-      cardIcons.forEach((icon) => {
+      cardIcons.forEach((icon, index) => {
         const card = document.createElement('div');
         card.classList.add('memory-card');
         card.dataset.icon = icon.name;
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `Flip memory card ${index + 1}`);
       
         // Create front face (icon)
         const frontFace = document.createElement('div');
@@ -301,18 +307,29 @@ document.addEventListener('DOMContentLoaded', () => {
         card.appendChild(backFace);
       
         card.addEventListener('click', flipCard);
+        card.addEventListener('keydown', handleCardKeydown);
         memoryContainer.appendChild(card);
         cards.push(card);
       });
     }
+
+    /** @param {KeyboardEvent} event */
+    function handleCardKeydown(event) {
+      if (event.key !== 'Enter' && event.key !== ' ') {
+        return;
+      }
+      event.preventDefault();
+      flipCard(event);
+    }
   
-    /** @param {MouseEvent} event */
+    /** @param {MouseEvent | KeyboardEvent} event */
     function flipCard(event) {
       if (lockBoard) return;
       const card = event.currentTarget;
       if (!(card instanceof HTMLElement)) {
         return;
       }
+      if (card.classList.contains('matched')) return;
       if (card === firstCard) return;
 
       card.classList.add('flipped');
@@ -353,6 +370,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       firstCard.removeEventListener('click', flipCard);
       secondCard.removeEventListener('click', flipCard);
+      firstCard.removeEventListener('keydown', handleCardKeydown);
+      secondCard.removeEventListener('keydown', handleCardKeydown);
+      firstCard.setAttribute('tabindex', '-1');
+      secondCard.setAttribute('tabindex', '-1');
     
       firstCard.classList.add('matched');
       secondCard.classList.add('matched');
@@ -584,8 +605,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
       directions.forEach(d => {
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = 'touch-btn';
-        btn.innerHTML = `<i class="fas ${d.icon}"></i>`;
+        btn.setAttribute('aria-label', `Move snake ${d.dir}`);
+        btn.innerHTML = `<i class="fas ${d.icon}" aria-hidden="true"></i>`;
         btn.setAttribute('data-direction', d.dir);
         btn.addEventListener('click', (event) => {
           const target = event.currentTarget;
@@ -886,6 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
       typingInput.type = 'text';
       typingInput.id = 'typing-input';
       typingInput.className = 'typing-input';
+      typingInput.setAttribute('aria-label', 'Typing input');
       typingInput.disabled = true;
       typingInput.placeholder = 'Type here when the game starts...';
     
@@ -1067,19 +1091,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetTypingGame() {
       if (window.typingTimerInterval) {
         clearInterval(window.typingTimerInterval);
+        window.typingTimerInterval = null;
       }
-    
+
+      const typingInputEl = getHtmlElement('typing-input');
+      if (typingInputEl) {
+        const typingInput = asInput(typingInputEl);
+        typingInput.disabled = true;
+        typingInput.removeEventListener('input', checkTyping);
+      }
+
       window.typingGameActive = false;
       typingStartButton.disabled = false;
       typingResetButton.disabled = true;
-    
+
       // Reset to initial display
       initTypingDisplay();
-    
+
       // Reset statistics
       wpmElement.textContent = '0';
       accuracyElement.textContent = '0';
     }
+
+    window.cleanupTypingGame = resetTypingGame;
   
     function endTypingGame() {
       if (window.typingTimerInterval) {
@@ -1358,7 +1392,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="effect-control">
                 <input type="checkbox" id="filter-toggle" class="effect-toggle" checked>
                 <label for="filter-toggle">🎛️ Filter</label>
-                <input type="range" id="filter-amount" min="0" max="100" value="80" class="effect-slider" aria-label="Filter amount">
+                <input type="range" id="filter-amount" min="0" max="100" value="20" class="effect-slider" aria-label="Filter amount">
               </div>
             </div>
           </div>
@@ -1378,7 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <button id="save-btn" class="save-btn" disabled aria-label="💾 Save">💾 Save</button>
               <button id="load-btn" class="load-btn" aria-label="📁 Load">📁 Load</button>
             </div>
-            <div id="composition-panel" class="composition-panel hidden" role="dialog" aria-modal="true" aria-labelledby="composition-panel-title" aria-hidden="true">
+            <div id="composition-panel" class="composition-panel hidden" role="dialog" aria-modal="true" aria-labelledby="composition-panel-title" aria-describedby="composition-panel-error" aria-hidden="true">
               <div class="composition-panel-header">
                 <h3 id="composition-panel-title" class="composition-panel-title">Composition Library</h3>
                 <button type="button" id="composition-panel-close" class="composition-panel-close" aria-label="Close composition library">×</button>
@@ -1408,7 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             </div>
-            <div class="layer-status">
+            <div class="layer-meta-panel">
               <div class="layer-info">
                 <span>Current Layer: <span id="current-layer">1</span></span>
                 <span>Total Layers: <span id="total-layers">0</span></span>
@@ -1577,6 +1611,19 @@ document.addEventListener('DOMContentLoaded', () => {
     /** @param {KeyboardEvent} event */
     function handleKeyPress(event) {
       if (!isGameActive) return;
+
+      const eventTarget = event.target;
+      if (eventTarget instanceof HTMLElement) {
+        const tagName = eventTarget.tagName;
+        if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT' || eventTarget.isContentEditable) {
+          return;
+        }
+      }
+
+      const compositionPanel = getHtmlElement('composition-panel');
+      if (compositionPanel && !compositionPanel.classList.contains('hidden')) {
+        return;
+      }
 
       const mappingKey = keyboardMapping[event.key] !== undefined
         ? event.key
@@ -1936,6 +1983,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
+    /** @param {string} note @param {boolean} isBlackKey */
+    function createDesktopKeyLabels(note, isBlackKey) {
+      const labels = document.createElement('div');
+      labels.className = 'piano-key-labels';
+
+      const keyBinding = noteToKeyLabel[note];
+      if (keyBinding) {
+        const bindingEl = document.createElement('span');
+        bindingEl.className = 'key-label';
+        bindingEl.textContent = keyBinding;
+        labels.appendChild(bindingEl);
+      }
+
+      if (!isBlackKey) {
+        const noteEl = document.createElement('span');
+        noteEl.className = 'piano-note-name';
+        noteEl.textContent = note;
+        labels.appendChild(noteEl);
+      }
+
+      return labels;
+    }
+
+    /** @param {string} note */
+    function createTouchKeyLabel(note) {
+      const label = document.createElement('span');
+      label.className = 'touch-key-note';
+      label.textContent = formatTouchNoteLabel(note);
+      return label;
+    }
+
     // Generate piano keyboard visual
     function generatePianoKeyboard() {
       const pianoKeyboard = queryRequired('piano-keyboard');
@@ -1950,19 +2028,7 @@ document.addEventListener('DOMContentLoaded', () => {
         key.className = 'piano-key white-key';
         key.dataset.note = note;
         key.setAttribute('aria-label', `Play ${note}`);
-
-        const noteLabel = document.createElement('span');
-        noteLabel.className = 'piano-note-name';
-        noteLabel.textContent = note;
-        key.appendChild(noteLabel);
-
-        const keyLabel = noteToKeyLabel[note];
-        if (keyLabel) {
-          const labelSpan = document.createElement('span');
-          labelSpan.className = 'key-label';
-          labelSpan.textContent = keyLabel;
-          key.appendChild(labelSpan);
-        }
+        key.appendChild(createDesktopKeyLabels(note, false));
 
         if (blackKeys[index] && blackKeys[index].length > 0) {
           const blackNote = blackKeys[index][0];
@@ -1971,19 +2037,7 @@ document.addEventListener('DOMContentLoaded', () => {
             blackKey.className = 'piano-key black-key';
             blackKey.dataset.note = blackNote;
             blackKey.setAttribute('aria-label', `Play ${blackNote}`);
-
-            const blackNoteLabel = document.createElement('span');
-            blackNoteLabel.className = 'piano-note-name';
-            blackNoteLabel.textContent = blackNote;
-            blackKey.appendChild(blackNoteLabel);
-
-            const blackKeyLabel = noteToKeyLabel[blackNote];
-            if (blackKeyLabel) {
-              const blackLabelSpan = document.createElement('span');
-              blackLabelSpan.className = 'key-label';
-              blackLabelSpan.textContent = blackKeyLabel;
-              blackKey.appendChild(blackLabelSpan);
-            }
+            blackKey.appendChild(createDesktopKeyLabels(blackNote, true));
 
             key.appendChild(blackKey);
           }
@@ -2029,7 +2083,7 @@ document.addEventListener('DOMContentLoaded', () => {
         key.className = 'touch-key white-key';
         key.dataset.note = note;
         key.setAttribute('aria-label', `Play ${note}`);
-        key.textContent = formatTouchNoteLabel(note);
+        key.appendChild(createTouchKeyLabel(note));
 
         if (blackKeys[index] && blackKeys[index].length > 0) {
           const blackNote = blackKeys[index][0];
@@ -2038,7 +2092,7 @@ document.addEventListener('DOMContentLoaded', () => {
             blackKey.className = 'touch-key black-key';
             blackKey.dataset.note = blackNote;
             blackKey.setAttribute('aria-label', `Play ${blackNote}`);
-            blackKey.textContent = formatTouchNoteLabel(blackNote);
+            blackKey.appendChild(createTouchKeyLabel(blackNote));
             key.appendChild(blackKey);
           }
         }
@@ -2412,7 +2466,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Highlight piano key
     /** @param {string} noteName */
     function highlightPianoKey(noteName) {
-      const pianoKey = document.querySelector(`[data-note="${noteName}"]`);
+      const useTouchPiano = window.matchMedia('(max-width: 768px)').matches;
+      const selector = useTouchPiano
+        ? `.touch-key[data-note="${noteName}"]`
+        : `.piano-key[data-note="${noteName}"]`;
+      const pianoKey = document.querySelector(selector);
       if (pianoKey) {
         pianoKey.classList.add('active');
         setTimeout(() => pianoKey.classList.remove('active'), 200);
@@ -2776,6 +2834,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const playLoop = () => {
         if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
 
+        clearLayerLoopTimeouts(layerIndex);
+
         notes.forEach(({ note, time }) => {
           const adjustedTime = window.GameUtils.scaleNoteTime(time, layerTempo);
           const timeoutId = setTimeout(() => {
@@ -2885,8 +2945,56 @@ document.addEventListener('DOMContentLoaded', () => {
       errorElement.classList.add('hidden');
     }
 
+    /** @returns {HTMLElement[]} */
+    function getCompositionPanelFocusableElements() {
+      const panel = getHtmlElement('composition-panel');
+      if (!panel) {
+        return [];
+      }
+
+      const selector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      /** @type {HTMLElement[]} */
+      const focusable = [];
+      panel.querySelectorAll(selector).forEach((element) => {
+        if (element instanceof HTMLElement && element.offsetParent !== null) {
+          focusable.push(element);
+        }
+      });
+      return focusable;
+    }
+
+    /** @param {KeyboardEvent} event */
+    function trapCompositionPanelFocus(event) {
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const focusable = getCompositionPanelFocusableElements();
+      if (focusable.length === 0) {
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) {
+        return;
+      }
+
+      const active = document.activeElement;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
     /** @param {KeyboardEvent} event */
     function handleCompositionPanelKeydown(event) {
+      trapCompositionPanelFocus(event);
+
       if (event.key !== 'Escape') {
         return;
       }
@@ -3040,17 +3148,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = document.createElement('li');
         item.className = 'composition-list-item';
         item.setAttribute('role', 'option');
-        item.setAttribute('role', 'option');
         const timestamp = comp.timestamp ? new Date(comp.timestamp).toLocaleString() : 'Unknown date';
 
         const main = document.createElement('div');
         main.className = 'composition-list-item-main';
         main.setAttribute('tabindex', '0');
         main.setAttribute('aria-label', `${comp.name}, saved ${timestamp}`);
-        main.innerHTML = `
-          <span class="composition-list-name">${comp.name}</span>
-          <span class="composition-list-date">${timestamp}</span>
-        `;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'composition-list-name';
+        nameSpan.textContent = comp.name;
+
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'composition-list-date';
+        dateSpan.textContent = timestamp;
+
+        main.appendChild(nameSpan);
+        main.appendChild(dateSpan);
 
         const loadAtIndex = () => {
           loadCompositionAtIndex(index);

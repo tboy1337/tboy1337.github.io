@@ -477,22 +477,22 @@
             <nav class="game-menu backdrop-blur-sm border border-white/10 mb-6" aria-label="Game selection menu">
                 <ul class="flex flex-wrap justify-center">
                     <li class="game-menu-item active" data-game="memory">
-                        <button type="button" class="px-4 py-2" aria-label="Play Memory Card Game" aria-pressed="true">
+                        <button type="button" class="px-4 py-2" aria-label="Play Memory Card Game" aria-controls="memory-section" aria-pressed="true">
                             <i class="fas fa-brain mr-2" aria-hidden="true"></i>Memory Game
                         </button>
                     </li>
                     <li class="game-menu-item" data-game="snake">
-                        <button type="button" class="px-4 py-2" aria-label="Play Snake Game" aria-pressed="false">
+                        <button type="button" class="px-4 py-2" aria-label="Play Snake Game" aria-controls="snake-section" aria-pressed="false">
                             <i class="fas fa-snake mr-2" aria-hidden="true"></i>Snake Game
                         </button>
                     </li>
                     <li class="game-menu-item" data-game="typing">
-                        <button type="button" class="px-4 py-2" aria-label="Play Typing Speed Test" aria-pressed="false">
+                        <button type="button" class="px-4 py-2" aria-label="Play Typing Speed Test" aria-controls="typing-section" aria-pressed="false">
                             <i class="fas fa-keyboard mr-2" aria-hidden="true"></i>Typing Test
                         </button>
                     </li>
                     <li class="game-menu-item" data-game="music-studio">
-                        <button type="button" class="px-4 py-2" aria-label="Play Advanced Music Studio" aria-pressed="false">
+                        <button type="button" class="px-4 py-2" aria-label="Play Advanced Music Studio" aria-controls="music-studio-section" aria-pressed="false">
                             <i class="fas fa-music mr-2" aria-hidden="true"></i>Music Studio
                         </button>
                     </li>
@@ -650,6 +650,40 @@
     
     <!-- Service Worker Registration -->
     <script>
+        function rememberHashBeforeReload() {
+            if (window.location.hash) {
+                window.sessionStorage.setItem('tboy1337-pending-hash', window.location.hash);
+            }
+        }
+
+        function showServiceWorkerUpdateBanner() {
+            if (document.getElementById('sw-update-banner')) {
+                return;
+            }
+
+            const banner = document.createElement('div');
+            banner.id = 'sw-update-banner';
+            banner.className = 'sw-update-banner';
+            banner.setAttribute('role', 'status');
+            banner.setAttribute('aria-live', 'polite');
+            banner.innerHTML = `
+                <p class="sw-update-banner-text">A new version of this site is available.</p>
+                <div class="sw-update-banner-actions">
+                    <button type="button" id="sw-update-refresh" class="sw-update-banner-btn sw-update-banner-btn-primary">Refresh</button>
+                    <button type="button" id="sw-update-dismiss" class="sw-update-banner-btn">Later</button>
+                </div>
+            `;
+            document.body.appendChild(banner);
+
+            document.getElementById('sw-update-refresh').addEventListener('click', function() {
+                rememberHashBeforeReload();
+                window.location.reload();
+            });
+            document.getElementById('sw-update-dismiss').addEventListener('click', function() {
+                banner.remove();
+            });
+        }
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js', { type: 'module' })
@@ -661,9 +695,8 @@
                             const newWorker = registration.installing;
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // New service worker installed, refresh page to get latest content
-                                    console.log('New service worker installed, refreshing page...');
-                                    window.location.reload();
+                                    console.log('New service worker installed');
+                                    showServiceWorkerUpdateBanner();
                                 }
                             });
                         });

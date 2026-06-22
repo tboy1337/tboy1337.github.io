@@ -20,4 +20,11 @@ test.describe('Game menu', () => {
     await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
     await expect(page.getByRole('button', { name: 'Start Memory Card Game' })).toBeVisible();
   });
+
+  test('game menu buttons reference their game sections', async ({ page }) => {
+    await expect(page.getByRole('button', { name: 'Play Memory Card Game' })).toHaveAttribute('aria-controls', 'memory-section');
+    await expect(page.getByRole('button', { name: 'Play Snake Game' })).toHaveAttribute('aria-controls', 'snake-section');
+    await expect(page.getByRole('button', { name: 'Play Typing Speed Test' })).toHaveAttribute('aria-controls', 'typing-section');
+    await expect(page.getByRole('button', { name: 'Play Advanced Music Studio' })).toHaveAttribute('aria-controls', 'music-studio-section');
+  });
 });
