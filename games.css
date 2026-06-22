@@ -881,21 +881,6 @@
   margin-top: 0.25rem;
 }
 
-/* Keyboard Help */
-.keyboard-help {
-  background: rgb(0, 0, 0, 0.2);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 2rem;
-  border: 1px solid rgb(255, 255, 255, 0.1);
-}
-
-.keyboard-help p {
-  margin: 0.5rem 0;
-  color: #c0c0c0;
-  font-size: 14px;
-}
-
 /* Touch Piano for Mobile */
 .touch-piano-container {
   display: none;
@@ -983,8 +968,7 @@
   }
 
   .piano-container,
-  .keyboard-legend,
-  .keyboard-help {
+  .keyboard-legend {
     display: none;
   }
   
@@ -1010,10 +994,6 @@
   .touch-piano-container {
     display: block;
     margin-bottom: 1rem;
-  }
-  
-  .keyboard-help {
-    font-size: 12px;
   }
   
   .mobile-controls {

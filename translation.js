@@ -56,7 +56,6 @@ function initGoogleTranslate() {
     };
         
     script.onload = function() {
-      console.log('Google Translate script loaded successfully');
       // Set a timeout to initialize if googleTranslateElementInit hasn't been called
       setTimeout(() => {
         if (!window.googleTranslateInitialized) {
@@ -169,8 +168,6 @@ window.googleTranslateElementInit = function() {
     
     // Apply additional styling and customization immediately
     setTimeout(completeCustomization, 100);
-        
-    console.log('Google Translate initialized successfully');
   } catch (error) {
     console.error('Error during Google Translate initialization:', error);
     showTranslateError();
@@ -440,8 +437,6 @@ function completeCustomization() {
       attributes: true,
       attributeFilter: ['style', 'class']
     });
-        
-    console.log('Google Translate styling forcefully applied with observer');
   };
     
   checkAndStyle();
@@ -711,10 +706,37 @@ document.addEventListener('DOMContentLoaded', () => {
   rememberHashForRestore();
   window.addEventListener('hashchange', rememberHashForRestore);
   initGoogleTranslate();
-    
-  // Clean up any Google elements periodically to ensure they don't interfere with the page
+
   setTimeout(cleanupGoogleElements, 1500);
-  setInterval(cleanupGoogleElements, 5000);
+
+  /** @type {ReturnType<typeof setInterval> | null} */
+  let cleanupIntervalId = null;
+
+  function startCleanupInterval() {
+    if (cleanupIntervalId !== null) {
+      return;
+    }
+    cleanupIntervalId = setInterval(cleanupGoogleElements, 15000);
+  }
+
+  function stopCleanupInterval() {
+    if (cleanupIntervalId === null) {
+      return;
+    }
+    clearInterval(cleanupIntervalId);
+    cleanupIntervalId = null;
+  }
+
+  startCleanupInterval();
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopCleanupInterval();
+      return;
+    }
+    cleanupGoogleElements();
+    startCleanupInterval();
+  });
     
   // Retry customization multiple times very quickly to catch the text replacement
   setTimeout(completeCustomization, 50);

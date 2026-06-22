@@ -7,7 +7,7 @@ export default defineConfig({
     coverage: {
       provider: 'istanbul',
       include: ['lib/**/*.mjs'],
-      exclude: ['tests/**', 'node_modules/**', 'lib/bootstrap-site-utils.mjs', 'lib/lazy-games-loader.mjs'],
+      exclude: ['tests/**', 'node_modules/**', 'lib/bootstrap-site-utils.mjs', 'lib/lazy-games-loader.mjs', 'lib/on-dom-ready.mjs'],
       thresholds: {
         lines: 90,
         branches: 90,

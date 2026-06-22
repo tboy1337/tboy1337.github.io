@@ -10,8 +10,12 @@ test.describe('Portfolio page', () => {
   test('loads with SEO and social metadata', async ({ page }) => {
     await expect(page).toHaveTitle(/tboy1337/);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Portfolio of tboy1337/);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://tboy1337.github.io/');
+    await expect(page.locator('meta[name="referrer"]')).toHaveAttribute('content', 'strict-origin-when-cross-origin');
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /Developer & Innovator/);
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+    const schema = await page.locator('script[type="application/ld+json"]').textContent();
+    expect(schema).toContain('"@type": "Person"');
   });
 
   test('shows portfolio projects and Starstruck achievement', async ({ page }) => {

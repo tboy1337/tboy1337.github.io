@@ -27,8 +27,8 @@ The site includes four fully-featured browser games:
 
 ### Advanced Functionality
 - **Form Validation**: Real-time client-side validation with user-friendly error messages
-- **Progressive Enhancement**: Works without JavaScript, enhanced with interactive features
-- **Accessibility**: ARIA labels, keyboard navigation, and screen reader support
+- **Service Worker**: Offline caching with network-first HTML and script updates
+- **Accessibility**: ARIA labels, keyboard navigation, skip link, and screen reader support
 - **Lazy Loading**: Games bundle loads when the games section is near the viewport
 
 ## 🛠️ Technologies Used
@@ -185,13 +185,14 @@ Visual showcase of GitHub accomplishments including:
 - **Pull Shark**: Merged pull request contributions
 - **Pair Extraordinaire**: Collaborative development achievements
 - **YOLO**: Direct-to-main branch contributions
+- **Starstruck**: Created a repository with many stars
 
 ## ⚡ Performance Features
 
 - **Service Worker**: Offline caching and improved loading times
-- **Optimized Assets**: Compressed images and efficient resource loading
-- **Minimal Dependencies**: Lightweight codebase with CDN resources
-- **Progressive Enhancement**: Core functionality works without JavaScript
+- **Built CSS**: Tailwind utilities compiled to a static `tailwind.css` file (no runtime CDN)
+- **Lazy Loading**: Games and utilities load when the games section is near the viewport
+- **Optimized Assets**: Minified CSS, compressed images, and deferred scripts
 
 ## 🔧 Development
 

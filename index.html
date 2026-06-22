@@ -46,6 +46,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://translate.google.com">
     
+    <link rel="preload" href="tailwind.css" as="style">
     <link rel="stylesheet" href="tailwind.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -456,6 +457,7 @@
                                 name="message" 
                                 required
                                 rows="6"
+                                autocomplete="off"
                                 class="w-full px-4 py-3 bg-black/60 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors resize-vertical"
                                 placeholder="Tell me about your project or idea..."
                             ></textarea>
@@ -525,7 +527,7 @@
                             <strong id="score-label">Score:</strong> <span id="score" role="status" aria-live="polite" aria-labelledby="score-label">0</span>
                         </div>
                         <div class="stat-box">
-                            <strong id="time-label">Time:</strong> <span id="time" role="timer" aria-live="polite" aria-labelledby="time-label">60</span>s
+                            <strong id="time-label">Time:</strong> <span id="time" role="status" aria-live="polite" aria-labelledby="time-label">60</span>s
                         </div>
                     </div>
                     <div class="game-controls">

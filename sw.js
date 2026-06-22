@@ -9,12 +9,7 @@ import {
   getStaleCacheNames
 } from './lib/sw-utils.mjs';
 
-const DEBUG = false;
-
-/** @type {(...args: unknown[]) => void} */
-const debugLog = DEBUG ? (() => { /* noop in production */ }) : () => {};
-
-const CACHE_NAME = 'tboy1337-v1.3.0';
+const CACHE_NAME = 'tboy1337-v1.3.1';
 
 const STATIC_ASSETS = [
   '/',
@@ -30,6 +25,7 @@ const STATIC_ASSETS = [
   '/lib/game-utils.mjs',
   '/lib/bootstrap-site-utils.mjs',
   '/lib/lazy-games-loader.mjs',
+  '/lib/on-dom-ready.mjs',
   '/lib/sw-utils.mjs',
   '/lib/typing-stats.mjs',
   '/lib/memory-game-utils.mjs',
@@ -56,12 +52,10 @@ const PRECACHE_ASSETS = [...STATIC_ASSETS, ...IMAGE_ASSETS];
 
 self.addEventListener('install', (event) => {
   const installEvent = /** @type {ExtendableEvent} */ (event);
-  debugLog('Service Worker installing...');
   sw.skipWaiting();
 
   installEvent.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      debugLog('Caching static assets...');
       await Promise.all(
         PRECACHE_ASSETS.map(async (asset) => {
           const response = await fetch(asset);
@@ -77,13 +71,11 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   const activateEvent = /** @type {ExtendableEvent} */ (event);
-  debugLog('Service Worker activating...');
   activateEvent.waitUntil(
     Promise.all([
       caches.keys().then(cacheNames => {
         return Promise.all(
           getStaleCacheNames(cacheNames, CACHE_NAME).map(cacheName => {
-            debugLog('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           })
         );

@@ -1553,13 +1553,6 @@ onDomReady(() => {
             <span class="legend-key legend-key-label">Shortcuts</span>
           </div>
         </div>
-
-        <!-- Keyboard Instruction -->
-        <div class="keyboard-help">
-          <p class="mb-2">🎹 <strong>Keyboard Controls:</strong></p>
-          <p>White keys: A S D F G H J K | Black keys: W E T Y U O P</p>
-          <p>Lower octave: 1-7 | Higher octave: Arrow keys</p>
-        </div>
       </div>
     `;
 

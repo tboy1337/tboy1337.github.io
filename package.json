@@ -14,7 +14,7 @@
     "test:e2e": "playwright test",
     "test:coverage": "node scripts/merge-coverage.mjs",
     "test": "npm run test:unit && npm run test:e2e && npm run test:coverage",
-    "check": "npm run lint && npm run typecheck && npm run validate && npm run test"
+    "check": "npm run build:css && npm run lint && npm run typecheck && npm run validate && npm run test"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
