@@ -13,6 +13,7 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#instrument-select option[value="synth"]')).toHaveText('🎹 Synthesizer');
     await expect(page.getByRole('checkbox', { name: '🌊 Reverb' })).toBeChecked();
     await expect(page.getByRole('button', { name: '📁 Load' })).toBeEnabled();
+    await expect(page.getByText('Metronome:')).toBeVisible();
   });
 
   test('plays notes from keyboard input', async ({ page }) => {
@@ -20,33 +21,32 @@ test.describe('Advanced Music Studio', () => {
     await page.keyboard.press('a');
     await page.keyboard.press('s');
     await page.keyboard.press('d');
-    await expect(page.locator('#arrow-notes')).not.toHaveText('0');
+    await expect(page.locator('#music-studio-notes')).not.toHaveText('0');
   });
 
   test('plays notes from arrow keys', async ({ page }) => {
     await startMusicStudio(page);
     await page.keyboard.press('ArrowUp');
     await page.keyboard.press('ArrowLeft');
-    await expect(page.locator('#arrow-notes')).toHaveText('2');
+    await expect(page.locator('#music-studio-notes')).toHaveText('2');
   });
 
   test('plays black keys and octave 3 number row', async ({ page }) => {
     await startMusicStudio(page);
     await page.keyboard.press('w');
     await page.keyboard.press('1');
-    await expect(page.locator('#arrow-notes')).toHaveText('2');
+    await expect(page.locator('#music-studio-notes')).toHaveText('2');
   });
 
   test('plays notes from piano key clicks', async ({ page }) => {
     await startMusicStudio(page);
     await page.locator('.piano-key.white-key[data-note="C4"]').click();
     await page.locator('.piano-key.white-key[data-note="D4"]').click();
-    await expect(page.locator('#arrow-notes')).toHaveText('2');
+    await expect(page.locator('#music-studio-notes')).toHaveText('2');
   });
 
   test('records a layer and enables playback controls', async ({ page }) => {
     await startMusicStudio(page);
-    page.once('dialog', async (dialog) => { await dialog.dismiss(); });
 
     await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
     await page.keyboard.press('a');
@@ -58,6 +58,14 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.getByRole('button', { name: '💾 Save' })).toBeEnabled();
   });
 
+  test('shows message when stopping empty recording', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await expect(page.locator('#recording-status')).toContainText('No notes recorded');
+    await expect(page.getByRole('button', { name: '▶️ Play' })).toBeDisabled();
+  });
+
   test('loops the current layer', async ({ page }) => {
     await startMusicStudio(page);
     await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
@@ -67,6 +75,20 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.getByRole('button', { name: '⏹️ Stop Current' })).toBeVisible();
     await page.getByRole('button', { name: '⏹️ Stop Current' }).click();
     await expect(page.getByRole('button', { name: '🔄 Loop Current' })).toBeVisible();
+  });
+
+  test('stops loop and clears active layer state', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.keyboard.press('a');
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await page.getByRole('button', { name: '🔄 Loop Current' }).click();
+    await page.getByRole('button', { name: '⏹️ Stop Current' }).click();
+
+    const loopState = await page.evaluate(() => ({
+      timeoutMapEmpty: !window.layerLoopTimeouts || window.layerLoopTimeouts.size === 0
+    }));
+    expect(loopState.timeoutMapEmpty).toBe(true);
   });
 
   test('adjusts layer tempo via slider', async ({ page }) => {
@@ -109,6 +131,34 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#composition-panel-error')).toContainText('Please enter a composition name');
   });
 
+  test('save overwrites duplicate composition name', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.keyboard.press('a');
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+
+    await saveComposition(page, 'Duplicate Suite');
+    await page.getByRole('button', { name: '💾 Save' }).click();
+    await page.getByLabel('Composition name').fill('Duplicate Suite');
+    await page.getByRole('button', { name: 'Save composition' }).click();
+    await expect(page.locator('#composition-panel-error')).toContainText('already exists');
+    await page.getByRole('button', { name: 'Overwrite existing composition' }).click();
+    await expect(page.locator('#recording-status')).toContainText('saved successfully');
+  });
+
+  test('deletes composition from library', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.keyboard.press('a');
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await saveComposition(page, 'Delete Me');
+
+    await page.getByRole('button', { name: '📁 Load' }).click();
+    await page.getByRole('button', { name: 'Delete Delete Me' }).click();
+    await page.getByRole('button', { name: 'Confirm action' }).click();
+    await expect(page.locator('#recording-status')).toContainText('Deleted "Delete Me"');
+  });
+
   test('load shows message for empty library', async ({ page }) => {
     await startMusicStudio(page);
     await page.evaluate(() => localStorage.setItem('musicCompositions', '[]'));
@@ -126,7 +176,7 @@ test.describe('Advanced Music Studio', () => {
     await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
     const audioState = await page.evaluate(() => ({
       hasCleanup: typeof window.cleanupMusicStudio === 'function',
-      contextClosed: !window.arrowGameAudioContext || window.arrowGameAudioContext.state === 'closed'
+      contextClosed: !window.musicStudioAudioContext || window.musicStudioAudioContext.state === 'closed'
     }));
     expect(audioState.hasCleanup).toBe(true);
     expect(audioState.contextClosed).toBe(true);
@@ -141,7 +191,7 @@ test.describe('Advanced Music Studio', () => {
 
     await expect(page.getByText('Click "Start Studio" to begin composing!')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Advanced Music Studio' })).toBeEnabled();
-    await expect(page.locator('#arrow-notes')).toHaveText('0');
+    await expect(page.locator('#music-studio-notes')).toHaveText('0');
   });
 
   test('switches layer via layer indicator click', async ({ page }) => {
@@ -203,6 +253,16 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.getByText('Click "Start Studio" to begin composing!')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Advanced Music Studio' })).toBeEnabled();
   });
+
+  test('clears current layer via confirm panel', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.keyboard.press('f');
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await page.getByRole('button', { name: '🗑️ Clear Current' }).click();
+    await page.getByRole('button', { name: 'Confirm action' }).click();
+    await expect(page.getByRole('button', { name: '▶️ Play' })).toBeDisabled();
+  });
 });
 
 test.describe('Advanced Music Studio mobile', () => {
@@ -216,8 +276,15 @@ test.describe('Advanced Music Studio mobile', () => {
     await expect(page.locator('.touch-piano-container')).toBeVisible();
     await page.locator('.touch-key.white-key[data-note="C4"]').tap();
     await page.locator('.touch-key.white-key[data-note="C5"]').tap();
-    const noteCount = Number(await page.locator('#arrow-notes').textContent());
+    const noteCount = Number(await page.locator('#music-studio-notes').textContent());
     expect(noteCount).toBeGreaterThanOrEqual(2);
+  });
+
+  test('hides desktop piano on mobile', async ({ page }) => {
+    await startMusicStudio(page);
+    await expect(page.locator('.piano-container')).toBeHidden();
+    await expect(page.locator('.keyboard-legend')).toBeHidden();
+    await expect(page.locator('.touch-piano-container')).toBeVisible();
   });
 });
 

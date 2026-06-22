@@ -40,7 +40,7 @@ test.describe('Games coverage expansion', () => {
       await page.locator('#instrument-select').selectOption(instrument);
       await page.keyboard.press('a');
     }
-    await expect(page.locator('#arrow-notes')).not.toHaveText('0');
+    await expect(page.locator('#music-studio-notes')).not.toHaveText('0');
   });
 
   test('music studio loops all layers and clears all', async ({ page }) => {
@@ -53,8 +53,9 @@ test.describe('Games coverage expansion', () => {
     await page.waitForTimeout(200);
     await page.getByRole('button', { name: '⏹️ Stop All' }).click();
 
-    page.once('dialog', async (dialog) => { await dialog.accept(); });
+    page.once('dialog', async () => { /* legacy guard */ });
     await page.getByRole('button', { name: '🗑️ Clear All' }).click();
+    await page.getByRole('button', { name: 'Confirm action' }).click();
   });
 
   test('music studio navigates to previous layer', async ({ page }) => {

@@ -63,7 +63,7 @@ function getInputTarget(target) {
 }
 
 /**
- * @typedef {'memory' | 'snake' | 'typing' | 'arrow'} GameName
+ * @typedef {'memory' | 'snake' | 'typing' | 'music-studio'} GameName
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Music Studio cleanup
-      if (gameName !== 'arrow') {
+      if (gameName !== 'music-studio') {
         if (typeof window.cleanupMusicStudio === 'function') {
           window.cleanupMusicStudio();
         }
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
           const gameName = target.getAttribute('data-game');
-          if (gameName === 'memory' || gameName === 'snake' || gameName === 'typing' || gameName === 'arrow') {
+          if (gameName === 'memory' || gameName === 'snake' || gameName === 'typing' || gameName === 'music-studio') {
             switchGame(gameName);
           }
         } catch (error) {
@@ -1148,9 +1148,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // Advanced Music Studio
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const startButtonEl = getHtmlElement('start-arrow');
-    const resetButtonEl = getHtmlElement('reset-arrow');
-    const gameContainerEl = getHtmlElement('arrow-game');
+    const startButtonEl = getHtmlElement('start-music-studio');
+    const resetButtonEl = getHtmlElement('reset-music-studio');
+    const gameContainerEl = getHtmlElement('music-studio-game');
     
     if (!gameContainerEl || !startButtonEl || !resetButtonEl) {
       console.warn('Music studio elements not found');
@@ -1162,7 +1162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetButton = asButton(assertPresent(resetButtonEl));
   
     let isGameActive = false;
-    window.arrowGameAudioContext = null;
+    window.musicStudioAudioContext = null;
     let notesPlayed = 0;
   
     // Define comprehensive note frequencies (full chromatic scale with multiple octaves)
@@ -1220,9 +1220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let recordedNotes = [];
     let recordingStartTime = 0;
     let isLooping = false;
-    /** @type {ReturnType<typeof setInterval> | null} */
-    let loopInterval = null;
-    let currentTempo = 120; // BPM
+    let currentTempo = 120; // BPM (metronome visual only)
     let masterVolume = 0.3;
   
     // Multi-layer loop system with individual tempos
@@ -1235,6 +1233,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isPlayingPlayback = false;
     /** @type {HTMLElement | null} */
     let compositionPanelTrigger = null;
+    /** @type {(() => void) | null} */
+    let pendingConfirmAction = null;
     let lastTouchNote = '';
     let lastTouchTime = 0;
     /** @type {ReturnType<typeof setTimeout>[]} */
@@ -1258,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize the advanced music studio
-    function initArrowDisplay() {
+    function initMusicStudioWelcome() {
       gameContainer.classList.add('centered-content');
       gameContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
@@ -1273,16 +1273,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Initialize when loaded
-    initArrowDisplay();
+    initMusicStudioWelcome();
   
     // Initialize notes counter
-    const notesElement = queryRequired('arrow-notes');
+    const notesElement = queryRequired('music-studio-notes');
     if (notesElement) {
       notesElement.textContent = '0';
     }
   
     // Create the advanced music studio UI
-    function createArrowGameUI() {
+    function createMusicStudioUI() {
       gameContainer.classList.remove('centered-content');
     
       gameContainer.innerHTML = `
@@ -1315,9 +1315,10 @@ document.addEventListener('DOMContentLoaded', () => {
               <span id="volume-display">30%</span>
             </div>
             <div class="control-group">
-              <label for="tempo-slider">⏱️ Tempo:</label>
+              <label for="tempo-slider">🎵 Metronome:</label>
               <input type="range" id="tempo-slider" min="60" max="180" value="120" class="control-slider">
               <span id="tempo-display">120 BPM</span>
+              <span class="control-hint">Visual beat reference; layer tempo controls playback speed</span>
             </div>
           </div>
           
@@ -1379,6 +1380,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="text" id="composition-name-input" class="composition-name-input" maxlength="100" autocomplete="off">
                 <div class="composition-panel-actions">
                   <button type="button" id="composition-save-confirm" class="composition-action-btn" aria-label="Save composition">Save composition</button>
+                  <button type="button" id="composition-overwrite-btn" class="composition-action-btn composition-overwrite-btn hidden" aria-label="Overwrite existing composition">Overwrite</button>
                   <button type="button" id="composition-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
                 </div>
               </div>
@@ -1387,6 +1389,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <ul id="composition-list" class="composition-list" role="listbox" aria-label="Saved compositions"></ul>
                 <div class="composition-panel-actions">
                   <button type="button" id="composition-cancel-load-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
+                </div>
+              </div>
+              <div id="composition-confirm-view" class="composition-view hidden">
+                <p id="composition-confirm-message" class="composition-confirm-message"></p>
+                <div class="composition-panel-actions">
+                  <button type="button" id="composition-confirm-btn" class="composition-action-btn" aria-label="Confirm action">Confirm</button>
+                  <button type="button" id="composition-confirm-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
                 </div>
               </div>
             </div>
@@ -1484,7 +1493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function ensureAudioResumed() {
-      const context = window.arrowGameAudioContext;
+      const context = window.musicStudioAudioContext;
       if (context && context.state === 'suspended') {
         context.resume().catch((err) => {
           console.warn('Failed to resume audio context:', err);
@@ -1517,7 +1526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function requireAudioContext() {
-      const context = window.arrowGameAudioContext;
+      const context = window.musicStudioAudioContext;
       if (!context) {
         throw new Error('Audio context not initialized');
       }
@@ -1595,7 +1604,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Web Audio API
     function initAudio() {
       try {
-        window.arrowGameAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        window.musicStudioAudioContext = new (window.AudioContext || window.webkitAudioContext)();
         // Resume audio context if it's suspended (required by browser policies)
         if (requireAudioContext().state === 'suspended') {
           requireAudioContext().resume().catch(err => {
@@ -1605,7 +1614,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hideAudioUnavailableBanner();
       } catch (error) {
         console.warn('Web Audio API not supported in this browser:', error);
-        window.arrowGameAudioContext = null;
+        window.musicStudioAudioContext = null;
         showAudioUnavailableBanner();
       }
     }
@@ -1613,13 +1622,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Play a note by name with advanced synthesis
     /** @param {string} noteName */
     function playNoteByName(noteName) {
-      if (!window.arrowGameAudioContext) return;
+      if (!window.musicStudioAudioContext) return;
 
       ensureAudioResumed();
     
       // Update notes counter
       notesPlayed++;
-      const notesElement = queryRequired('arrow-notes');
+      const notesElement = queryRequired('music-studio-notes');
       if (notesElement) {
         notesElement.textContent = String(notesPlayed);
       }
@@ -2036,27 +2045,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Start the music maker
-    function startArrowGame() {
+    function startMusicStudio() {
       if (isGameActive) return;
     
       isGameActive = true;
     
       // Reset notes counter
       notesPlayed = 0;
-      const notesElement = queryRequired('arrow-notes');
+      const notesElement = queryRequired('music-studio-notes');
       if (notesElement) {
         notesElement.textContent = String(notesPlayed);
       }
     
       // Create the UI
-      createArrowGameUI();
+      createMusicStudioUI();
     
       // Init audio context
       initAudio();
     
       // Set up keyboard event handler
-      window.arrowKeyboardHandler = handleKeyPress;
-      document.addEventListener('keydown', window.arrowKeyboardHandler);
+      window.musicStudioKeyboardHandler = handleKeyPress;
+      document.addEventListener('keydown', window.musicStudioKeyboardHandler);
     
       // Start tempo feedback
       addTempoFeedback();
@@ -2206,16 +2215,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetMusicStudioState() {
       stopAllLoops();
       clearPlaybackTimeouts();
+      clearAllLayerLoopTimeouts();
       activeLoopLayers.clear();
 
       if (window.layerIntervals) {
         window.layerIntervals.forEach(intervalId => clearInterval(intervalId));
         window.layerIntervals.clear();
-      }
-
-      if (loopInterval) {
-        clearInterval(loopInterval);
-        loopInterval = null;
       }
 
       if (window.tempoFeedbackInterval) {
@@ -2232,31 +2237,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function closeMusicStudioAudio() {
-      if (window.arrowGameAudioContext && requireAudioContext().state !== 'closed') {
+      if (window.musicStudioAudioContext && requireAudioContext().state !== 'closed') {
         requireAudioContext().close().catch(err => {
           console.warn('Failed to close music studio audio context:', err);
         });
-        window.arrowGameAudioContext = null;
+        window.musicStudioAudioContext = null;
       }
     }
 
     function cleanupMusicStudio() {
-      if (window.arrowKeyboardHandler) {
-        document.removeEventListener('keydown', window.arrowKeyboardHandler);
-        window.arrowKeyboardHandler = null;
+      if (window.musicStudioKeyboardHandler) {
+        document.removeEventListener('keydown', window.musicStudioKeyboardHandler);
+        window.musicStudioKeyboardHandler = null;
       }
 
       if (isGameActive) {
         resetMusicStudioState();
       } else {
         activeLoopLayers.clear();
+        clearAllLayerLoopTimeouts();
         if (window.layerIntervals) {
           window.layerIntervals.forEach(intervalId => clearInterval(intervalId));
           window.layerIntervals.clear();
-        }
-        if (loopInterval) {
-          clearInterval(loopInterval);
-          loopInterval = null;
         }
         if (window.tempoFeedbackInterval) {
           clearInterval(window.tempoFeedbackInterval);
@@ -2269,12 +2271,12 @@ document.addEventListener('DOMContentLoaded', () => {
       compositionPanelTrigger = null;
 
       notesPlayed = 0;
-      const notesElement = queryRequired('arrow-notes');
+      const notesElement = queryRequired('music-studio-notes');
       if (notesElement) {
         notesElement.textContent = '0';
       }
 
-      initArrowDisplay();
+      initMusicStudioWelcome();
       startButton.disabled = false;
       resetButton.disabled = true;
     }
@@ -2282,16 +2284,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.cleanupMusicStudio = cleanupMusicStudio;
 
     // Reset the music maker
-    function resetArrowGame() {
+    function resetMusicStudio() {
       cleanupMusicStudio();
       notesPlayed = 0;
 
-      const notesElement = queryRequired('arrow-notes');
+      const notesElement = queryRequired('music-studio-notes');
       if (notesElement) {
         notesElement.textContent = '0';
       }
 
-      initArrowDisplay();
+      initMusicStudioWelcome();
 
       startButton.disabled = false;
       resetButton.disabled = true;
@@ -2431,6 +2433,8 @@ document.addEventListener('DOMContentLoaded', () => {
           queryRequired('loop-all-btn').disabled = false;
           queryRequired('clear-btn').disabled = false;
           queryRequired('save-btn').disabled = false;
+        } else {
+          statusElement.textContent = 'No notes recorded — try again';
         }
       } else {
       // Start recording new layer
@@ -2565,55 +2569,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function clearCurrentLayer() {
-      if (confirm(`Clear layer ${currentLayerIndex + 1}?`)) {
-      // Stop loop if playing
-        if (activeLoopLayers.has(currentLayerIndex)) {
-          stopLayerLoop(currentLayerIndex);
-        }
-      
-        // Clear the layer
-        const currentLayer = loopLayers[currentLayerIndex];
-        if (currentLayer) {
-          currentLayer.notes = [];
-        }
-        recordedNotes = [];
-      
-        // Update UI
-        updateLayerDisplay();
-        queryRequired('recording-status').textContent = `Layer ${currentLayerIndex + 1} cleared`;
-        queryRequired('play-btn').disabled = true;
-        queryRequired('loop-btn').disabled = true;
-        queryRequired('clear-btn').disabled = true;
-      }
+      openConfirmPanel(
+        `Clear layer ${currentLayerIndex + 1}?`,
+        () => {
+          if (activeLoopLayers.has(currentLayerIndex)) {
+            stopLayerLoop(currentLayerIndex);
+          }
+
+          const currentLayer = loopLayers[currentLayerIndex];
+          if (currentLayer) {
+            currentLayer.notes = [];
+          }
+          recordedNotes = [];
+
+          updateLayerDisplay();
+          queryRequired('recording-status').textContent = `Layer ${currentLayerIndex + 1} cleared`;
+          queryRequired('play-btn').disabled = true;
+          queryRequired('loop-btn').disabled = true;
+          queryRequired('clear-btn').disabled = true;
+        },
+        queryRequired('clear-btn')
+      );
     }
   
     function clearAllLayers() {
-      if (confirm('Clear all layers? This cannot be undone!')) {
-      // Stop all loops
-        stopAllLoops();
-      
-        // Clear all data
-        loopLayers = [];
-        recordedNotes = [];
-        currentLayerIndex = 0;
-        isRecording = false;
-      
-        // Reset UI
-        const recordBtn = queryRequired('record-btn');
-        setBtnLabel(recordBtn, '⏺️ Record Layer');
-        recordBtn.classList.remove('recording');
-      
-        updateLayerDisplay();
-        updateLayerCounts();
-      
-        queryRequired('recording-status').textContent = 'All layers cleared - ready to record layer 1';
-        queryRequired('play-btn').disabled = true;
-        queryRequired('loop-btn').disabled = true;
-        queryRequired('loop-all-btn').disabled = true;
-        queryRequired('clear-btn').disabled = true;
-        queryRequired('clear-all-btn').disabled = true;
-        queryRequired('save-btn').disabled = true;
-      }
+      openConfirmPanel(
+        'Clear all layers? This cannot be undone!',
+        () => {
+          stopAllLoops();
+
+          loopLayers = [];
+          recordedNotes = [];
+          currentLayerIndex = 0;
+          isRecording = false;
+
+          const recordBtn = queryRequired('record-btn');
+          setBtnLabel(recordBtn, '⏺️ Record Layer');
+          recordBtn.classList.remove('recording');
+
+          updateLayerDisplay();
+          updateLayerCounts();
+
+          queryRequired('recording-status').textContent = 'All layers cleared - ready to record layer 1';
+          queryRequired('play-btn').disabled = true;
+          queryRequired('loop-btn').disabled = true;
+          queryRequired('loop-all-btn').disabled = true;
+          queryRequired('clear-btn').disabled = true;
+          queryRequired('clear-all-btn').disabled = true;
+          queryRequired('save-btn').disabled = true;
+        },
+        queryRequired('clear-all-btn')
+      );
     }
   
     /** @param {string} noteName */
@@ -2722,6 +2728,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
+    /** @param {number} layerIndex */
+    function clearLayerLoopTimeouts(layerIndex) {
+      if (!window.layerLoopTimeouts || !window.layerLoopTimeouts.has(layerIndex)) {
+        return;
+      }
+      const timeouts = window.layerLoopTimeouts.get(layerIndex);
+      if (timeouts) {
+        timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+      }
+      window.layerLoopTimeouts.delete(layerIndex);
+    }
+
+    function clearAllLayerLoopTimeouts() {
+      if (!window.layerLoopTimeouts) {
+        return;
+      }
+      window.layerLoopTimeouts.forEach((timeouts) => {
+        timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+      });
+      window.layerLoopTimeouts.clear();
+    }
+
     /** @param {number} layerIndex @param {Array<{ note: string; time: number }>} notes */
     function startLayerLoop(layerIndex, notes) {
       if (activeLoopLayers.has(layerIndex)) {
@@ -2742,12 +2770,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         notes.forEach(({ note, time }) => {
           const adjustedTime = window.GameUtils.scaleNoteTime(time, layerTempo);
-          setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             if (activeLoopLayers.has(layerIndex)) {
               playNoteByName(note);
               highlightPianoKey(note);
             }
           }, adjustedTime);
+          if (!window.layerLoopTimeouts) {
+            window.layerLoopTimeouts = new Map();
+          }
+          const layerTimeouts = window.layerLoopTimeouts.get(layerIndex) || [];
+          layerTimeouts.push(timeoutId);
+          window.layerLoopTimeouts.set(layerIndex, layerTimeouts);
         });
       };
     
@@ -2783,6 +2817,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /** @param {number} layerIndex */
     function stopLayerLoop(layerIndex) {
       activeLoopLayers.delete(layerIndex);
+      clearLayerLoopTimeouts(layerIndex);
     
       if (window.layerIntervals && window.layerIntervals.has(layerIndex)) {
         clearInterval(window.layerIntervals.get(layerIndex));
@@ -2859,6 +2894,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const panel = getHtmlElement('composition-panel');
       const saveView = getHtmlElement('composition-save-view');
       const loadView = getHtmlElement('composition-load-view');
+      const confirmView = getHtmlElement('composition-confirm-view');
+      const overwriteBtn = getHtmlElement('composition-overwrite-btn');
 
       if (panel) {
         panel.classList.add('hidden');
@@ -2870,8 +2907,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (loadView) {
         loadView.classList.add('hidden');
       }
+      if (confirmView) {
+        confirmView.classList.add('hidden');
+      }
+      if (overwriteBtn) {
+        overwriteBtn.classList.add('hidden');
+      }
 
       clearCompositionPanelError();
+      pendingConfirmAction = null;
       document.removeEventListener('keydown', handleCompositionPanelKeydown);
 
       if (compositionPanelTrigger) {
@@ -2880,25 +2924,65 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    /** @param {string} message @param {() => void} onConfirm @param {HTMLElement} trigger */
+    function openConfirmPanel(message, onConfirm, trigger) {
+      const panel = getHtmlElement('composition-panel');
+      const saveView = getHtmlElement('composition-save-view');
+      const loadView = getHtmlElement('composition-load-view');
+      const confirmView = getHtmlElement('composition-confirm-view');
+      const title = getHtmlElement('composition-panel-title');
+      const messageEl = getHtmlElement('composition-confirm-message');
+      const confirmBtn = getHtmlElement('composition-confirm-btn');
+
+      if (!panel || !saveView || !loadView || !confirmView || !title || !messageEl) {
+        return;
+      }
+
+      compositionPanelTrigger = trigger;
+      pendingConfirmAction = onConfirm;
+      clearCompositionPanelError();
+      panel.classList.remove('hidden');
+      panel.setAttribute('aria-hidden', 'false');
+      saveView.classList.add('hidden');
+      loadView.classList.add('hidden');
+      confirmView.classList.remove('hidden');
+      title.textContent = 'Confirm Action';
+      messageEl.textContent = message;
+      document.addEventListener('keydown', handleCompositionPanelKeydown);
+
+      if (confirmBtn instanceof HTMLElement) {
+        confirmBtn.focus();
+      }
+    }
+
     /** @param {'save' | 'load'} mode @param {HTMLElement} trigger */
     function openCompositionPanel(mode, trigger) {
       const panel = getHtmlElement('composition-panel');
       const saveView = getHtmlElement('composition-save-view');
       const loadView = getHtmlElement('composition-load-view');
+      const confirmView = getHtmlElement('composition-confirm-view');
       const title = getHtmlElement('composition-panel-title');
       const nameInputEl = getHtmlElement('composition-name-input');
       const nameInput = nameInputEl ? asInput(nameInputEl) : null;
+      const overwriteBtn = getHtmlElement('composition-overwrite-btn');
 
       if (!panel || !saveView || !loadView || !title) {
         return;
       }
 
       compositionPanelTrigger = trigger;
+      pendingConfirmAction = null;
       clearCompositionPanelError();
       panel.classList.remove('hidden');
       panel.setAttribute('aria-hidden', 'false');
       saveView.classList.add('hidden');
       loadView.classList.add('hidden');
+      if (confirmView) {
+        confirmView.classList.add('hidden');
+      }
+      if (overwriteBtn) {
+        overwriteBtn.classList.add('hidden');
+      }
       document.addEventListener('keydown', handleCompositionPanelKeydown);
 
       if (mode === 'save') {
@@ -2948,10 +3032,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = document.createElement('li');
         item.className = 'composition-list-item';
         item.setAttribute('role', 'option');
-        item.setAttribute('tabindex', '0');
+        item.setAttribute('role', 'option');
         const timestamp = comp.timestamp ? new Date(comp.timestamp).toLocaleString() : 'Unknown date';
-        item.setAttribute('aria-label', `${comp.name}, saved ${timestamp}`);
-        item.innerHTML = `
+
+        const main = document.createElement('div');
+        main.className = 'composition-list-item-main';
+        main.setAttribute('tabindex', '0');
+        main.setAttribute('aria-label', `${comp.name}, saved ${timestamp}`);
+        main.innerHTML = `
           <span class="composition-list-name">${comp.name}</span>
           <span class="composition-list-date">${timestamp}</span>
         `;
@@ -2960,24 +3048,63 @@ document.addEventListener('DOMContentLoaded', () => {
           loadCompositionAtIndex(index);
         };
 
-        item.addEventListener('click', loadAtIndex);
-        item.addEventListener('keydown', (event) => {
+        main.addEventListener('click', loadAtIndex);
+        main.addEventListener('keydown', (event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             loadAtIndex();
           }
         });
 
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'composition-delete-btn';
+        deleteBtn.setAttribute('aria-label', `Delete ${comp.name}`);
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          openConfirmPanel(
+            `Delete "${comp.name}"? This cannot be undone.`,
+            () => {
+              deleteCompositionAtIndex(index);
+            },
+            deleteBtn
+          );
+        });
+
+        item.appendChild(main);
+        item.appendChild(deleteBtn);
         list.appendChild(item);
       });
 
-      const firstItem = list.querySelector('.composition-list-item');
-      if (firstItem instanceof HTMLElement) {
-        firstItem.focus();
+      const firstMain = list.querySelector('.composition-list-item-main');
+      if (firstMain instanceof HTMLElement) {
+        firstMain.focus();
       }
     }
 
-    function confirmSaveComposition() {
+    /** @param {number} index */
+    function deleteCompositionAtIndex(index) {
+      const saved = getSavedCompositionsFromStorage();
+      if (saved === null || index < 0 || index >= saved.length) {
+        showCompositionPanelError('Failed to delete composition.');
+        return;
+      }
+
+      const composition = /** @type {{ name: string }} */ (saved[index]);
+      saved.splice(index, 1);
+
+      try {
+        localStorage.setItem('musicCompositions', JSON.stringify(saved));
+        closeCompositionPanel();
+        queryRequired('recording-status').textContent = `Deleted "${composition.name}" from library.`;
+      } catch {
+        showCompositionPanelError('Failed to delete composition. Storage may be unavailable.');
+      }
+    }
+
+    /** @param {boolean} [overwrite] */
+    function confirmSaveComposition(overwrite = false) {
       const nameInputEl = getHtmlElement('composition-name-input');
       const nameInput = nameInputEl ? asInput(nameInputEl) : null;
       const name = nameInput?.value.trim() ?? '';
@@ -3013,7 +3140,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
-        saved.push(composition);
+        if (!Array.isArray(saved)) {
+          showCompositionPanelError('Failed to save composition.');
+          return;
+        }
+
+        const existingIndex = saved.findIndex((entry) => {
+          return entry && typeof entry === 'object' && 'name' in entry && entry.name === name;
+        });
+
+        if (existingIndex >= 0 && !overwrite) {
+          showCompositionPanelError(
+            `A composition named "${name}" already exists. Change the name or click Overwrite to replace it.`
+          );
+          const overwriteBtn = getHtmlElement('composition-overwrite-btn');
+          if (overwriteBtn) {
+            overwriteBtn.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (existingIndex >= 0) {
+          saved[existingIndex] = composition;
+        } else {
+          saved.push(composition);
+        }
+
         localStorage.setItem('musicCompositions', JSON.stringify(saved));
         closeCompositionPanel();
         queryRequired('recording-status').textContent = `Composition "${name}" saved successfully!`;
@@ -3104,14 +3256,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupCompositionPanel() {
       const saveConfirmBtn = getHtmlElement('composition-save-confirm');
+      const overwriteBtn = getHtmlElement('composition-overwrite-btn');
       const cancelSaveBtn = getHtmlElement('composition-cancel-btn');
       const cancelLoadBtn = getHtmlElement('composition-cancel-load-btn');
       const closeBtn = getHtmlElement('composition-panel-close');
+      const confirmBtn = getHtmlElement('composition-confirm-btn');
+      const confirmCancelBtn = getHtmlElement('composition-confirm-cancel-btn');
       const nameInputEl = getHtmlElement('composition-name-input');
       const nameInput = nameInputEl ? asInput(nameInputEl) : null;
 
       if (saveConfirmBtn) {
-        saveConfirmBtn.addEventListener('click', confirmSaveComposition);
+        saveConfirmBtn.addEventListener('click', () => confirmSaveComposition(false));
+      }
+      if (overwriteBtn) {
+        overwriteBtn.addEventListener('click', () => confirmSaveComposition(true));
+      }
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+          if (pendingConfirmAction) {
+            pendingConfirmAction();
+          }
+          closeCompositionPanel();
+        });
+      }
+      if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener('click', closeCompositionPanel);
       }
       if (cancelSaveBtn) {
         cancelSaveBtn.addEventListener('click', closeCompositionPanel);
@@ -3126,8 +3295,15 @@ document.addEventListener('DOMContentLoaded', () => {
         nameInput.addEventListener('keydown', (event) => {
           if (event.key === 'Enter') {
             event.preventDefault();
-            confirmSaveComposition();
+            confirmSaveComposition(false);
           }
+        });
+        nameInput.addEventListener('input', () => {
+          const overwriteButton = getHtmlElement('composition-overwrite-btn');
+          if (overwriteButton) {
+            overwriteButton.classList.add('hidden');
+          }
+          clearCompositionPanelError();
         });
       }
     }
@@ -3148,10 +3324,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event listeners
-    startButton.addEventListener('click', startArrowGame);
-    resetButton.addEventListener('click', resetArrowGame);
+    startButton.addEventListener('click', startMusicStudio);
+    resetButton.addEventListener('click', resetMusicStudio);
   
   } catch (error) {
-    console.error('Error initializing arrow game:', error);
+    console.error('Error initializing music studio:', error);
   }
 }); 

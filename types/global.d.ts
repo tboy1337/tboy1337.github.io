@@ -14,9 +14,10 @@ declare global {
     ContactValidation: typeof ContactValidationModule;
     SnakeLogic: typeof SnakeLogicModule;
     cleanupMusicStudio?: () => void;
-    arrowKeyboardHandler?: ((event: KeyboardEvent) => void) | null;
+    musicStudioKeyboardHandler?: ((event: KeyboardEvent) => void) | null;
     snakeKeyboardHandler: ((event: KeyboardEvent) => void) | null;
-    arrowGameAudioContext?: AudioContext | null;
+    musicStudioAudioContext?: AudioContext | null;
+    layerLoopTimeouts?: Map<number, ReturnType<typeof setTimeout>[]>;
     webkitAudioContext?: typeof AudioContext;
     snakeGameActive?: boolean;
     snakeGameInterval?: ReturnType<typeof setInterval> | null;

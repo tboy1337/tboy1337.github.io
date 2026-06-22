@@ -49,7 +49,7 @@ test.describe('Music studio extended interactions', () => {
 
     await page.locator('#instrument-select').selectOption('piano');
     await page.keyboard.press('a');
-    await expect(page.locator('#arrow-notes')).not.toHaveText('0');
+    await expect(page.locator('#music-studio-notes')).not.toHaveText('0');
 
     await page.getByRole('checkbox', { name: '🌊 Reverb' }).uncheck();
     await page.getByRole('checkbox', { name: '🌊 Reverb' }).check();
@@ -84,10 +84,8 @@ test.describe('Music studio extended interactions', () => {
     await page.keyboard.press('f');
     await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
 
-    page.once('dialog', async (dialog) => {
-      await dialog.accept();
-    });
     await page.getByRole('button', { name: '🗑️ Clear Current' }).click();
+    await page.getByRole('button', { name: 'Confirm action' }).click();
     await expect(page.getByRole('button', { name: '▶️ Play' })).toBeDisabled();
   });
 });
