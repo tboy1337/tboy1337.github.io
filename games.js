@@ -1,4 +1,71 @@
 // Game Menu System
+
+/**
+ * @param {EventTarget | null} element
+ * @returns {element is HTMLSelectElement}
+ */
+function isSelectElement(element) {
+  return element instanceof HTMLSelectElement;
+}
+
+/**
+ * @param {string} id
+ * @returns {HTMLElement | null}
+ */
+function getHtmlElement(id) {
+  const element = document.getElementById(id);
+  return element instanceof HTMLElement ? element : null;
+}
+
+/**
+ * @param {string} id
+ * @returns {HTMLElement}
+ */
+function queryRequired(id) {
+  const element = document.getElementById(id);
+  if (!(element instanceof HTMLElement)) {
+    throw new Error(`Missing #${id}`);
+  }
+  return element;
+}
+
+/**
+ * @template {HTMLElement} T
+ * @param {T | null} element
+ * @returns {T}
+ */
+function assertPresent(element) {
+  return /** @type {T} */ (element);
+}
+
+/**
+ * @param {HTMLElement} element
+ * @returns {HTMLInputElement}
+ */
+function asInput(element) {
+  return /** @type {HTMLInputElement} */ (element);
+}
+
+/**
+ * @param {HTMLElement} element
+ * @returns {HTMLButtonElement}
+ */
+function asButton(element) {
+  return /** @type {HTMLButtonElement} */ (element);
+}
+
+/**
+ * @param {EventTarget | null} target
+ * @returns {HTMLInputElement | null}
+ */
+function getInputTarget(target) {
+  return target instanceof HTMLInputElement ? target : null;
+}
+
+/**
+ * @typedef {'memory' | 'snake' | 'typing' | 'arrow'} GameName
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
   try {
     const menuItems = document.querySelectorAll('.game-menu-item');
@@ -12,7 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global reference to the snake keyboard handler
     window.snakeKeyboardHandler = null;
   
-    // Function to switch between games
+    /**
+     * @param {GameName} gameName
+     */
     function switchGame(gameName) {
     // Stop all active games before switching
     // Memory game cleanup
@@ -21,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.memoryGameTimer = null;
         window.memoryGameActive = false;
       }
-    
+
       // Snake game cleanup
       if (gameName !== 'snake') {
         if (window.snakeGameInterval) {
@@ -34,34 +103,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         window.snakeGameActive = false;
       }
-    
+
       // Typing game cleanup
       if (gameName !== 'typing' && window.typingTimerInterval) {
-        clearInterval(window.typingTimerInterval);
+        if (window.typingTimerInterval) {
+          clearInterval(window.typingTimerInterval);
+        }
         window.typingTimerInterval = null;
         window.typingGameActive = false;
       }
-    
-      // Arrow game cleanup
+
+      // Music Studio cleanup
       if (gameName !== 'arrow') {
-        if (window.arrowKeyboardHandler) {
-          document.removeEventListener('keydown', window.arrowKeyboardHandler);
-          window.arrowKeyboardHandler = null;
-        }
-        // Close audio context when switching away from arrow game
-        if (window.arrowGameAudioContext && window.arrowGameAudioContext.state !== 'closed') {
-          window.arrowGameAudioContext.close().catch(err => {
-            console.warn('Failed to close arrow game audio context:', err);
-          });
-          window.arrowGameAudioContext = null;
+        if (typeof window.cleanupMusicStudio === 'function') {
+          window.cleanupMusicStudio();
         }
       }
-    
+
       // Hide all game sections
       gameSections.forEach(section => {
         section.classList.add('hidden');
       });
-    
+
       // Deactivate all menu items and update aria-pressed
       menuItems.forEach(item => {
         item.classList.remove('active');
@@ -70,32 +133,36 @@ document.addEventListener('DOMContentLoaded', () => {
           button.setAttribute('aria-pressed', 'false');
         }
       });
-    
+
       // Show selected game and activate menu item
-      const gameSection = document.getElementById(`${gameName}-section`);
+      const gameSection = queryRequired(`${gameName}-section`);
       if (gameSection) {
         gameSection.classList.remove('hidden');
       }
-    
+
       const activeMenuItem = document.querySelector(`.game-menu-item[data-game="${gameName}"]`);
       if (activeMenuItem) {
         activeMenuItem.classList.add('active');
-      
+
         // Update aria-pressed for active button
         const activeButton = activeMenuItem.querySelector('button');
         if (activeButton) {
           activeButton.setAttribute('aria-pressed', 'true');
-          activeButton.focus(); // Focus the active game button for keyboard users
+          activeButton.focus();
         }
       }
     }
   
     // Add click event listeners to menu items
     menuItems.forEach(item => {
-      item.addEventListener('click', function() {
+      item.addEventListener('click', (event) => {
         try {
-          const gameName = this.getAttribute('data-game');
-          if (gameName) {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLElement)) {
+            return;
+          }
+          const gameName = target.getAttribute('data-game');
+          if (gameName === 'memory' || gameName === 'snake' || gameName === 'typing' || gameName === 'arrow') {
             switchGame(gameName);
           }
         } catch (error) {
@@ -112,21 +179,30 @@ document.addEventListener('DOMContentLoaded', () => {
 // Memory Card Game
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const gameContainer = document.getElementById('memory-game');
-    const startButton = document.getElementById('start-game');
-    const resetButton = document.getElementById('reset-game');
-    const scoreElement = document.getElementById('score');
-    const timeElement = document.getElementById('time');
+    const gameContainer = getHtmlElement('memory-game');
+    const startButton = getHtmlElement('start-game');
+    const resetButton = getHtmlElement('reset-game');
+    const scoreElement = getHtmlElement('score');
+    const timeElement = getHtmlElement('time');
     
     if (!gameContainer || !startButton || !resetButton || !scoreElement || !timeElement) {
       console.warn('Memory game elements not found');
       return;
     }
+
+    const memoryContainer = assertPresent(gameContainer);
+    const memoryStartButton = asButton(startButton);
+    const memoryResetButton = asButton(resetButton);
+    const memoryScoreElement = assertPresent(scoreElement);
+    const memoryTimeElement = assertPresent(timeElement);
   
     let cards = [];
     let hasFlippedCard = false;
     let lockBoard = false;
-    let firstCard, secondCard;
+    /** @type {HTMLElement | null} */
+    let firstCard = null;
+    /** @type {HTMLElement | null} */
+    let secondCard = null;
     let score = 0;
     let timeLeft = 60;
     window.memoryGameTimer = null;
@@ -147,9 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize with a centered start message instead of the grid
     function initializeGameDisplay() {
     // First add the centered-content class to change the display mode
-      gameContainer.classList.add('centered-content');
+      memoryContainer.classList.add('centered-content');
     
-      gameContainer.innerHTML = `
+      memoryContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
         <p class="text-xl mb-4">Memory Card Game</p>
         <p>Test your memory by matching pairs of tech icons!</p>
@@ -163,15 +239,15 @@ document.addEventListener('DOMContentLoaded', () => {
   
     function startGame() {
       if (window.memoryGameActive) return;
-    
+
       window.memoryGameActive = true;
       score = 0;
       timeLeft = 60;
-      scoreElement.textContent = score;
-      timeElement.textContent = timeLeft;
+      memoryScoreElement.textContent = String(score);
+      memoryTimeElement.textContent = String(timeLeft);
     
       // Remove the centered-content class before creating the grid
-      gameContainer.classList.remove('centered-content');
+      memoryContainer.classList.remove('centered-content');
     
       // Create cards
       createCards();
@@ -179,26 +255,26 @@ document.addEventListener('DOMContentLoaded', () => {
       // Start timer
       window.memoryGameTimer = setInterval(() => {
         timeLeft--;
-        timeElement.textContent = timeLeft;
+        memoryTimeElement.textContent = String(timeLeft);
       
         if (timeLeft <= 0) {
           endGame(false); // Game lost - time ran out
         }
       }, 1000);
     
-      startButton.disabled = true;
-      resetButton.disabled = false;
+      memoryStartButton.disabled = true;
+      memoryResetButton.disabled = false;
     }
   
     function createCards() {
-      gameContainer.innerHTML = '';
+      memoryContainer.innerHTML = '';
       cards = [];
     
       // Double the icons to create pairs
       const cardIcons = [...icons, ...icons];
     
       // Shuffle the icons
-      shuffleArray(cardIcons);
+      window.GameUtils.shuffleArray(cardIcons);
     
       // Create card elements
       cardIcons.forEach((icon) => {
@@ -225,42 +301,56 @@ document.addEventListener('DOMContentLoaded', () => {
         card.appendChild(backFace);
       
         card.addEventListener('click', flipCard);
-        gameContainer.appendChild(card);
+        memoryContainer.appendChild(card);
         cards.push(card);
       });
     }
   
-    function flipCard() {
+    /** @param {MouseEvent} event */
+    function flipCard(event) {
       if (lockBoard) return;
-      if (this === firstCard) return;
-    
-      this.classList.add('flipped');
-    
+      const card = event.currentTarget;
+      if (!(card instanceof HTMLElement)) {
+        return;
+      }
+      if (card === firstCard) return;
+
+      card.classList.add('flipped');
+
       if (!hasFlippedCard) {
       // First card flipped
         hasFlippedCard = true;
-        firstCard = this;
+        firstCard = card;
         return;
       }
-    
+
       // Second card flipped
-      secondCard = this;
+      secondCard = card;
       checkForMatch();
     }
   
     function checkForMatch() {
-      const isMatch = firstCard.dataset.icon === secondCard.dataset.icon;
-    
+      if (!firstCard || !secondCard) {
+        return;
+      }
+      const isMatch = window.MemoryGameUtils.isMemoryMatch(
+        firstCard.dataset.icon ?? '',
+        secondCard.dataset.icon ?? ''
+      );
+
       if (isMatch) {
         disableCards();
-        score += 10;
-        scoreElement.textContent = score;
+        score = window.MemoryGameUtils.updateMemoryScore(score, true);
+        memoryScoreElement.textContent = String(score);
       } else {
         unflipCards();
       }
     }
   
     function disableCards() {
+      if (!firstCard || !secondCard) {
+        return;
+      }
       firstCard.removeEventListener('click', flipCard);
       secondCard.removeEventListener('click', flipCard);
     
@@ -270,18 +360,26 @@ document.addEventListener('DOMContentLoaded', () => {
       resetBoard();
     
       // Check if all cards are matched
-      if (document.querySelectorAll('.memory-card.matched').length === cards.length) {
+      if (window.MemoryGameUtils.isMemoryGameComplete(
+        document.querySelectorAll('.memory-card.matched').length,
+        cards.length
+      )) {
         endGame(true); // Game won - all cards matched
       }
     }
   
     function unflipCards() {
+      if (!firstCard || !secondCard) {
+        return;
+      }
       lockBoard = true;
-    
+      const first = firstCard;
+      const second = secondCard;
+
       setTimeout(() => {
-        firstCard.classList.remove('flipped');
-        secondCard.classList.remove('flipped');
-      
+        first.classList.remove('flipped');
+        second.classList.remove('flipped');
+
         resetBoard();
       }, 1000);
     }
@@ -291,41 +389,37 @@ document.addEventListener('DOMContentLoaded', () => {
       [firstCard, secondCard] = [null, null];
     }
   
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-  
     function resetGame() {
-      clearInterval(window.memoryGameTimer);
+      if (window.memoryGameTimer) {
+        clearInterval(window.memoryGameTimer);
+      }
       window.memoryGameActive = false;
     
       // Reset to initial display
       initializeGameDisplay();
     
-      startButton.disabled = false;
-      resetButton.disabled = true;
+      memoryStartButton.disabled = false;
+      memoryResetButton.disabled = true;
     
       score = 0;
       timeLeft = 60;
-      scoreElement.textContent = score;
-      timeElement.textContent = timeLeft;
+      memoryScoreElement.textContent = String(score);
+      memoryTimeElement.textContent = String(timeLeft);
     
       resetBoard();
     }
   
     function endGame(won = false) {
-      clearInterval(window.memoryGameTimer);
+      if (window.memoryGameTimer) {
+        clearInterval(window.memoryGameTimer);
+      }
       window.memoryGameActive = false;
       lockBoard = true;
     
       // Show result message
-      gameContainer.classList.add('centered-content');
+      memoryContainer.classList.add('centered-content');
       if (won) {
-        gameContainer.innerHTML = `
+        memoryContainer.innerHTML = `
         <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
           <p class="text-2xl mb-4 text-green-400">🎉 You Won!</p>
           <p class="text-lg mb-2">All cards matched!</p>
@@ -335,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
       } else {
-        gameContainer.innerHTML = `
+        memoryContainer.innerHTML = `
         <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
           <p class="text-2xl mb-4 text-red-400">⏰ Time's Up!</p>
           <p class="text-lg mb-2">Better luck next time!</p>
@@ -345,15 +439,13 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       }
     
-      startButton.disabled = false;
-      resetButton.disabled = false; // Enable reset so user can play again
+      memoryStartButton.disabled = false;
+      memoryResetButton.disabled = false; // Enable reset so user can play again
     }
   
     // Event listeners
-    if (startButton && resetButton) {
-      startButton.addEventListener('click', startGame);
-      resetButton.addEventListener('click', resetGame);
-    }
+    memoryStartButton.addEventListener('click', startGame);
+    memoryResetButton.addEventListener('click', resetGame);
   
   } catch (error) {
     console.error('Error initializing memory game:', error);
@@ -363,19 +455,29 @@ document.addEventListener('DOMContentLoaded', () => {
 // Snake Game
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const snakeContainer = document.getElementById('snake-game');
-    const snakeStartButton = document.getElementById('start-snake');
-    const snakeResetButton = document.getElementById('reset-snake');
-    const snakeScoreElement = document.getElementById('snake-score');
+    const snakeContainerEl = getHtmlElement('snake-game');
+    const snakeStartButtonEl = getHtmlElement('start-snake');
+    const snakeResetButtonEl = getHtmlElement('reset-snake');
+    const snakeScoreElementEl = getHtmlElement('snake-score');
     
-    if (!snakeContainer || !snakeStartButton || !snakeResetButton || !snakeScoreElement) {
+    if (!snakeContainerEl || !snakeStartButtonEl || !snakeResetButtonEl || !snakeScoreElementEl) {
       console.warn('Snake game elements not found');
       return;
     }
+
+    const snakeContainer = assertPresent(snakeContainerEl);
+    const snakeStartButton = asButton(assertPresent(snakeStartButtonEl));
+    const snakeResetButton = asButton(assertPresent(snakeResetButtonEl));
+    const snakeScoreElement = assertPresent(snakeScoreElementEl);
   
-    let canvas, ctx;
+    /** @type {HTMLCanvasElement | undefined} */
+    let canvas;
+    /** @type {CanvasRenderingContext2D | null | undefined} */
+    let ctx;
+    /** @type {Array<{ x: number; y: number }>} */
     let snake = [];
-    let food = {};
+    /** @type {{ x: number; y: number }} */
+    let food = { x: 0, y: 0 };
     let direction = 'right';
     let nextDirection = 'right'; // Buffer for next direction change
     let gameSpeed = 150;
@@ -417,6 +519,10 @@ document.addEventListener('DOMContentLoaded', () => {
       canvas.style.height = 'auto';
     
       ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.warn('Canvas 2D context unavailable');
+        return;
+      }
       snakeContainer.innerHTML = '';
       snakeContainer.appendChild(canvas);
     
@@ -440,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
       window.snakeGameActive = true;
       snakeScore = 0;
-      snakeScoreElement.textContent = snakeScore;
+      snakeScoreElement.textContent = String(snakeScore);
     
       // Reset direction to ensure consistent start
       direction = 'right';
@@ -481,9 +587,15 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.className = 'touch-btn';
         btn.innerHTML = `<i class="fas ${d.icon}"></i>`;
         btn.setAttribute('data-direction', d.dir);
-        btn.addEventListener('click', function() {
-          const dir = this.getAttribute('data-direction');
-          handleDirectionChange(dir);
+        btn.addEventListener('click', (event) => {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLButtonElement)) {
+            return;
+          }
+          const dir = target.getAttribute('data-direction');
+          if (dir) {
+            handleDirectionChange(dir);
+          }
         });
         touchControlsContainer.appendChild(btn);
       });
@@ -491,22 +603,15 @@ document.addEventListener('DOMContentLoaded', () => {
       snakeContainer.appendChild(touchControlsContainer);
     }
   
-    function handleDirectionChange(newDirection) {
-    // Only allow direction changes if no change is already queued
-      if (direction !== nextDirection) {
-        return;
-      }
-    
-      if (
-        (newDirection === 'up' && direction !== 'down') ||
-      (newDirection === 'down' && direction !== 'up') ||
-      (newDirection === 'left' && direction !== 'right') ||
-      (newDirection === 'right' && direction !== 'left')
-      ) {
-        nextDirection = newDirection;
-      }
+    function handleDirectionChange(/** @type {string} */ newDirection) {
+      nextDirection = window.SnakeLogic.resolveDirectionChange(
+        direction,
+        nextDirection,
+        newDirection
+      );
     }
   
+    /** @param {KeyboardEvent} e */
     function changeDirection(e) {
     // Prevent default browser scrolling behavior for arrow keys
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || 
@@ -514,33 +619,15 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
       }
     
-      // Only allow direction changes if no change is already queued
-      // This prevents multiple rapid direction changes within one game loop cycle
-      if (direction !== nextDirection) {
-        return;
-      }
-    
-      // Validate against current direction to prevent immediate reversal
-      if (e.key === 'ArrowUp' && direction !== 'down') {
-        nextDirection = 'up';
-      } else if (e.key === 'ArrowDown' && direction !== 'up') {
-        nextDirection = 'down';
-      } else if (e.key === 'ArrowLeft' && direction !== 'right') {
-        nextDirection = 'left';
-      } else if (e.key === 'ArrowRight' && direction !== 'left') {
-        nextDirection = 'right';
-      }
+      nextDirection = window.SnakeLogic.resolveKeyboardDirection(
+        e.key,
+        direction,
+        nextDirection
+      );
     }
   
     function gameLoop() {
-      if (!window.snakeGameActive) return;
-    
-      // Safety check: ensure canvas and context exist
-      if (!canvas || !ctx) {
-        console.warn('Canvas or context not initialized');
-        endSnakeGame();
-        return;
-      }
+      if (!window.snakeGameActive || !canvas || !ctx) return;
     
       // Apply queued direction change at the start of each game loop
       direction = nextDirection;
@@ -553,10 +640,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Check if food eaten (before collision check to avoid issues)
       let foodEaten = false;
-      if (snake.length > 0 && snake[0].x === food.x && snake[0].y === food.y) {
+      if (window.SnakeLogic.isFoodEaten(snake[0] ?? { x: -1, y: -1 }, food)) {
       // Increase score
         snakeScore += 10;
-        snakeScoreElement.textContent = snakeScore;
+        snakeScoreElement.textContent = String(snakeScore);
       
         // Create new food
         createFood();
@@ -582,65 +669,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function moveSnake() {
-    // Safety check: ensure snake exists
-      if (!snake || snake.length === 0) {
-        console.warn('Snake array is empty');
-        endSnakeGame();
+      const headCell = snake[0];
+      if (!headCell) {
         return;
       }
-    
-      // Calculate new head position
-      const head = { x: snake[0].x, y: snake[0].y };
-    
-      switch (direction) {
-        case 'up':
-          head.y -= snakeSize;
-          break;
-        case 'down':
-          head.y += snakeSize;
-          break;
-        case 'left':
-          head.x -= snakeSize;
-          break;
-        case 'right':
-          head.x += snakeSize;
-          break;
-      }
-    
-      // Add new head to beginning of snake array
+      const head = window.SnakeLogic.getNextHead(headCell, direction, snakeSize);
       snake.unshift(head);
     }
-  
+
     function checkCollision() {
-    // Safety check: ensure snake has a head
-      if (!snake || snake.length === 0) {
-        return true; // Treat as collision if snake doesn't exist
-      }
-    
-      const head = snake[0];
-    
-      // Check wall collision
-      if (
-        head.x < 0 ||
-      head.y < 0 ||
-      head.x >= canvas.width ||
-      head.y >= canvas.height
-      ) {
+      const headCell = snake[0];
+      if (!headCell || !canvas) {
         return true;
       }
-    
-      // Check self collision (skip the head)
-      for (let i = 1; i < snake.length; i++) {
-        if (head.x === snake[i].x && head.y === snake[i].y) {
-          return true;
-        }
-      }
-    
-      return false;
+      return window.SnakeLogic.hasCollision(headCell, snake, canvas.width, canvas.height);
     }
   
     function createFood() {
-    // Create food at random position (aligned to grid)
+      if (!canvas) {
+        return;
+      }
+      // Create food at random position (aligned to grid)
       const gridWidth = canvas.width / snakeSize;
       const gridHeight = canvas.height / snakeSize;
     
@@ -657,7 +706,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check if food position conflicts with snake
         let conflictFound = false;
         for (let i = 0; i < snake.length; i++) {
-          if (food.x === snake[i].x && food.y === snake[i].y) {
+          const segment = snake[i];
+          if (!segment) {
+            continue;
+          }
+          if (food.x === segment.x && food.y === segment.y) {
             conflictFound = true;
             break;
           }
@@ -674,23 +727,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function drawSnake() {
+      const context = ctx;
+      if (!context) {
+        return;
+      }
       snake.forEach((segment, index) => {
       // Make head a different color
         if (index === 0) {
-          ctx.fillStyle = '#22c55e'; // Green
+          context.fillStyle = '#22c55e'; // Green
         } else {
-          ctx.fillStyle = '#4ade80'; // Light green
+          context.fillStyle = '#4ade80'; // Light green
         }
       
-        ctx.fillRect(segment.x, segment.y, snakeSize, snakeSize);
+        context.fillRect(segment.x, segment.y, snakeSize, snakeSize);
       
         // Add border
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.strokeRect(segment.x, segment.y, snakeSize, snakeSize);
+        context.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        context.strokeRect(segment.x, segment.y, snakeSize, snakeSize);
       });
     }
   
     function drawFood() {
+      if (!ctx) {
+        return;
+      }
       ctx.fillStyle = '#f87171'; // Red
       ctx.fillRect(food.x, food.y, snakeSize, snakeSize);
     
@@ -707,9 +767,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Reset game state
       snake = [];
-      food = {};
+      food = { x: 0, y: 0 };
       snakeScore = 0;
-      snakeScoreElement.textContent = snakeScore;
+      snakeScoreElement.textContent = String(snakeScore);
       direction = 'right';
       nextDirection = 'right';
       gameSpeed = 150;
@@ -719,7 +779,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function endSnakeGame() {
-      clearInterval(window.snakeGameInterval);
+      if (window.snakeGameInterval) {
+        clearInterval(window.snakeGameInterval);
+      }
     
       // Remove keyboard event listener
       if (window.snakeKeyboardHandler) {
@@ -757,25 +819,30 @@ document.addEventListener('DOMContentLoaded', () => {
 // Typing Speed Test Game
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const typingContainer = document.getElementById('typing-game');
-    const typingStartButton = document.getElementById('start-typing');
-    const typingResetButton = document.getElementById('reset-typing');
-    const wpmElement = document.getElementById('typing-wpm');
-    const accuracyElement = document.getElementById('typing-accuracy');
+    const typingContainerEl = getHtmlElement('typing-game');
+    const typingStartButtonEl = getHtmlElement('start-typing');
+    const typingResetButtonEl = getHtmlElement('reset-typing');
+    const wpmElementEl = getHtmlElement('typing-wpm');
+    const accuracyElementEl = getHtmlElement('typing-accuracy');
     
-    if (!typingContainer || !typingStartButton || !typingResetButton || !wpmElement || !accuracyElement) {
+    if (!typingContainerEl || !typingStartButtonEl || !typingResetButtonEl || !wpmElementEl || !accuracyElementEl) {
       console.warn('Typing game elements not found');
       return;
     }
+
+    const typingContainer = assertPresent(typingContainerEl);
+    const typingStartButton = asButton(assertPresent(typingStartButtonEl));
+    const typingResetButton = asButton(assertPresent(typingResetButtonEl));
+    const wpmElement = assertPresent(wpmElementEl);
+    const accuracyElement = assertPresent(accuracyElementEl);
   
+    /** @type {Date | undefined} */
     let startTime;
     window.typingTimerInterval = null;
     window.typingGameActive = false;
     let totalTyped = 0;
     let correctTyped = 0;
-    let _currentSentence = 0;
     let sentencesCompleted = 0;
-    let _totalWordsTyped = 0;
     let totalCharactersTyped = 0;
     let totalCorrectCharacters = 0;
   
@@ -853,9 +920,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.typingGameActive = true;
       totalTyped = 0;
       correctTyped = 0;
-      _currentSentence = 0;
       sentencesCompleted = 0;
-      _totalWordsTyped = 0;
       totalCharactersTyped = 0;
       totalCorrectCharacters = 0;
     
@@ -866,14 +931,8 @@ document.addEventListener('DOMContentLoaded', () => {
       loadNewSentence();
     
       // Get elements
-      const typingInput = document.getElementById('typing-input');
-      const timerDisplay = document.getElementById('timer-display');
-    
-      if (!typingInput || !timerDisplay) {
-        console.warn('Typing game elements not ready');
-        window.typingGameActive = false;
-        return;
-      }
+      const typingInput = asInput(queryRequired('typing-input'));
+      const timerDisplay = queryRequired('timer-display');
     
       // Enable input and focus
       typingInput.disabled = false;
@@ -882,12 +941,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Start timer (60 seconds)
       let timeLeft = 60;
-      timerDisplay.textContent = timeLeft;
+      timerDisplay.textContent = String(timeLeft);
     
       startTime = new Date();
       window.typingTimerInterval = setInterval(() => {
         timeLeft--;
-        timerDisplay.textContent = timeLeft;
+        timerDisplay.textContent = String(timeLeft);
       
         if (timeLeft <= 0) {
           endTypingGame();
@@ -902,17 +961,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function loadNewSentence() {
-      const textDisplay = document.getElementById('text-display');
-      const typingInput = document.getElementById('typing-input');
-    
-      if (!textDisplay) {
-        console.warn('Text display element not found');
-        return;
-      }
+      const textDisplay = queryRequired('text-display');
+      const typingInput = asInput(queryRequired('typing-input'));
     
       // Select random prompt
       const randomIndex = Math.floor(Math.random() * textPrompts.length);
-      const currentPrompt = textPrompts[randomIndex];
+      const currentPrompt = textPrompts[randomIndex] ?? textPrompts[0] ?? '';
+      if (!currentPrompt) {
+        return;
+      }
     
       // Display text character by character with spans for tracking
       textDisplay.innerHTML = '';
@@ -931,12 +988,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function checkTyping() {
-      const textDisplay = document.getElementById('text-display');
-      const typingInput = document.getElementById('typing-input');
-    
-      if (!textDisplay || !typingInput) {
-        return;
-      }
+      const textDisplay = queryRequired('text-display');
+      const typingInput = asInput(queryRequired('typing-input'));
     
       const arrayPrompt = textDisplay.querySelectorAll('span');
       const arrayValue = typingInput.value.split('');
@@ -950,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const character = arrayValue[index];
       
         // If character hasn't been typed yet
-        if (character === null || character === undefined) {
+        if (character == null) {
           characterSpan.classList.remove('correct');
           characterSpan.classList.remove('incorrect');
           correct = false;
@@ -977,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sentencesCompleted++;
       
         // Update sentence counter display
-        const sentenceCounter = document.getElementById('sentence-counter');
+        const sentenceCounter = queryRequired('sentence-counter');
         if (sentenceCounter) {
           sentenceCounter.textContent = `Sentences: ${sentencesCompleted}`;
         }
@@ -997,22 +1050,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStats() {
     // Calculate words per minute (WPM) based on cumulative stats
     // Assuming 5 characters = 1 word, which is a common standard
-      const timeInMinutes = (new Date() - startTime) / 1000 / 60;
-      const totalCorrectWords = (totalCorrectCharacters + correctTyped) / 5;
-      const wpm = Math.round(totalCorrectWords / timeInMinutes) || 0;
-    
-      // Calculate cumulative accuracy
-      const totalCharsSoFar = totalCharactersTyped + totalTyped;
-      const totalCorrectSoFar = totalCorrectCharacters + correctTyped;
-      const accuracy = totalCharsSoFar > 0 ? Math.round((totalCorrectSoFar / totalCharsSoFar) * 100) : 0;
+      const elapsedMs = startTime ? Date.now() - startTime.getTime() : 0;
+      const wpm = window.TypingStats.calculateWpm(totalCorrectCharacters, correctTyped, elapsedMs);
+      const accuracy = window.TypingStats.calculateAccuracy(
+        totalCharactersTyped,
+        totalTyped,
+        totalCorrectCharacters,
+        correctTyped
+      );
     
       // Update displays
-      wpmElement.textContent = wpm;
-      accuracyElement.textContent = accuracy;
+      wpmElement.textContent = String(wpm);
+      accuracyElement.textContent = String(accuracy);
     }
   
     function resetTypingGame() {
-      clearInterval(window.typingTimerInterval);
+      if (window.typingTimerInterval) {
+        clearInterval(window.typingTimerInterval);
+      }
     
       window.typingGameActive = false;
       typingStartButton.disabled = false;
@@ -1027,10 +1082,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function endTypingGame() {
-      clearInterval(window.typingTimerInterval);
+      if (window.typingTimerInterval) {
+        clearInterval(window.typingTimerInterval);
+      }
       window.typingGameActive = false;
     
-      const typingInput = document.getElementById('typing-input');
+      const typingInput = asInput(queryRequired('typing-input'));
       if (typingInput) {
         typingInput.disabled = true;
         typingInput.removeEventListener('input', checkTyping);
@@ -1041,10 +1098,12 @@ document.addEventListener('DOMContentLoaded', () => {
       totalCorrectCharacters += correctTyped;
     
       // Final statistics calculation
-      const timeInMinutes = (new Date() - startTime) / 1000 / 60;
-      const totalCorrectWords = totalCorrectCharacters / 5;
-      const finalWpm = Math.round(totalCorrectWords / timeInMinutes) || 0;
-      const finalAccuracy = totalCharactersTyped > 0 ? Math.round((totalCorrectCharacters / totalCharactersTyped) * 100) : 0;
+      const elapsedMs = startTime ? Date.now() - startTime.getTime() : 0;
+      const { wpm: finalWpm, accuracy: finalAccuracy } = window.TypingStats.calculateFinalStats(
+        totalCorrectCharacters,
+        totalCharactersTyped,
+        elapsedMs
+      );
     
       // Show final score display
       typingContainer.classList.add('centered-content');
@@ -1071,8 +1130,8 @@ document.addEventListener('DOMContentLoaded', () => {
       typingResetButton.disabled = false;
     
       // Update final displays one more time
-      wpmElement.textContent = finalWpm;
-      accuracyElement.textContent = finalAccuracy;
+      wpmElement.textContent = String(finalWpm);
+      accuracyElement.textContent = String(finalAccuracy);
     }
   
     // Event listeners
@@ -1086,43 +1145,125 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 }); 
 
-// Discord-style Arrow Keys Game
+// Advanced Music Studio
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const startButton = document.getElementById('start-arrow');
-    const resetButton = document.getElementById('reset-arrow');
-    const gameContainer = document.getElementById('arrow-game');
+    const startButtonEl = getHtmlElement('start-arrow');
+    const resetButtonEl = getHtmlElement('reset-arrow');
+    const gameContainerEl = getHtmlElement('arrow-game');
     
-    if (!startButton || !resetButton || !gameContainer) {
-      console.warn('Arrow game elements not found');
+    if (!gameContainerEl || !startButtonEl || !resetButtonEl) {
+      console.warn('Music studio elements not found');
       return;
     }
+
+    const gameContainer = assertPresent(gameContainerEl);
+    const startButton = asButton(assertPresent(startButtonEl));
+    const resetButton = asButton(assertPresent(resetButtonEl));
   
     let isGameActive = false;
     window.arrowGameAudioContext = null;
     let notesPlayed = 0;
   
-    // Define audio frequencies for different notes (pentatonic scale with electronic vibe)
-    const noteFrequencies = [
-      261.63, // C
-      293.66, // D
-      329.63, // E
-      392.00, // G
-      440.00, // A
-      523.25, // C (octave up)
-      587.33, // D (octave up)
-      659.25  // E (octave up)
-    ];
+    // Define comprehensive note frequencies (full chromatic scale with multiple octaves)
+    /** @type {Record<string, number>} */
+    const noteFrequencies = {
+    // Octave 3
+      'C3': 130.81, 'C#3': 138.59, 'Db3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'Eb3': 155.56,
+      'E3': 164.81, 'F3': 174.61, 'F#3': 185.00, 'Gb3': 185.00, 'G3': 196.00, 'G#3': 207.65,
+      'Ab3': 207.65, 'A3': 220.00, 'A#3': 233.08, 'Bb3': 233.08, 'B3': 246.94,
+      // Octave 4 (Middle)
+      'C4': 261.63, 'C#4': 277.18, 'Db4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'Eb4': 311.13,
+      'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'Gb4': 369.99, 'G4': 392.00, 'G#4': 415.30,
+      'Ab4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'Bb4': 466.16, 'B4': 493.88,
+      // Octave 5
+      'C5': 523.25, 'C#5': 554.37, 'Db5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'Eb5': 622.25,
+      'E5': 659.25, 'F5': 698.46, 'F#5': 739.99, 'Gb5': 739.99, 'G5': 783.99, 'G#5': 830.61,
+      'Ab5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'Bb5': 932.33, 'B5': 987.77
+    };
+
+    // Enhanced keyboard mapping for piano-style playing
+    /** @type {Record<string, string>} */
+    const keyboardMapping = {
+    // Lower row (white keys) - Major scale starting from C4
+      'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4', 'g': 'G4', 'h': 'A4', 'j': 'B4', 'k': 'C5',
+      // Upper row (black keys) - Sharps/flats
+      'w': 'C#4', 'e': 'D#4', 't': 'F#4', 'y': 'G#4', 'u': 'A#4', 'o': 'C#5', 'p': 'D#5',
+      // Number row for octave 3
+      '1': 'C3', '2': 'D3', '3': 'E3', '4': 'F3', '5': 'G3', '6': 'A3', '7': 'B3',
+      // Arrow keys for special effects and octave 5
+      'ArrowUp': 'C5', 'ArrowLeft': 'G4', 'ArrowDown': 'E4', 'ArrowRight': 'A4'
+    };
+
+    // Effect types and parameters - ALL ENABLED BY DEFAULT
+    /** @type {{
+     *   reverb: { enabled: boolean; roomSize: number; damping: number; wetness: number };
+     *   delay: { enabled: boolean; time: number; feedback: number; wetness: number };
+     *   chorus: { enabled: boolean; rate: number; depth: number; wetness: number };
+     *   distortion: { enabled: boolean; amount: number; wetness: number };
+     *   filter: { enabled: boolean; frequency: number; Q: number; type: BiquadFilterType };
+     * }} */
+    let currentEffects = {
+      reverb: { enabled: true, roomSize: 0.3, damping: 0.5, wetness: 0.3 },
+      delay: { enabled: true, time: 0.3, feedback: 0.3, wetness: 0.3 },
+      chorus: { enabled: true, rate: 1.5, depth: 0.3, wetness: 0.5 },
+      distortion: { enabled: true, amount: 25, wetness: 0.5 },
+      filter: { enabled: true, frequency: 1000, Q: 8, type: 'lowpass' }
+    };
+
+    // Current instrument type
+    let currentInstrument = 'synth'; // synth, piano, strings, bass
+
+    // Multi-layer recording system
+    let isRecording = false;
+    /** @type {Array<{ note: string; time: number }>} */
+    let recordedNotes = [];
+    let recordingStartTime = 0;
+    let isLooping = false;
+    /** @type {ReturnType<typeof setInterval> | null} */
+    let loopInterval = null;
+    let currentTempo = 120; // BPM
+    let masterVolume = 0.3;
   
-    // Initialize the game
+    // Multi-layer loop system with individual tempos
+    /** @type {Array<{ notes: Array<{ note: string; time: number }>; name?: string }>} */
+    let loopLayers = [];
+    let activeLoopLayers = new Set(); // Which layers are currently playing
+    let maxLoopLayers = 4; // Maximum number of simultaneous loops
+    let layerTempos = [120, 120, 120, 120]; // Individual BPM for each layer
+    let currentLayerIndex = 0;
+    let isPlayingPlayback = false;
+    /** @type {ReturnType<typeof setTimeout>[]} */
+    let playbackTimeouts = [];
+
+    const pianoKeyConfig = {
+      whiteKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
+      blackKeys: [['C#4'], ['D#4'], [], ['F#4'], ['G#4'], ['A#4'], [], []]
+    };
+
+    const noteToKeyLabel = /** @type {Record<string, string>} */ ({
+      'C4': 'A', 'D4': 'S', 'E4': 'D', 'F4': 'F', 'G4': 'G', 'A4': 'H', 'B4': 'J', 'C5': 'K',
+      'C#4': 'W', 'D#4': 'E', 'F#4': 'T', 'G#4': 'Y', 'A#4': 'U', 'C#5': 'O', 'D#5': 'P'
+    });
+
+    /** @param {HTMLElement | null} button @param {string} label */
+    function setBtnLabel(button, label) {
+      if (!button) return;
+      button.textContent = label;
+      button.setAttribute('aria-label', label);
+    }
+
+    // Initialize the advanced music studio
     function initArrowDisplay() {
       gameContainer.classList.add('centered-content');
       gameContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
-        <p class="text-xl mb-4">Music Keys</p>
-        <p>Press the arrow keys to create your own music!</p>
-        <p>Each arrow key plays a different note with electronic effects.</p>
-        <p class="mt-4">Click "Start" to begin making music!</p>
+        <p class="text-xl mb-4">🎹 Advanced Music Studio</p>
+        <p class="mb-2">Create music with a full chromatic keyboard!</p>
+        <p class="mb-2">🎵 Use A-K keys for white notes, W E T Y U O P for black notes</p>
+        <p class="mb-2">🎛️ Apply effects: reverb, delay, chorus & more</p>
+        <p class="mb-2">🔄 Record and loop your compositions</p>
+        <p class="mt-4">Click "Start Studio" to begin composing!</p>
       </div>
     `;
     }
@@ -1131,139 +1272,253 @@ document.addEventListener('DOMContentLoaded', () => {
     initArrowDisplay();
   
     // Initialize notes counter
-    const notesElement = document.getElementById('arrow-notes');
+    const notesElement = queryRequired('arrow-notes');
     if (notesElement) {
       notesElement.textContent = '0';
     }
   
-    // Create the game UI
+    // Create the advanced music studio UI
     function createArrowGameUI() {
       gameContainer.classList.remove('centered-content');
     
       gameContainer.innerHTML = `
-      <div class="arrow-container">
-        <div class="arrow-key" data-key="ArrowUp" data-note="0">
-          <i class="fas fa-arrow-up"></i>
-        </div>
-        <div class="arrow-key" data-key="ArrowLeft" data-note="1">
-          <i class="fas fa-arrow-left"></i>
-        </div>
-        <div class="arrow-key" data-key="ArrowDown" data-note="2">
-          <i class="fas fa-arrow-down"></i>
-        </div>
-        <div class="arrow-key" data-key="ArrowRight" data-note="3">
-          <i class="fas fa-arrow-right"></i>
-        </div>
-      </div>
-      <div class="mt-8 text-center">
-        <p>Create electronic music! Each arrow plays a different note.</p>
-        <p class="mt-2 text-sm text-gray-400">Try pressing multiple keys in different patterns.</p>
-      </div>
-      <div class="mobile-controls mt-6">
-        <p class="text-center mb-3">Tap the arrows to play on mobile:</p>
-        <div class="touch-arrow-container">
-          <div class="touch-arrow-btn" data-note="0">
-            <i class="fas fa-arrow-up"></i>
+      <div class="music-studio">
+        <!-- Piano Keyboard Visual -->
+        <div class="piano-container">
+          <div class="piano-keyboard" id="piano-keyboard">
+            <!-- Keys will be generated dynamically -->
           </div>
-          <div class="touch-arrow-row">
-            <div class="touch-arrow-btn" data-note="1">
-              <i class="fas fa-arrow-left"></i>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="control-panel">
+          <div class="control-row">
+            <div class="control-group">
+              <label>🎼 Instrument:</label>
+              <select id="instrument-select" class="control-select">
+                <option value="synth">🎹 Synthesizer</option>
+                <option value="piano">🎵 Piano</option>
+                <option value="strings">🎻 Strings</option>
+                <option value="bass">🎸 Bass</option>
+              </select>
             </div>
-            <div class="touch-arrow-btn" data-note="2">
-              <i class="fas fa-arrow-down"></i>
+            <div class="control-group">
+              <label>🔊 Volume:</label>
+              <input type="range" id="volume-slider" min="0" max="100" value="30" class="control-slider">
+              <span id="volume-display">30%</span>
             </div>
-            <div class="touch-arrow-btn" data-note="3">
-              <i class="fas fa-arrow-right"></i>
+            <div class="control-group">
+              <label>⏱️ Tempo:</label>
+              <input type="range" id="tempo-slider" min="60" max="180" value="120" class="control-slider">
+              <span id="tempo-display">120 BPM</span>
+            </div>
+          </div>
+          
+          <!-- Effects Panel -->
+          <div class="effects-panel">
+            <div class="effects-title">🎛️ Effects</div>
+            <div class="effects-grid">
+              <div class="effect-control">
+                <input type="checkbox" id="reverb-toggle" class="effect-toggle" checked>
+                <label for="reverb-toggle">🌊 Reverb</label>
+                <input type="range" id="reverb-amount" min="0" max="100" value="30" class="effect-slider">
+              </div>
+              <div class="effect-control">
+                <input type="checkbox" id="delay-toggle" class="effect-toggle" checked>
+                <label for="delay-toggle">🔄 Delay</label>
+                <input type="range" id="delay-amount" min="0" max="100" value="30" class="effect-slider">
+              </div>
+              <div class="effect-control">
+                <input type="checkbox" id="chorus-toggle" class="effect-toggle" checked>
+                <label for="chorus-toggle">🌈 Chorus</label>
+                <input type="range" id="chorus-amount" min="0" max="100" value="50" class="effect-slider">
+              </div>
+              <div class="effect-control">
+                <input type="checkbox" id="distortion-toggle" class="effect-toggle" checked>
+                <label for="distortion-toggle">⚡ Distortion</label>
+                <input type="range" id="distortion-amount" min="0" max="100" value="50" class="effect-slider">
+              </div>
+              <div class="effect-control">
+                <input type="checkbox" id="filter-toggle" class="effect-toggle" checked>
+                <label for="filter-toggle">🎛️ Filter</label>
+                <input type="range" id="filter-amount" min="0" max="100" value="80" class="effect-slider">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recording Panel -->
+          <div class="recording-panel">
+            <div class="recording-title">🎙️ Multi-Layer Recording</div>
+            <div class="recording-controls recording-controls-primary">
+              <button id="record-btn" class="record-btn" aria-label="⏺️ Record Layer">⏺️ Record Layer</button>
+              <button id="play-btn" class="play-btn" disabled aria-label="▶️ Play">▶️ Play</button>
+              <button id="loop-btn" class="loop-btn" disabled aria-label="🔄 Loop Current">🔄 Loop Current</button>
+              <button id="loop-all-btn" class="loop-btn" disabled aria-label="🔄 Loop All">🔄 Loop All</button>
+            </div>
+            <div class="recording-controls recording-controls-secondary">
+              <button id="clear-btn" class="clear-btn" disabled aria-label="🗑️ Clear Current">🗑️ Clear Current</button>
+              <button id="clear-all-btn" class="clear-btn" disabled aria-label="🗑️ Clear All">🗑️ Clear All</button>
+              <button id="save-btn" class="save-btn" disabled aria-label="💾 Save">💾 Save</button>
+              <button id="load-btn" class="load-btn" aria-label="📁 Load">📁 Load</button>
+            </div>
+            <div class="layer-status">
+              <div class="layer-info">
+                <span>Current Layer: <span id="current-layer">1</span></span>
+                <span>Total Layers: <span id="total-layers">0</span></span>
+                <span>Layer Tempo: <span id="layer-tempo">120</span> BPM</span>
+              </div>
+              <div class="layer-controls">
+                <button id="prev-layer-btn" class="layer-nav-btn" disabled>◀ Prev</button>
+                <button id="next-layer-btn" class="layer-nav-btn" disabled>Next ▶</button>
+                <input type="range" id="layer-tempo-slider" min="60" max="200" value="120" class="tempo-slider-small">
+              </div>
+            </div>
+            <div class="recording-info">
+              <span id="recording-status">Ready to record layer 1</span>
+              <span id="recording-length">0:00</span>
+            </div>
+            <div class="layers-display" id="layers-display">
+              <!-- Layer indicators will be added here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Keyboard Legend -->
+        <div class="keyboard-legend" aria-label="Keyboard mapping legend">
+          <div class="legend-row legend-white-keys">
+            <span class="legend-key" data-key="a">A</span>
+            <span class="legend-key" data-key="s">S</span>
+            <span class="legend-key" data-key="d">D</span>
+            <span class="legend-key" data-key="f">F</span>
+            <span class="legend-key" data-key="g">G</span>
+            <span class="legend-key" data-key="h">H</span>
+            <span class="legend-key" data-key="j">J</span>
+            <span class="legend-key" data-key="k">K</span>
+          </div>
+          <div class="legend-row legend-black-keys">
+            <span class="legend-key legend-key-black" data-key="w">W</span>
+            <span class="legend-key legend-key-black" data-key="e">E</span>
+            <span class="legend-key legend-key-spacer"></span>
+            <span class="legend-key legend-key-black" data-key="t">T</span>
+            <span class="legend-key legend-key-black" data-key="y">Y</span>
+            <span class="legend-key legend-key-black" data-key="u">U</span>
+            <span class="legend-key legend-key-spacer"></span>
+            <span class="legend-key legend-key-black" data-key="o">O</span>
+            <span class="legend-key legend-key-black" data-key="p">P</span>
+          </div>
+          <div class="legend-row legend-octave-keys">
+            <span class="legend-key" data-key="1">1</span>
+            <span class="legend-key" data-key="2">2</span>
+            <span class="legend-key" data-key="3">3</span>
+            <span class="legend-key" data-key="4">4</span>
+            <span class="legend-key" data-key="5">5</span>
+            <span class="legend-key" data-key="6">6</span>
+            <span class="legend-key" data-key="7">7</span>
+            <span class="legend-key legend-key-label">Octave 3</span>
+          </div>
+          <div class="legend-row legend-arrow-keys">
+            <span class="legend-key" data-key="ArrowLeft">←</span>
+            <span class="legend-key" data-key="ArrowDown">↓</span>
+            <span class="legend-key" data-key="ArrowUp">↑</span>
+            <span class="legend-key" data-key="ArrowRight">→</span>
+            <span class="legend-key legend-key-label">Shortcuts</span>
+          </div>
+        </div>
+
+        <!-- Keyboard Instruction -->
+        <div class="keyboard-help">
+          <p class="mb-2">🎹 <strong>Keyboard Controls:</strong></p>
+          <p>White keys: A S D F G H J K | Black keys: W E T Y U O P</p>
+          <p>Lower octave: 1-7 | Higher octave: Arrow keys</p>
+        </div>
+        
+        <!-- Mobile Touch Controls -->
+        <div class="mobile-controls">
+          <div class="touch-piano-container">
+            <div class="touch-key-row" id="touch-piano-keyboard">
+              <!-- Touch keys generated dynamically -->
             </div>
           </div>
         </div>
       </div>
     `;
 
-      // Add note labels to the keys
-      const noteNames = ['C', 'D', 'E', 'G', 'A', 'C', 'D', 'E'];
-      document.querySelectorAll('.arrow-key, .touch-arrow-btn').forEach((key) => {
-        const noteIndex = parseInt(key.dataset.note);
-      
-        // Add note name
-        const noteLabel = document.createElement('div');
-        noteLabel.className = 'note-label';
-        noteLabel.textContent = noteNames[noteIndex];
-        key.appendChild(noteLabel);
-      });
+      // Generate piano keyboard visual
+      generatePianoKeyboard();
+      generateTouchPiano();
+    
+      // Setup control event listeners
+      setupControlListeners();
 
-      // Add touch event listeners for mobile
-      document.querySelectorAll('.touch-arrow-btn').forEach(btn => {
-        btn.addEventListener('touchstart', handleTouchStart);
-        btn.addEventListener('click', handleTouchStart);  // Also support clicks for testing
-      });
+      initializeEffectStates();
     }
   
-    // Handle touch events for mobile
+    function requireAudioContext() {
+      const context = window.arrowGameAudioContext;
+      if (!context) {
+        throw new Error('Audio context not initialized');
+      }
+      return context;
+    }
+
+    /** @param {TouchEvent | MouseEvent} event */
     function handleTouchStart(event) {
       if (!isGameActive) return;
-    
+
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
       // Prevent default behavior to avoid scrolling
       event.preventDefault();
-    
-      const noteIndex = parseInt(this.dataset.note);
-    
+
+      const noteName = target.dataset.note;
+      if (!noteName) return;
+
       // Visual effect for button press
-      this.classList.add('active');
+      target.classList.add('active');
       setTimeout(() => {
-        this.classList.remove('active');
+        target.classList.remove('active');
       }, 100);
-    
+
       // Play the note
-      playNote(noteIndex);
-    
-      // Add correct animation
-      this.classList.add('correct');
-      setTimeout(() => this.classList.remove('correct'), 300);
-    
-      // Find and animate the corresponding keyboard arrow
-      const arrowKey = document.querySelector(`.arrow-key[data-note="${noteIndex}"]`);
-      if (arrowKey) {
-        arrowKey.classList.add('active');
-        setTimeout(() => arrowKey.classList.remove('active'), 100);
-        arrowKey.classList.add('correct');
-        setTimeout(() => arrowKey.classList.remove('correct'), 300);
+      playNoteByName(noteName);
+
+      // Add visual feedback animation
+      target.classList.add('correct');
+      setTimeout(() => target.classList.remove('correct'), 300);
+
+      // Record if recording is active
+      if (isRecording) {
+        recordNote(noteName);
       }
     }
-  
-    // Handle key press events
+
+    /** @param {KeyboardEvent} event */
     function handleKeyPress(event) {
       if (!isGameActive) return;
-    
-      const key = event.key;
-      const keyMap = {
-        'ArrowUp': 0,
-        'ArrowLeft': 1,
-        'ArrowDown': 2,
-        'ArrowRight': 3
-      };
-    
-      if (keyMap[key] !== undefined) {
-      // Prevent default browser scrolling behavior for arrow keys
-        event.preventDefault();
-      
-        const noteIndex = keyMap[key];
-        const arrowElement = document.querySelector(`.arrow-key[data-key="${key}"]`);
-      
-        // Play the note
-        playNote(noteIndex);
-      
-        // Visual effect for key press (only if element exists)
-        if (arrowElement) {
-          arrowElement.classList.add('active');
-          setTimeout(() => {
-            arrowElement.classList.remove('active');
-          }, 100);
-        
-          // Add correct animation
-          arrowElement.classList.add('correct');
-          setTimeout(() => arrowElement.classList.remove('correct'), 300);
-        }
+
+      const mappingKey = keyboardMapping[event.key] !== undefined
+        ? event.key
+        : keyboardMapping[event.key.toLowerCase()] !== undefined
+          ? event.key.toLowerCase()
+          : null;
+
+      if (!mappingKey) return;
+
+      event.preventDefault();
+
+      const noteName = keyboardMapping[mappingKey];
+      if (!noteName) {
+        return;
+      }
+
+      playNoteByName(noteName);
+      highlightKey(mappingKey, noteName);
+
+      if (isRecording) {
+        recordNote(noteName);
       }
     }
   
@@ -1272,8 +1527,8 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         window.arrowGameAudioContext = new (window.AudioContext || window.webkitAudioContext)();
         // Resume audio context if it's suspended (required by browser policies)
-        if (window.arrowGameAudioContext.state === 'suspended') {
-          window.arrowGameAudioContext.resume().catch(err => {
+        if (requireAudioContext().state === 'suspended') {
+          requireAudioContext().resume().catch(err => {
             console.warn('Failed to resume audio context:', err);
           });
         }
@@ -1283,90 +1538,429 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
-    // Play a note based on index with electronic style
-    function playNote(index) {
+    // Play a note by name with advanced synthesis
+    /** @param {string} noteName */
+    function playNoteByName(noteName) {
       if (!window.arrowGameAudioContext) return;
     
       // Update notes counter
       notesPlayed++;
-      const notesElement = document.getElementById('arrow-notes');
+      const notesElement = queryRequired('arrow-notes');
       if (notesElement) {
-        notesElement.textContent = notesPlayed;
+        notesElement.textContent = String(notesPlayed);
       }
     
-      // Create audio nodes
-      const oscillator = window.arrowGameAudioContext.createOscillator();
-      const gainNode = window.arrowGameAudioContext.createGain();
-      const filterNode = window.arrowGameAudioContext.createBiquadFilter();
-      const distortion = window.arrowGameAudioContext.createWaveShaper();
+      const frequency = noteFrequencies[noteName];
+      if (!frequency) return;
     
-      // Set up oscillator with a sawtooth wave for more electronic sound
-      oscillator.type = index % 2 === 0 ? 'sawtooth' : 'square';
-      oscillator.frequency.value = noteFrequencies[index];
+      // Create base oscillator based on instrument type
+      const oscillator = createInstrumentOscillator(frequency);
     
-      // Set up filter for that electronic sound
-      filterNode.type = 'lowpass';
-      filterNode.frequency.value = 1000;
-      filterNode.Q.value = 8;
-    
-      // Add filter envelope for the wah effect
-      filterNode.frequency.setValueAtTime(100, window.arrowGameAudioContext.currentTime);
-      filterNode.frequency.exponentialRampToValueAtTime(
-        3000, 
-        window.arrowGameAudioContext.currentTime + 0.1
-      );
-      filterNode.frequency.exponentialRampToValueAtTime(
-        1000, 
-        window.arrowGameAudioContext.currentTime + 0.4
-      );
-    
-      // Distortion function for added effect
-      function makeDistortionCurve(amount) {
-        const k = typeof amount === 'number' ? amount : 50;
-        const samples = 44100;
-        const curve = new Float32Array(samples);
-        const deg = Math.PI / 180;
-      
-        for (let i = 0; i < samples; ++i) {
-          const x = (i * 2 / samples) - 1;
-          curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
-        }
-      
-        return curve;
-      }
-    
-      distortion.curve = makeDistortionCurve(25);
-      distortion.oversample = '4x';
-    
-      // Initial gain value
-      gainNode.gain.value = 0.3;
-    
-      // Connect all the nodes
-      oscillator.connect(filterNode);
-      filterNode.connect(distortion);
-      distortion.connect(gainNode);
-      gainNode.connect(window.arrowGameAudioContext.destination);
-    
+      // Create effect chain
+      const effectChain = createEffectChain();
+
+      // Create master gain
+      const masterGain = requireAudioContext().createGain();
+      masterGain.gain.value = masterVolume;
+
+      // Connect the audio chain
+      oscillator.connect(effectChain.input);
+      effectChain.output.connect(masterGain);
+      masterGain.connect(requireAudioContext().destination);
+
       // Start the oscillator
       oscillator.start();
-    
-      // Apply volume envelope
-      gainNode.gain.setValueAtTime(0.01, window.arrowGameAudioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.3, window.arrowGameAudioContext.currentTime + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, window.arrowGameAudioContext.currentTime + 0.5);
-    
-      // Add a slight pitch bend for more character
-      oscillator.frequency.exponentialRampToValueAtTime(
-        oscillator.frequency.value * 0.99,
-        window.arrowGameAudioContext.currentTime + 0.4
-      );
-    
-      // Stop the oscillator after a short time
+
+      // Apply envelope based on instrument type
+      applyEnvelope(effectChain.output, currentInstrument);
+
+      // Stop the oscillator after note duration
+      const noteDuration = getNoteDuration(currentInstrument);
       setTimeout(() => {
-        oscillator.stop();
-      }, 500);
+        try {
+          oscillator.stop();
+        } catch {
+        // Oscillator may have already stopped
+        }
+        if (effectChain.chorusLFO) {
+          try {
+            effectChain.chorusLFO.stop();
+          } catch {
+          // LFO may have already stopped
+          }
+        }
+      }, noteDuration);
     }
   
+    // Create oscillator based on instrument type
+    function createInstrumentOscillator(/** @type {number} */ frequency) {
+      const oscillator = requireAudioContext().createOscillator();
+      oscillator.frequency.value = frequency;
+    
+      switch (currentInstrument) {
+        case 'piano':
+          oscillator.type = 'triangle';
+          break;
+        case 'strings':
+          oscillator.type = 'sawtooth';
+          break;
+        case 'bass':
+          oscillator.type = 'square';
+          break;
+        case 'synth':
+        default:
+          oscillator.type = 'sawtooth';
+          break;
+      }
+    
+      return oscillator;
+    }
+  
+    // Create comprehensive effect chain
+    function createEffectChain() {
+      let input = requireAudioContext().createGain();
+      let output = input;
+      let chorusLFO = null;
+    
+      // Filter
+      if (currentEffects.filter.enabled) {
+        const filter = requireAudioContext().createBiquadFilter();
+        filter.type = currentEffects.filter.type;
+        filter.frequency.value = currentEffects.filter.frequency;
+        filter.Q.value = currentEffects.filter.Q;
+      
+        // Add filter envelope for sweep effect
+        filter.frequency.setValueAtTime(currentEffects.filter.frequency * 0.5, requireAudioContext().currentTime);
+        filter.frequency.exponentialRampToValueAtTime(
+          currentEffects.filter.frequency * 2, 
+          requireAudioContext().currentTime + 0.1
+        );
+        filter.frequency.exponentialRampToValueAtTime(
+          currentEffects.filter.frequency, 
+          requireAudioContext().currentTime + 0.3
+        );
+      
+        output.connect(filter);
+        output = filter;
+      }
+    
+      // Distortion with proper wet/dry mix
+      if (currentEffects.distortion.enabled) {
+        const distortion = requireAudioContext().createWaveShaper();
+        distortion.curve = makeDistortionCurve(currentEffects.distortion.amount);
+        distortion.oversample = '4x';
+      
+        const dryGain = requireAudioContext().createGain();
+        const wetGain = requireAudioContext().createGain();
+        const mixGain = requireAudioContext().createGain();
+      
+        dryGain.gain.value = 1 - currentEffects.distortion.wetness;
+        wetGain.gain.value = currentEffects.distortion.wetness;
+      
+        // Split signal
+        output.connect(dryGain);
+        output.connect(distortion);
+        distortion.connect(wetGain);
+      
+        // Mix back together
+        dryGain.connect(mixGain);
+        wetGain.connect(mixGain);
+        output = mixGain;
+      
+      }
+    
+      // Delay effect (FIXED: tempo should NOT affect delay characteristics)
+      if (currentEffects.delay.enabled) {
+        const delayTime = currentEffects.delay.time; // Fixed delay time, not tempo-dependent
+        const delayNode = requireAudioContext().createDelay(1);
+        const delayGain = requireAudioContext().createGain();
+        const feedbackGain = requireAudioContext().createGain();
+        const wetGain = requireAudioContext().createGain();
+        const dryGain = requireAudioContext().createGain();
+        const mixGain = requireAudioContext().createGain();
+      
+        delayNode.delayTime.value = Math.min(delayTime, 0.8);
+        wetGain.gain.value = currentEffects.delay.wetness;
+        dryGain.gain.value = 1 - currentEffects.delay.wetness;
+        feedbackGain.gain.value = currentEffects.delay.feedback;
+      
+        // Create delay chain
+        output.connect(dryGain);
+        output.connect(delayGain);
+        delayGain.connect(delayNode);
+        delayNode.connect(wetGain);
+        delayNode.connect(feedbackGain);
+        feedbackGain.connect(delayGain); // Feedback loop
+      
+        // Mix signals
+        dryGain.connect(mixGain);
+        wetGain.connect(mixGain);
+        output = mixGain;
+      
+      }
+    
+      // Simple reverb (using multiple delays)
+      if (currentEffects.reverb.enabled) {
+        const reverbGain = requireAudioContext().createGain();
+        const dryGain = requireAudioContext().createGain();
+        const mixGain = requireAudioContext().createGain();
+      
+        reverbGain.gain.value = currentEffects.reverb.wetness;
+        dryGain.gain.value = 1 - currentEffects.reverb.wetness;
+      
+        // Create multiple short delays to simulate reverb
+        [0.03, 0.05, 0.07, 0.09].forEach((time) => {
+          const delay = requireAudioContext().createDelay();
+          const gain = requireAudioContext().createGain();
+          delay.delayTime.value = time * currentEffects.reverb.roomSize;
+          gain.gain.value = 0.3 * (1 - currentEffects.reverb.damping);
+
+          output.connect(delay);
+          delay.connect(gain);
+          gain.connect(reverbGain);
+        });
+      
+        // Mix dry and wet
+        output.connect(dryGain);
+        dryGain.connect(mixGain);
+        reverbGain.connect(mixGain);
+        output = mixGain;
+      
+      }
+    
+      // Simple chorus effect (using modulated delay)
+      if (currentEffects.chorus.enabled) {
+        const chorusDelay = requireAudioContext().createDelay(0.05);
+        chorusLFO = requireAudioContext().createOscillator();
+        const chorusGain = requireAudioContext().createGain();
+        const chorusDepth = requireAudioContext().createGain();
+        const dryGain = requireAudioContext().createGain();
+        const mixGain = requireAudioContext().createGain();
+
+        // Set up LFO for chorus modulation
+        chorusLFO.frequency.value = currentEffects.chorus.rate;
+        chorusLFO.type = 'sine';
+        chorusDepth.gain.value = currentEffects.chorus.depth * 0.002; // Small modulation
+
+        // Connect LFO to delay time
+        chorusLFO.connect(chorusDepth);
+        chorusDepth.connect(chorusDelay.delayTime);
+
+        // Set base delay time
+        chorusDelay.delayTime.value = 0.02;
+
+        // Set gains
+        chorusGain.gain.value = currentEffects.chorus.wetness;
+        dryGain.gain.value = 1 - currentEffects.chorus.wetness;
+
+        // Connect audio path
+        output.connect(chorusDelay);
+        chorusDelay.connect(chorusGain);
+        output.connect(dryGain);
+
+        // Mix signals
+        dryGain.connect(mixGain);
+        chorusGain.connect(mixGain);
+
+        // Start LFO
+        chorusLFO.start();
+
+        output = mixGain;
+      }
+
+      return { input, output, chorusLFO };
+    }
+  
+    // Create distortion curve
+    function makeDistortionCurve(/** @type {number} */ amount) {
+      const k = typeof amount === 'number' ? amount : 50;
+      const samples = 44100;
+      const curve = new Float32Array(samples);
+      const deg = Math.PI / 180;
+    
+      for (let i = 0; i < samples; ++i) {
+        const x = (i * 2 / samples) - 1;
+        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+      }
+    
+      return curve;
+    }
+  
+    // Apply envelope based on instrument type (FIXED: tempo should NOT affect sound quality)
+    function applyEnvelope(/** @type {GainNode} */ gainNode, /** @type {string} */ instrument) {
+      const now = requireAudioContext().currentTime;
+    
+      switch (instrument) {
+        case 'piano':
+          gainNode.gain.setValueAtTime(0.01, now);
+          gainNode.gain.exponentialRampToValueAtTime(1, now + 0.01);
+          gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2);
+          break;
+        case 'strings':
+          gainNode.gain.setValueAtTime(0.01, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3);
+          gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3);
+          break;
+        case 'bass':
+          gainNode.gain.setValueAtTime(0.01, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
+          break;
+        case 'synth':
+        default:
+          gainNode.gain.setValueAtTime(0.01, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+          break;
+      }
+    }
+  
+    // Get note duration based on instrument (FIXED: tempo should NOT affect individual note length)
+    function getNoteDuration(/** @type {string} */ instrument) {
+      switch (instrument) {
+        case 'piano': return 2000;
+        case 'strings': return 3000;
+        case 'bass': return 1000;
+        case 'synth':
+        default: return 800;
+      }
+    }
+  
+    // Tempo-based metronome click (visual feedback)
+    function addTempoFeedback() {
+      const tempoDisplay = queryRequired('tempo-display');
+      if (tempoDisplay && currentTempo > 0) {
+        const beatInterval = 60000 / currentTempo; // ms per beat
+      
+        // Clear existing tempo feedback
+        if (window.tempoFeedbackInterval) {
+          clearInterval(window.tempoFeedbackInterval);
+        }
+      
+        // Add visual beat indicator
+        window.tempoFeedbackInterval = setInterval(() => {
+          if (tempoDisplay) {
+            tempoDisplay.style.color = '#4ade80';
+            setTimeout(() => {
+              if (tempoDisplay) {
+                tempoDisplay.style.color = '#e0e0e0';
+              }
+            }, 100);
+          }
+        }, beatInterval);
+      }
+    }
+  
+    // Generate piano keyboard visual
+    function generatePianoKeyboard() {
+      const pianoKeyboard = queryRequired('piano-keyboard');
+      if (!pianoKeyboard) return;
+
+      const { whiteKeys, blackKeys } = pianoKeyConfig;
+
+      pianoKeyboard.innerHTML = '';
+
+      whiteKeys.forEach((note, index) => {
+        const key = document.createElement('div');
+        key.className = 'piano-key white-key';
+        key.dataset.note = note;
+        key.setAttribute('aria-label', `Play ${note}`);
+
+        const noteLabel = document.createElement('span');
+        noteLabel.className = 'piano-note-name';
+        noteLabel.textContent = note;
+        key.appendChild(noteLabel);
+
+        const keyLabel = noteToKeyLabel[note];
+        if (keyLabel) {
+          const labelSpan = document.createElement('span');
+          labelSpan.className = 'key-label';
+          labelSpan.textContent = keyLabel;
+          key.appendChild(labelSpan);
+        }
+
+        if (blackKeys[index] && blackKeys[index].length > 0) {
+          const blackNote = blackKeys[index][0];
+          if (blackNote) {
+            const blackKey = document.createElement('div');
+            blackKey.className = 'piano-key black-key';
+            blackKey.dataset.note = blackNote;
+            blackKey.setAttribute('aria-label', `Play ${blackNote}`);
+
+            const blackNoteLabel = document.createElement('span');
+            blackNoteLabel.className = 'piano-note-name';
+            blackNoteLabel.textContent = blackNote;
+            blackKey.appendChild(blackNoteLabel);
+
+            const blackKeyLabel = noteToKeyLabel[blackNote];
+            if (blackKeyLabel) {
+              const blackLabelSpan = document.createElement('span');
+              blackLabelSpan.className = 'key-label';
+              blackLabelSpan.textContent = blackKeyLabel;
+              blackKey.appendChild(blackLabelSpan);
+            }
+
+            key.appendChild(blackKey);
+          }
+        }
+
+        pianoKeyboard.appendChild(key);
+      });
+
+      pianoKeyboard.addEventListener('click', (e) => {
+        const target = e.target;
+        if (!(target instanceof Element)) {
+          return;
+        }
+        const pianoKey = target.closest('.piano-key');
+        if (!(pianoKey instanceof HTMLElement)) return;
+
+        const noteName = pianoKey.dataset.note;
+        if (noteName) {
+          playNoteByName(noteName);
+          highlightPianoKey(noteName);
+
+          if (isRecording) {
+            recordNote(noteName);
+          }
+        }
+      });
+    }
+
+    function generateTouchPiano() {
+      const touchKeyboard = queryRequired('touch-piano-keyboard');
+      if (!touchKeyboard) return;
+
+      const { whiteKeys, blackKeys } = pianoKeyConfig;
+      touchKeyboard.innerHTML = '';
+
+      whiteKeys.slice(0, 7).forEach((note, index) => {
+        const key = document.createElement('div');
+        key.className = 'touch-key white-key';
+        key.dataset.note = note;
+        key.setAttribute('aria-label', `Play ${note}`);
+        key.textContent = note.replace('4', '');
+
+        if (blackKeys[index] && blackKeys[index].length > 0) {
+          const blackNote = blackKeys[index][0];
+          if (blackNote) {
+            const blackKey = document.createElement('div');
+            blackKey.className = 'touch-key black-key';
+            blackKey.dataset.note = blackNote;
+            blackKey.setAttribute('aria-label', `Play ${blackNote}`);
+            blackKey.textContent = blackNote.replace('4', '#');
+            key.appendChild(blackKey);
+          }
+        }
+
+        touchKeyboard.appendChild(key);
+      });
+
+      setupTouchControls();
+    }
+
     // Start the music maker
     function startArrowGame() {
       if (isGameActive) return;
@@ -1375,9 +1969,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Reset notes counter
       notesPlayed = 0;
-      const notesElement = document.getElementById('arrow-notes');
+      const notesElement = queryRequired('arrow-notes');
       if (notesElement) {
-        notesElement.textContent = notesPlayed;
+        notesElement.textContent = String(notesPlayed);
       }
     
       // Create the UI
@@ -1390,47 +1984,867 @@ document.addEventListener('DOMContentLoaded', () => {
       window.arrowKeyboardHandler = handleKeyPress;
       document.addEventListener('keydown', window.arrowKeyboardHandler);
     
+      // Start tempo feedback
+      addTempoFeedback();
+    
+      // Log initial state for debugging
+    
       startButton.disabled = true;
       resetButton.disabled = false;
     }
   
-    // Reset the music maker
-    function resetArrowGame() {
-      isGameActive = false;
+    /** @typedef {'reverb' | 'delay' | 'chorus' | 'distortion' | 'filter'} EffectName */
+
+    // Setup control panel event listeners
+    function setupControlListeners() {
+    // Instrument selector
+      const instrumentSelect = queryRequired('instrument-select');
+      if (isSelectElement(instrumentSelect)) {
+        instrumentSelect.addEventListener('change', (e) => {
+          const target = e.target;
+          if (!isSelectElement(target)) {
+            return;
+          }
+          currentInstrument = target.value;
+        });
+      }
     
-      // Reset notes counter
-      notesPlayed = 0;
+      // Volume control
+      const volumeSlider = asInput(queryRequired('volume-slider'));
+      const volumeDisplay = queryRequired('volume-display');
+      volumeSlider.addEventListener('input', (e) => {
+        const target = getInputTarget(e.target);
+        if (!target) {
+          return;
+        }
+        masterVolume = Number(target.value) / 100;
+        volumeDisplay.textContent = `${target.value}%`;
+      });
     
-      // Close audio context to prevent memory leak
-      if (window.arrowGameAudioContext && window.arrowGameAudioContext.state !== 'closed') {
-        window.arrowGameAudioContext.close().catch(err => {
-          console.warn('Failed to close audio context:', err);
+      // Tempo control
+      const tempoSlider = asInput(queryRequired('tempo-slider'));
+      const tempoDisplay = queryRequired('tempo-display');
+      tempoSlider.addEventListener('input', (e) => {
+        const target = getInputTarget(e.target);
+        if (!target) {
+          return;
+        }
+        currentTempo = parseInt(target.value, 10);
+        tempoDisplay.textContent = `${target.value} BPM`;
+        addTempoFeedback(); // Start visual tempo feedback
+      });
+    
+      // Effect toggles and sliders
+      setupEffectControls();
+    
+      // Recording controls
+      setupRecordingControls();
+    }
+  
+    /** @param {EffectName} effect @param {HTMLInputElement} slider */
+    function syncEffectSlider(effect, slider) {
+      if (!slider || !currentEffects[effect]) return;
+
+      if (effect === 'distortion') {
+        slider.value = String(currentEffects[effect].amount);
+      } else if (effect === 'filter') {
+        slider.value = String(currentEffects[effect].frequency / 50);
+      } else {
+        slider.value = String(currentEffects[effect].wetness * 100);
+      }
+    }
+
+    // Initialize effect states after DOM is ready
+    function initializeEffectStates() {
+      /** @type {EffectName[]} */
+      const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
+
+      effects.forEach((effect) => {
+        const toggle = asInput(queryRequired(`${effect}-toggle`));
+        const slider = asInput(queryRequired(`${effect}-amount`));
+
+        toggle.checked = currentEffects[effect].enabled;
+        slider.disabled = !currentEffects[effect].enabled;
+        syncEffectSlider(effect, slider);
+      });
+    }
+
+    // Setup effect controls (event listeners only)
+    function setupEffectControls() {
+      /** @type {EffectName[]} */
+      const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
+    
+      effects.forEach((effect) => {
+        const toggle = asInput(queryRequired(`${effect}-toggle`));
+        const slider = asInput(queryRequired(`${effect}-amount`));
+      
+        toggle.addEventListener('change', (e) => {
+          const target = getInputTarget(e.target);
+          if (!target) {
+            return;
+          }
+          currentEffects[effect].enabled = target.checked;
+          slider.disabled = !target.checked;
+        });
+      
+        slider.addEventListener('input', (e) => {
+          const target = getInputTarget(e.target);
+          if (!target) {
+            return;
+          }
+          const value = Number(target.value) / 100;
+          if (effect === 'distortion') {
+            currentEffects[effect].amount = parseInt(target.value, 10);
+            currentEffects[effect].wetness = value;
+          } else if (effect === 'filter') {
+            currentEffects[effect].frequency = parseInt(target.value, 10) * 50;
+          } else {
+            currentEffects[effect].wetness = value;
+          }
+        });
+      });
+    }
+
+    function stopAllLoops() {
+      [...activeLoopLayers].forEach(layerIndex => {
+        stopLayerLoop(layerIndex);
+      });
+
+      const loopAllBtn = queryRequired('loop-all-btn');
+      if (loopAllBtn) {
+        setBtnLabel(loopAllBtn, '🔄 Loop All');
+        loopAllBtn.classList.remove('active');
+      }
+    }
+
+    function clearPlaybackTimeouts() {
+      playbackTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+      playbackTimeouts = [];
+      isPlayingPlayback = false;
+
+      const playBtn = queryRequired('play-btn');
+      if (playBtn) {
+        setBtnLabel(playBtn, '▶️ Play');
+        playBtn.classList.remove('playing');
+      }
+    }
+
+    function resetMusicStudioState() {
+      stopAllLoops();
+      clearPlaybackTimeouts();
+      activeLoopLayers.clear();
+
+      if (window.layerIntervals) {
+        window.layerIntervals.forEach(intervalId => clearInterval(intervalId));
+        window.layerIntervals.clear();
+      }
+
+      if (loopInterval) {
+        clearInterval(loopInterval);
+        loopInterval = null;
+      }
+
+      if (window.tempoFeedbackInterval) {
+        clearInterval(window.tempoFeedbackInterval);
+        window.tempoFeedbackInterval = null;
+      }
+
+      loopLayers = [];
+      layerTempos = [120, 120, 120, 120];
+      currentLayerIndex = 0;
+      recordedNotes = [];
+      isLooping = false;
+      isRecording = false;
+    }
+
+    function closeMusicStudioAudio() {
+      if (window.arrowGameAudioContext && requireAudioContext().state !== 'closed') {
+        requireAudioContext().close().catch(err => {
+          console.warn('Failed to close music studio audio context:', err);
         });
         window.arrowGameAudioContext = null;
       }
-    
-      // Remove keyboard event handler
+    }
+
+    function cleanupMusicStudio() {
       if (window.arrowKeyboardHandler) {
         document.removeEventListener('keydown', window.arrowKeyboardHandler);
         window.arrowKeyboardHandler = null;
       }
-    
-      // Remove touch event listeners only if they exist
-      const touchBtns = document.querySelectorAll('.touch-arrow-btn');
-      if (touchBtns.length > 0) {
-        touchBtns.forEach(btn => {
-          btn.removeEventListener('touchstart', handleTouchStart);
-          btn.removeEventListener('click', handleTouchStart);
-        });
+
+      resetMusicStudioState();
+      closeMusicStudioAudio();
+      isGameActive = false;
+
+      notesPlayed = 0;
+      const notesElement = queryRequired('arrow-notes');
+      if (notesElement) {
+        notesElement.textContent = '0';
       }
-    
-      // Reset to initial display
+
       initArrowDisplay();
-    
+      startButton.disabled = false;
+      resetButton.disabled = true;
+    }
+
+    window.cleanupMusicStudio = cleanupMusicStudio;
+
+    // Reset the music maker
+    function resetArrowGame() {
+      cleanupMusicStudio();
+      notesPlayed = 0;
+
+      const notesElement = queryRequired('arrow-notes');
+      if (notesElement) {
+        notesElement.textContent = '0';
+      }
+
+      initArrowDisplay();
+
       startButton.disabled = false;
       resetButton.disabled = true;
     }
   
+    // Setup recording controls
+    function setupRecordingControls() {
+      const recordBtn = queryRequired('record-btn');
+      const playBtn = queryRequired('play-btn');
+      const loopBtn = queryRequired('loop-btn');
+      const loopAllBtn = queryRequired('loop-all-btn');
+      const clearBtn = queryRequired('clear-btn');
+      const clearAllBtn = queryRequired('clear-all-btn');
+      const saveBtn = queryRequired('save-btn');
+      const loadBtn = queryRequired('load-btn');
+      const prevLayerBtn = queryRequired('prev-layer-btn');
+      const nextLayerBtn = queryRequired('next-layer-btn');
+    
+      if (recordBtn) {
+        recordBtn.addEventListener('click', toggleRecording);
+      }
+      if (playBtn) {
+        playBtn.addEventListener('click', playRecording);
+      }
+      if (loopBtn) {
+        loopBtn.addEventListener('click', toggleLoop);
+      }
+      if (loopAllBtn) {
+        loopAllBtn.addEventListener('click', toggleLoopAll);
+      }
+      if (clearBtn) {
+        clearBtn.addEventListener('click', clearCurrentLayer);
+      }
+      if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', clearAllLayers);
+      }
+      if (saveBtn) {
+        saveBtn.addEventListener('click', saveRecording);
+      }
+      if (loadBtn) {
+        loadBtn.addEventListener('click', loadRecording);
+      }
+      if (prevLayerBtn) {
+        prevLayerBtn.addEventListener('click', switchToPrevLayer);
+      }
+      if (nextLayerBtn) {
+        nextLayerBtn.addEventListener('click', switchToNextLayer);
+      }
+    
+      // Layer tempo control
+      const layerTempoSlider = queryRequired('layer-tempo-slider');
+      if (layerTempoSlider) {
+        const tempoHandler = (/** @type {Event} */ e) => {
+          const target = getInputTarget(e.target);
+          if (!target) {
+            return;
+          }
+          const newTempo = parseInt(target.value, 10);
+          layerTempos[currentLayerIndex] = newTempo;
+          const layerTempoDisplay = queryRequired('layer-tempo');
+          layerTempoDisplay.textContent = String(newTempo);
+
+          if (activeLoopLayers.has(currentLayerIndex)) {
+            stopLayerLoop(currentLayerIndex);
+
+            const currentLayer = loopLayers[currentLayerIndex];
+            const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
+              (currentLayer ? currentLayer.notes : []);
+
+            if (notesToPlay.length > 0) {
+              setTimeout(() => {
+                startLayerLoop(currentLayerIndex, notesToPlay);
+              }, 200);
+            }
+          }
+        };
+
+        layerTempoSlider.addEventListener('input', tempoHandler);
+        layerTempoSlider.addEventListener('change', tempoHandler);
+      }
+    }
+  
+    // Setup touch controls for mobile
+    function setupTouchControls() {
+      const useTouch = 'ontouchstart' in window;
+      document.querySelectorAll('.touch-key').forEach((key) => {
+        key.addEventListener(useTouch ? 'touchstart' : 'click', (event) => {
+          handleTouchStart(/** @type {MouseEvent | TouchEvent} */ (event));
+        });
+      });
+    }
+  
+    // Highlight key visual feedback
+    /** @param {string} keyCode @param {string} noteName */
+    function highlightKey(keyCode, noteName) {
+      const keyElement = document.querySelector(`[data-key="${keyCode}"]`);
+      if (keyElement) {
+        keyElement.classList.add('active');
+        setTimeout(() => keyElement.classList.remove('active'), 100);
+      }
+
+      highlightPianoKey(noteName);
+    }
+  
+    // Highlight piano key
+    /** @param {string} noteName */
+    function highlightPianoKey(noteName) {
+      const pianoKey = document.querySelector(`[data-note="${noteName}"]`);
+      if (pianoKey) {
+        pianoKey.classList.add('active');
+        setTimeout(() => pianoKey.classList.remove('active'), 200);
+      }
+    }
+  
+    // Recording functions
+    function toggleRecording() {
+      const recordBtn = queryRequired('record-btn');
+      const statusElement = queryRequired('recording-status');
+    
+      if (isRecording) {
+      // Stop recording and save to current layer
+        isRecording = false;
+        setBtnLabel(recordBtn, '⏺️ Record Layer');
+        recordBtn.classList.remove('recording');
+      
+        // Save the current recording to the layer
+        if (recordedNotes.length > 0) {
+          saveCurrentRecordingToLayer();
+          statusElement.textContent = `Layer ${currentLayerIndex + 1}: ${recordedNotes.length} notes recorded`;
+        
+          // Enable controls
+          queryRequired('play-btn').disabled = false;
+          queryRequired('loop-btn').disabled = false;
+          queryRequired('loop-all-btn').disabled = false;
+          queryRequired('clear-btn').disabled = false;
+          queryRequired('save-btn').disabled = false;
+        }
+      } else {
+      // Start recording new layer
+        isRecording = true;
+        recordedNotes = [];
+        recordingStartTime = Date.now();
+        setBtnLabel(recordBtn, '⏹️ Stop Recording');
+        recordBtn.classList.add('recording');
+        statusElement.textContent = `Recording layer ${currentLayerIndex + 1}...`;
+      }
+    }
+  
+    function saveCurrentRecordingToLayer() {
+    // Ensure we have enough layers
+      while (loopLayers.length <= currentLayerIndex) {
+        loopLayers.push({ notes: [], name: `Layer ${loopLayers.length + 1}` });
+      }
+    
+      // Save current recording to the layer
+      const currentLayer = loopLayers[currentLayerIndex];
+      if (currentLayer) {
+        currentLayer.notes = [...recordedNotes];
+      }
+    
+      updateLayerDisplay();
+      updateLayerCounts();
+    }
+  
+    function updateLayerDisplay() {
+      const layersDisplay = queryRequired('layers-display');
+      if (!layersDisplay) return;
+
+      layersDisplay.innerHTML = '';
+
+      loopLayers.forEach((layer, index) => {
+        const layerElement = document.createElement('div');
+        layerElement.className = `layer-indicator ${index === currentLayerIndex ? 'current' : ''}`;
+        layerElement.setAttribute('role', 'button');
+        layerElement.setAttribute('tabindex', '0');
+        layerElement.setAttribute('aria-label', `Switch to layer ${index + 1}`);
+        layerElement.innerHTML = `
+        <span class="layer-number">${index + 1}</span>
+        <span class="layer-notes">${layer.notes.length} notes</span>
+        <span class="layer-status ${activeLoopLayers.has(index) ? 'playing' : 'stopped'}">
+          ${activeLoopLayers.has(index) ? '▶️' : '⏸️'}
+        </span>
+      `;
+
+        layerElement.addEventListener('click', () => switchToLayer(index));
+        layerElement.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            switchToLayer(index);
+          }
+        });
+
+        layersDisplay.appendChild(layerElement);
+      });
+    }
+  
+    function updateLayerCounts() {
+      queryRequired('current-layer').textContent = String(currentLayerIndex + 1);
+      queryRequired('total-layers').textContent = String(loopLayers.length);
+    
+      // Update navigation buttons
+      queryRequired('prev-layer-btn').disabled = currentLayerIndex === 0;
+      queryRequired('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
+      queryRequired('clear-all-btn').disabled = loopLayers.length === 0;
+    }
+  
+    function switchToPrevLayer() {
+      if (currentLayerIndex > 0) {
+        currentLayerIndex--;
+        switchToLayer(currentLayerIndex);
+      }
+    }
+  
+    function switchToNextLayer() {
+      if (currentLayerIndex < maxLoopLayers - 1) {
+        currentLayerIndex++;
+        switchToLayer(currentLayerIndex);
+      }
+    }
+  
+    /** @param {number} layerIndex */
+    function switchToLayer(layerIndex) {
+      currentLayerIndex = layerIndex;
+    
+      // Load the layer's recorded notes
+      const targetLayer = loopLayers[layerIndex];
+      if (targetLayer) {
+        recordedNotes = [...targetLayer.notes];
+      } else {
+        recordedNotes = [];
+      }
+    
+      // Update UI
+      updateLayerDisplay();
+      updateLayerCounts();
+    
+      // Update layer tempo display and slider
+      const layerTempo = layerTempos[layerIndex] || 120;
+      queryRequired('layer-tempo').textContent = String(layerTempo);
+      const layerTempoSlider = queryRequired('layer-tempo-slider');
+      layerTempoSlider.value = String(layerTempo);
+    
+      const statusElement = queryRequired('recording-status');
+      if (recordedNotes.length > 0) {
+        statusElement.textContent = `Layer ${layerIndex + 1}: ${recordedNotes.length} notes @ ${layerTempo} BPM`;
+        queryRequired('play-btn').disabled = false;
+        queryRequired('loop-btn').disabled = false;
+        queryRequired('clear-btn').disabled = false;
+      } else {
+        statusElement.textContent = `Ready to record layer ${layerIndex + 1} @ ${layerTempo} BPM`;
+        queryRequired('play-btn').disabled = true;
+        queryRequired('loop-btn').disabled = true;
+        queryRequired('clear-btn').disabled = true;
+      }
+    
+      // Update loop button state
+      const loopBtn = queryRequired('loop-btn');
+      if (activeLoopLayers.has(layerIndex)) {
+        setBtnLabel(loopBtn, '⏹️ Stop Current');
+        loopBtn.classList.add('active');
+        isLooping = true;
+      } else {
+        setBtnLabel(loopBtn, '🔄 Loop Current');
+        loopBtn.classList.remove('active');
+        isLooping = false;
+      }
+    
+    }
+  
+    function clearCurrentLayer() {
+      if (confirm(`Clear layer ${currentLayerIndex + 1}?`)) {
+      // Stop loop if playing
+        if (activeLoopLayers.has(currentLayerIndex)) {
+          stopLayerLoop(currentLayerIndex);
+        }
+      
+        // Clear the layer
+        const currentLayer = loopLayers[currentLayerIndex];
+        if (currentLayer) {
+          currentLayer.notes = [];
+        }
+        recordedNotes = [];
+      
+        // Update UI
+        updateLayerDisplay();
+        queryRequired('recording-status').textContent = `Layer ${currentLayerIndex + 1} cleared`;
+        queryRequired('play-btn').disabled = true;
+        queryRequired('loop-btn').disabled = true;
+        queryRequired('clear-btn').disabled = true;
+      }
+    }
+  
+    function clearAllLayers() {
+      if (confirm('Clear all layers? This cannot be undone!')) {
+      // Stop all loops
+        stopAllLoops();
+      
+        // Clear all data
+        loopLayers = [];
+        recordedNotes = [];
+        currentLayerIndex = 0;
+        isRecording = false;
+      
+        // Reset UI
+        const recordBtn = queryRequired('record-btn');
+        setBtnLabel(recordBtn, '⏺️ Record Layer');
+        recordBtn.classList.remove('recording');
+      
+        updateLayerDisplay();
+        updateLayerCounts();
+      
+        queryRequired('recording-status').textContent = 'All layers cleared - ready to record layer 1';
+        queryRequired('play-btn').disabled = true;
+        queryRequired('loop-btn').disabled = true;
+        queryRequired('loop-all-btn').disabled = true;
+        queryRequired('clear-btn').disabled = true;
+        queryRequired('clear-all-btn').disabled = true;
+        queryRequired('save-btn').disabled = true;
+      }
+    }
+  
+    /** @param {string} noteName */
+    function recordNote(noteName) {
+      if (!isRecording) return;
+    
+      const timestamp = Date.now() - recordingStartTime;
+      recordedNotes.push({ note: noteName, time: timestamp });
+    
+      // Update recording length display
+      const lengthElement = queryRequired('recording-length');
+      if (lengthElement) {
+        const seconds = Math.floor(timestamp / 1000);
+        const minutes = Math.floor(seconds / 60);
+        lengthElement.textContent = `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+      }
+    }
+  
+    function playRecording() {
+      if (recordedNotes.length === 0) return;
+
+      const playBtn = queryRequired('play-btn');
+
+      if (isPlayingPlayback) {
+        clearPlaybackTimeouts();
+        if (playBtn) {
+          playBtn.disabled = recordedNotes.length === 0;
+        }
+        return;
+      }
+
+      isPlayingPlayback = true;
+      if (playBtn) {
+        setBtnLabel(playBtn, '⏸️ Stop');
+        playBtn.classList.add('playing');
+      }
+
+      const layerTempo = layerTempos[currentLayerIndex] || 120;
+      const tempoScale = 120 / layerTempo;
+
+      recordedNotes.forEach(({ note, time }) => {
+        const adjustedTime = time * tempoScale;
+        const timeoutId = setTimeout(() => {
+          if (!isPlayingPlayback) return;
+          playNoteByName(note);
+          highlightPianoKey(note);
+        }, adjustedTime);
+        playbackTimeouts.push(timeoutId);
+      });
+
+      const lastRecordedNote = recordedNotes[recordedNotes.length - 1];
+      const totalDuration = lastRecordedNote
+        ? (lastRecordedNote.time * tempoScale) + 1000
+        : 1000;
+      const endTimeoutId = setTimeout(() => {
+        clearPlaybackTimeouts();
+        if (playBtn) {
+          playBtn.disabled = false;
+        }
+      }, totalDuration);
+      playbackTimeouts.push(endTimeoutId);
+    }
+  
+    // Multi-layer loop management
+    function toggleLoop() {
+      const loopBtn = queryRequired('loop-btn');
+    
+    
+      if (isLooping) {
+      // Stop current layer loop
+        stopLayerLoop(currentLayerIndex);
+        isLooping = false;
+        setBtnLabel(loopBtn, '🔄 Loop Current');
+        loopBtn.classList.remove('active');
+      } else {
+      // Start current layer loop
+        const activeLayer = loopLayers[currentLayerIndex];
+        const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
+          (activeLayer ? activeLayer.notes : []);
+
+        if (notesToPlay.length === 0) {
+          return;
+        }
+
+        startLayerLoop(currentLayerIndex, notesToPlay);
+        isLooping = true;
+        setBtnLabel(loopBtn, '⏹️ Stop Current');
+        loopBtn.classList.add('active');
+      }
+    }
+  
+    function toggleLoopAll() {
+      const loopAllBtn = queryRequired('loop-all-btn');
+    
+      if (activeLoopLayers.size > 0) {
+      // Stop all loops
+        stopAllLoops();
+        setBtnLabel(loopAllBtn, '🔄 Loop All');
+        loopAllBtn.classList.remove('active');
+      } else {
+      // Start all layer loops
+        if (loopLayers.length === 0) return;
+        startAllLoops();
+        setBtnLabel(loopAllBtn, '⏹️ Stop All');
+        loopAllBtn.classList.add('active');
+      }
+    }
+  
+    /** @param {number} layerIndex @param {Array<{ note: string; time: number }>} notes */
+    function startLayerLoop(layerIndex, notes) {
+      if (activeLoopLayers.has(layerIndex)) {
+        stopLayerLoop(layerIndex);
+        return;
+      }
+      if (!notes || notes.length === 0) {
+        return;
+      }
+    
+      activeLoopLayers.add(layerIndex);
+    
+      // Use layer-specific tempo instead of global tempo
+      const layerTempo = layerTempos[layerIndex] || 120;
+
+      const playLoop = () => {
+        if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
+
+        notes.forEach(({ note, time }) => {
+          const adjustedTime = window.GameUtils.scaleNoteTime(time, layerTempo);
+          setTimeout(() => {
+            if (activeLoopLayers.has(layerIndex)) {
+              playNoteByName(note);
+              highlightPianoKey(note);
+            }
+          }, adjustedTime);
+        });
+      };
+    
+      // Start immediately
+      playLoop();
+    
+      // Set up interval for looping (tempo-adjusted)
+      const lastNote = notes[notes.length - 1];
+      if (!lastNote) {
+        return;
+      }
+
+      const loopDuration = window.GameUtils.calculateLoopDuration(
+        layerTempo,
+        lastNote.time
+      );
+    
+      const intervalId = setInterval(() => {
+        if (activeLoopLayers.has(layerIndex)) {
+          playLoop();
+        } else {
+          clearInterval(intervalId);
+        }
+      }, loopDuration);
+    
+      // Store interval ID for this layer
+      if (!window.layerIntervals) window.layerIntervals = new Map();
+      window.layerIntervals.set(layerIndex, intervalId);
+    
+      updateLayerDisplay();
+    }
+  
+    /** @param {number} layerIndex */
+    function stopLayerLoop(layerIndex) {
+      activeLoopLayers.delete(layerIndex);
+    
+      if (window.layerIntervals && window.layerIntervals.has(layerIndex)) {
+        clearInterval(window.layerIntervals.get(layerIndex));
+        window.layerIntervals.delete(layerIndex);
+      }
+    
+      if (layerIndex === currentLayerIndex) {
+        isLooping = false;
+        const loopBtn = queryRequired('loop-btn');
+        if (loopBtn) {
+          setBtnLabel(loopBtn, '🔄 Loop Current');
+          loopBtn.classList.remove('active');
+        }
+      }
+    
+      updateLayerDisplay();
+    }
+  
+    function startAllLoops() {
+      loopLayers.forEach((layer, index) => {
+        if (layer.notes.length > 0) {
+          startLayerLoop(index, layer.notes);
+        }
+      });
+    }
+
+    function hasRecordableContent() {
+      return window.GameUtils.hasRecordableContent(loopLayers, recordedNotes);
+    }
+
+    function saveRecording() {
+      if (!hasRecordableContent()) return;
+
+      const name = prompt('Enter a name for your composition:');
+      if (!name) return;
+
+      if (recordedNotes.length > 0) {
+        saveCurrentRecordingToLayer();
+      }
+
+      const composition = window.GameUtils.buildCompositionPayload({
+        name,
+        loopLayers: loopLayers.map((layer, layerIndex) => ({
+          notes: layer.notes,
+          name: layer.name ?? `Layer ${layerIndex + 1}`
+        })),
+        layerTempos,
+        currentLayerIndex,
+        instrument: currentInstrument,
+        effects: currentEffects,
+        tempo: currentTempo,
+        timestamp: new Date().toISOString()
+      });
+
+      try {
+        const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
+        saved.push(composition);
+        localStorage.setItem('musicCompositions', JSON.stringify(saved));
+        alert(`Composition "${name}" saved successfully!`);
+      } catch {
+        alert('Failed to save composition. Storage may be full.');
+      }
+    }
+  
+    function loadRecording() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
+      
+        if (saved.length === 0) {
+          alert('No saved compositions found.');
+          return;
+        }
+      
+        const names = saved.map((/** @type {{ name: string; timestamp: string }} */ comp, /** @type {number} */ index) => `${index + 1}. ${comp.name} (${new Date(comp.timestamp).toLocaleString()})`);
+        const choice = prompt(`Select a composition to load:\n\n${names.join('\n')}\n\nEnter the number:`);
+        if (choice === null) {
+          return;
+        }
+      
+        const index = window.GameUtils.parseCompositionSelection(choice, saved.length);
+        if (index === null) {
+          alert('Invalid selection.');
+          return;
+        }
+      
+        const composition = /** @type {{ name: string; instrument: string; effects: typeof currentEffects; tempo: number }} */ (saved[index]);
+        const restored = window.GameUtils.restoreCompositionState(composition);
+        loopLayers = /** @type {typeof loopLayers} */ (restored.loopLayers);
+        layerTempos = restored.layerTempos;
+        currentLayerIndex = restored.currentLayerIndex;
+        recordedNotes = /** @type {typeof recordedNotes} */ (restored.recordedNotes);
+
+        currentInstrument = composition.instrument;
+        currentEffects = composition.effects;
+        currentTempo = composition.tempo;
+      
+        // Update UI
+        queryRequired('instrument-select').value = currentInstrument;
+        queryRequired('tempo-slider').value = String(currentTempo);
+        queryRequired('tempo-display').textContent = `${currentTempo} BPM`;
+      
+        // Update effect controls
+        /** @type {EffectName[]} */
+        const effectNames = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
+        effectNames.forEach((effect) => {
+          const toggle = asInput(queryRequired(`${effect}-toggle`));
+          const slider = asInput(queryRequired(`${effect}-amount`));
+
+          toggle.checked = currentEffects[effect].enabled;
+          slider.disabled = !currentEffects[effect].enabled;
+          syncEffectSlider(effect, slider);
+        });
+      
+        // Enable playback buttons
+        queryRequired('play-btn').disabled = false;
+        queryRequired('loop-btn').disabled = false;
+        queryRequired('loop-all-btn').disabled = loopLayers.length === 0;
+        queryRequired('clear-btn').disabled = false;
+        queryRequired('clear-all-btn').disabled = loopLayers.length === 0;
+        queryRequired('save-btn').disabled = false;
+        queryRequired('prev-layer-btn').disabled = currentLayerIndex === 0;
+        queryRequired('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
+
+        const layerTempoSlider = queryRequired('layer-tempo-slider');
+        const layerTempo = layerTempos[currentLayerIndex] || currentTempo;
+        if (layerTempoSlider) {
+          layerTempoSlider.value = String(layerTempo);
+        }
+        const layerTempoDisplay = queryRequired('layer-tempo');
+        if (layerTempoDisplay) {
+          layerTempoDisplay.textContent = String(layerTempo);
+        }
+
+        updateLayerDisplay();
+        updateLayerCounts();
+
+        queryRequired('recording-status').textContent = `Loaded "${composition.name}"`;
+
+        const notesForDuration = recordedNotes.length > 0
+          ? recordedNotes
+          : (loopLayers[currentLayerIndex]?.notes || []);
+        if (notesForDuration.length > 0) {
+          const lastNote = notesForDuration[notesForDuration.length - 1];
+          if (lastNote) {
+            queryRequired('recording-length').textContent =
+              window.GameUtils.formatRecordingLength(lastNote.time);
+          }
+        } else {
+          queryRequired('recording-length').textContent = '0:00';
+        }
+      
+        alert(`Composition "${composition.name}" loaded successfully!`);
+      } catch {
+        alert('Failed to load compositions.');
+      }
+    }
+
     // Event listeners
     startButton.addEventListener('click', startArrowGame);
     resetButton.addEventListener('click', resetArrowGame);

@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "lib": ["ES2022", "DOM", "WebWorker"]
+  },
+  "include": [
+    "types/**/*.d.ts",
+    "games.js",
+    "lib/**/*.mjs",
+    "tests/**/*.ts",
+    "eslint.config.js",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "tests/unit/**"
+  ]
+}

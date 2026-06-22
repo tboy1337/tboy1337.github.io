@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "lib": ["ES2022", "WebWorker"]
+  },
+  "include": [
+    "sw.js",
+    "lib/sw-utils.mjs"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

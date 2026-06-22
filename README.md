@@ -23,7 +23,7 @@ The site includes four fully-featured browser games:
 1. **Memory Card Game**: Match pairs of tech-themed icons within a time limit
 2. **Snake Game**: Classic snake game with responsive canvas and touch controls
 3. **Typing Speed Test**: Measure your WPM and accuracy with various text prompts
-4. **Music Keys**: Create electronic music using arrow keys with Web Audio API
+4. **Advanced Music Studio**: Full chromatic keyboard with multi-layer recording, effects, and looping
 
 ### Advanced Functionality
 - **Form Validation**: Real-time client-side validation with user-friendly error messages
@@ -130,10 +130,12 @@ tboy1337.github.io/
 - **Features**: Real-time WPM calculation, accuracy tracking, multiple text prompts
 - **Metrics**: Words per minute, accuracy percentage, time tracking
 
-### Music Keys
+### Advanced Music Studio
 - **Tech Stack**: Web Audio API, JavaScript
-- **Features**: Real-time audio synthesis, electronic sound effects, mobile touch support
-- **Audio**: Sawtooth and square wave oscillators with filter envelopes
+- **Features**: Chromatic piano keyboard, multi-layer recording (up to 4 layers), per-layer tempo control, save/load compositions
+- **Effects**: Reverb, delay, chorus, distortion, and filter with real-time mixing
+- **Instruments**: Synthesizer, piano, strings, and bass
+- **Controls**: A-K for white keys, W E T Y U O P for black keys (desktop); touch piano on mobile
 
 ## 📱 Responsive Design
 

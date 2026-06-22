@@ -654,4 +654,670 @@
     min-height: 48px;
     min-width: 48px;
   }
-} 
+}
+
+/* Advanced Music Studio Styles */
+.music-studio {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Piano Keyboard Visual */
+.piano-container {
+  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgb(0, 0, 0, 0.3);
+}
+
+.piano-keyboard {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  background: rgb(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+  position: relative;
+}
+
+.piano-key {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  border-radius: 0 0 8px 8px;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.piano-key.white-key {
+  width: 60px;
+  height: 200px;
+  background: linear-gradient(to bottom, #fff, #f5f5f5);
+  border: 1px solid #ddd;
+  color: #333;
+  z-index: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.piano-note-name {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.key-label {
+  font-size: 10px;
+  opacity: 0.65;
+  font-weight: normal;
+}
+
+.piano-key.white-key:hover {
+  background: linear-gradient(to bottom, #f0f0f0, #e8e8e8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgb(0, 0, 0, 0.2);
+}
+
+.piano-key.white-key.active {
+  background: linear-gradient(to bottom, #4ade80, #22c55e);
+  color: white;
+  transform: translateY(2px);
+}
+
+.piano-key.black-key {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 130px;
+  background: linear-gradient(to bottom, #333, #111);
+  border: 1px solid #000;
+  color: white;
+  z-index: 2;
+  border-radius: 0 0 6px 6px;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 4px;
+}
+
+.piano-key.black-key .piano-note-name {
+  font-size: 9px;
+}
+
+.piano-key.black-key .key-label {
+  font-size: 8px;
+}
+
+.piano-key.black-key:hover {
+  background: linear-gradient(to bottom, #444, #222);
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 4px 8px rgb(0, 0, 0, 0.4);
+}
+
+.piano-key.black-key.active {
+  background: linear-gradient(to bottom, #4ade80, #22c55e);
+  transform: translateX(-50%) translateY(2px);
+}
+
+/* Control Panel */
+.control-panel {
+  background: rgb(0, 0, 0, 0.4);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgb(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgb(0, 0, 0, 0.25);
+}
+
+.control-row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 180px;
+}
+
+.control-group label {
+  font-weight: bold;
+  color: #e0e0e0;
+  font-size: 14px;
+}
+
+.control-select {
+  background: rgb(0, 0, 0, 0.5);
+  border: 1px solid rgb(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.control-select:focus {
+  outline: none;
+  border-color: rgb(79, 70, 229, 0.8);
+  box-shadow: 0 0 0 2px rgb(79, 70, 229, 0.3);
+}
+
+.control-slider {
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: rgb(255, 255, 255, 0.2);
+  border-radius: 3px;
+  outline: none;
+}
+
+.control-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(45deg, #4f46e5, #7c3aed);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+}
+
+.control-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(45deg, #4f46e5, #7c3aed);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+}
+
+/* Effects Panel */
+.effects-panel {
+  margin-bottom: 2rem;
+}
+
+.effects-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.effects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.effect-control {
+  background: rgb(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid rgb(255, 255, 255, 0.1);
+}
+
+.effect-toggle {
+  margin-right: 8px;
+}
+
+.effect-control label {
+  font-weight: bold;
+  color: #e0e0e0;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.effect-slider {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.effect-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Recording Panel */
+.recording-panel {
+  background: rgb(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgb(255, 255, 255, 0.1);
+}
+
+.recording-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.recording-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.recording-controls-primary {
+  margin-bottom: 0.5rem;
+}
+
+.recording-controls-secondary {
+  margin-bottom: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgb(255, 255, 255, 0.08);
+}
+
+.record-btn, .play-btn, .loop-btn, .clear-btn, .save-btn, .load-btn {
+  background: rgb(0, 0, 0, 0.5);
+  border: 1px solid rgb(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.record-btn:hover, .play-btn:hover, .loop-btn:hover, 
+.clear-btn:hover, .save-btn:hover, .load-btn:hover {
+  background: rgb(79, 70, 229, 0.3);
+  border-color: rgb(79, 70, 229, 0.8);
+}
+
+.record-btn.recording {
+  background: rgb(239, 68, 68, 0.3);
+  border-color: rgb(239, 68, 68, 0.8);
+  animation: recording-pulse 1s infinite;
+}
+
+.play-btn.playing,
+.loop-btn.active {
+  background: rgb(79, 70, 229, 0.3);
+  border-color: rgb(79, 70, 229, 0.8);
+}
+
+.loop-btn.active {
+  background: rgb(34, 197, 94, 0.3);
+  border-color: rgb(34, 197, 94, 0.8);
+}
+
+@keyframes recording-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.recording-info {
+  display: flex;
+  justify-content: space-between;
+  color: #b0b0b0;
+  font-size: 14px;
+}
+
+/* Keyboard Legend */
+.keyboard-legend {
+  background: rgb(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgb(255, 255, 255, 0.1);
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.legend-row:last-child {
+  margin-bottom: 0;
+}
+
+.legend-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  background: linear-gradient(to bottom, #fff, #f0f0f0);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.1s ease;
+}
+
+.legend-key-black {
+  background: linear-gradient(to bottom, #444, #222);
+  border-color: #111;
+  color: white;
+  min-width: 24px;
+  height: 24px;
+  font-size: 11px;
+}
+
+.legend-key-spacer {
+  min-width: 14px;
+  background: transparent;
+  border: none;
+}
+
+.legend-key-label {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: normal;
+  min-width: auto;
+  margin-left: 0.5rem;
+}
+
+.legend-key.active {
+  background: linear-gradient(to bottom, #4ade80, #22c55e);
+  border-color: #16a34a;
+  color: white;
+  transform: translateY(1px);
+}
+
+.legend-black-keys {
+  padding-left: 12px;
+}
+
+.legend-octave-keys,
+.legend-arrow-keys {
+  margin-top: 0.25rem;
+}
+
+/* Keyboard Help */
+.keyboard-help {
+  background: rgb(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border: 1px solid rgb(255, 255, 255, 0.1);
+}
+
+.keyboard-help p {
+  margin: 0.5rem 0;
+  color: #c0c0c0;
+  font-size: 14px;
+}
+
+/* Touch Piano for Mobile */
+.touch-piano-container {
+  display: none;
+  background: rgb(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.touch-key-row {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  position: relative;
+}
+
+.touch-key.white-key {
+  position: relative;
+  width: 40px;
+  height: 120px;
+  background: linear-gradient(to bottom, #fff, #f5f5f5);
+  border: 1px solid #ddd;
+  color: #333;
+  z-index: 1;
+}
+
+.touch-key.black-key {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 80px;
+  background: linear-gradient(to bottom, #333, #111);
+  border: 1px solid #000;
+  color: white;
+  z-index: 2;
+  margin-left: 0;
+}
+
+.touch-key {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+  border-radius: 0 0 4px 4px;
+}
+
+.touch-key.white-key.active {
+  background: linear-gradient(to bottom, #4ade80, #22c55e);
+  color: white;
+  transform: translateY(2px);
+}
+
+.touch-key.black-key.active {
+  background: linear-gradient(to bottom, #4ade80, #22c55e);
+  transform: translateX(-50%) translateY(2px);
+}
+
+/* Responsive Design for Music Studio */
+@media (width <= 768px) {
+  .music-studio {
+    padding: 0.5rem;
+  }
+  
+  .piano-container {
+    padding: 1rem;
+  }
+  
+  .piano-keyboard {
+    padding: 0.5rem;
+  }
+  
+  .piano-key.white-key {
+    width: 40px;
+    height: 120px;
+    font-size: 10px;
+  }
+  
+  .piano-key.black-key {
+    width: 24px;
+    height: 80px;
+    font-size: 9px;
+  }
+  
+  .control-panel {
+    padding: 1rem;
+  }
+  
+  .control-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .effects-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .recording-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .touch-piano-container {
+    display: block;
+  }
+  
+  .keyboard-help {
+    font-size: 12px;
+  }
+  
+  .mobile-controls {
+    display: block;
+  }
+}
+
+@media (width <= 480px) {
+  .piano-key.white-key {
+    width: 32px;
+    height: 100px;
+    font-size: 8px;
+  }
+  
+  .piano-key.black-key {
+    width: 20px;
+    height: 65px;
+    font-size: 7px;
+  }
+  
+  .control-group {
+    min-width: 120px;
+  }
+  
+  .recording-controls button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Multi-layer Recording Styles */
+.layer-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgb(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgb(255, 255, 255, 0.1);
+}
+
+.layer-info {
+  display: flex;
+  gap: 2rem;
+  color: #e0e0e0;
+  font-size: 14px;
+}
+
+.layer-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tempo-slider-small {
+  width: 100px;
+  height: 20px;
+}
+
+.layer-nav-btn {
+  background: rgb(0, 0, 0, 0.5);
+  border: 1px solid rgb(255, 255, 255, 0.2);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.layer-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.layer-nav-btn:hover:not(:disabled) {
+  background: rgb(79, 70, 229, 0.3);
+  border-color: rgb(79, 70, 229, 0.8);
+}
+
+.layers-display {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.layer-indicator {
+  background: rgb(0, 0, 0, 0.3);
+  border: 1px solid rgb(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.5rem;
+  min-width: 80px;
+  text-align: center;
+  font-size: 12px;
+  color: #c0c0c0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.layer-indicator:hover {
+  border-color: rgb(79, 70, 229, 0.5);
+  background: rgb(79, 70, 229, 0.1);
+}
+
+.layer-indicator.current {
+  border-color: rgb(79, 70, 229, 0.8);
+  background: rgb(79, 70, 229, 0.2);
+  color: white;
+}
+
+.layer-number {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.layer-notes {
+  display: block;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.layer-status.playing {
+  color: #4ade80;
+}
+
+.layer-status.stopped {
+  color: #6b7280;
+}
+
+@media (width <= 768px) {
+  .layer-status {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .layer-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .layers-display {
+    justify-content: center;
+  }
+}

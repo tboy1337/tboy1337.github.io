@@ -1,22 +1,22 @@
 export default [
   {
+    files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
-        // Browser globals
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
         setTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        clearTimeout: 'readonly',
         AudioContext: 'readonly',
         webkitAudioContext: 'readonly',
         Float32Array: 'readonly',
         MutationObserver: 'readonly',
         google: 'readonly',
-        // Service Worker globals
         self: 'readonly',
         caches: 'readonly',
         clients: 'readonly',
@@ -24,11 +24,32 @@ export default [
         Cache: 'readonly',
         Request: 'readonly',
         URL: 'readonly',
-        fetch: 'readonly'
+        fetch: 'readonly',
+        importScripts: 'readonly',
+        GameUtils: 'readonly',
+        SwUtils: 'readonly',
+        prompt: 'readonly',
+        confirm: 'readonly',
+        alert: 'readonly',
+        localStorage: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLButtonElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLCanvasElement: 'readonly',
+        Element: 'readonly',
+        Event: 'readonly',
+        KeyboardEvent: 'readonly',
+        MouseEvent: 'readonly',
+        TouchEvent: 'readonly',
+        Response: 'readonly',
+        ServiceWorkerGlobalScope: 'readonly',
+        ExtendableEvent: 'readonly',
+        FetchEvent: 'readonly'
       }
     },
     rules: {
-      'no-unused-vars': ['warn', { 
+      'no-unused-vars': ['warn', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_'
       }],
@@ -37,6 +58,14 @@ export default [
       'quotes': ['error', 'single', { avoidEscape: true }],
       'indent': ['error', 2, { SwitchCase: 1 }],
       'no-undef': 'error'
+    }
+  },
+  {
+    files: ['tests/**/*.js', 'tests/**/*.ts'],
+    languageOptions: {
+      globals: {
+        process: 'readonly'
+      }
     }
   }
 ];

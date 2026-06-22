@@ -1,5 +1,6 @@
 {
   "extends": "stylelint-config-standard",
+  "ignoreFiles": ["coverage/**", "coverage-merged/**", "node_modules/**", "playwright-report/**", "test-results/**"],
   "rules": {
     "selector-class-pattern": null,
     "custom-property-pattern": null,

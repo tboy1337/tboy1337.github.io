@@ -1,0 +1,31 @@
+import { test, expect } from './test';
+import { mockAudio, gotoHome } from './support';
+
+test.beforeEach(async ({ page }) => {
+  await mockAudio(page);
+  await gotoHome(page);
+});
+
+test.describe('Portfolio page', () => {
+  test('loads with SEO and social metadata', async ({ page }) => {
+    await expect(page).toHaveTitle(/tboy1337/);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Portfolio of tboy1337/);
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /Developer & Innovator/);
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+  });
+
+  test('shows portfolio projects and Starstruck achievement', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'MediaRelay' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Blinter' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Starstruck' })).toBeVisible();
+    await expect(page.getByText(/Last updated: \w+ \d{4}/)).toBeVisible();
+  });
+
+  test('contact form fields are present with accessibility labels', async ({ page }) => {
+    await expect(page.getByRole('textbox', { name: 'Your Name' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Your Email' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Subject' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Message' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Submit contact form' })).toBeVisible();
+  });
+});

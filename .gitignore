@@ -1,0 +1,9 @@
+node_modules/
+coverage/
+coverage-e2e/
+coverage-merged/
+playwright-report/
+test-results/
+htmlcov/
+*.log
+.DS_Store
