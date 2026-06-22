@@ -676,13 +676,19 @@
             `;
             document.body.appendChild(banner);
 
-            document.getElementById('sw-update-refresh').addEventListener('click', function() {
-                rememberHashBeforeReload();
-                window.location.reload();
-            });
-            document.getElementById('sw-update-dismiss').addEventListener('click', function() {
-                banner.remove();
-            });
+            const refreshButton = document.getElementById('sw-update-refresh');
+            const dismissButton = document.getElementById('sw-update-dismiss');
+            if (refreshButton) {
+                refreshButton.addEventListener('click', function() {
+                    rememberHashBeforeReload();
+                    window.location.reload();
+                });
+            }
+            if (dismissButton) {
+                dismissButton.addEventListener('click', function() {
+                    banner.remove();
+                });
+            }
         }
 
         if ('serviceWorker' in navigator) {

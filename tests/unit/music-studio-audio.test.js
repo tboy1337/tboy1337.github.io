@@ -426,6 +426,25 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
     engine.dispose();
   });
 
+  it('forces effect rebuild after the max wait even with active voices', () => {
+    vi.useFakeTimers();
+    const context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({
+      createContext: () => context,
+      minNoteIntervalMs: 0
+    });
+    engine.init();
+    engine.playNote('C4');
+
+    const tweaked = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    tweaked.reverb.enabled = false;
+    engine.setEffects(tweaked);
+    vi.advanceTimersByTime(3200);
+    expect(engine.playNote('E4')).toBe(true);
+    engine.dispose();
+    vi.useRealTimers();
+  });
+
   it('defers effect rebuilds while voices are still active', () => {
     vi.useFakeTimers();
     const context = createMockAudioContext();

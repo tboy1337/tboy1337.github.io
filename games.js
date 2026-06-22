@@ -2150,6 +2150,19 @@ document.addEventListener('DOMContentLoaded', () => {
       isRecording = false;
     }
 
+    function safeCloseCompositionPanel() {
+      const panel = getHtmlElement('composition-panel');
+      if (panel) {
+        closeCompositionPanel();
+        return;
+      }
+
+      document.removeEventListener('keydown', handleCompositionPanelKeydown);
+      pendingConfirmAction = null;
+      compositionPanelTrigger = null;
+      setCompositionPanelVisible(false);
+    }
+
     function closeMusicStudioAudio() {
       musicStudioEngine.dispose();
       window.musicStudioAudioContext = null;
@@ -2157,12 +2170,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cleanupMusicStudio() {
+      safeCloseCompositionPanel();
+
       if (window.musicStudioKeyboardHandler) {
         document.removeEventListener('keydown', window.musicStudioKeyboardHandler, true);
         window.musicStudioKeyboardHandler = null;
       }
 
       audioResumePromise = null;
+      clearPlaybackTimeouts();
 
       if (isGameActive) {
         resetMusicStudioState();
@@ -2181,7 +2197,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       closeMusicStudioAudio();
       isGameActive = false;
-      compositionPanelTrigger = null;
 
       notesPlayed = 0;
       const notesElement = queryRequired('music-studio-notes');
@@ -2265,34 +2280,46 @@ document.addEventListener('DOMContentLoaded', () => {
       // Layer tempo control
       const layerTempoSlider = queryRequired('layer-tempo-slider');
       if (layerTempoSlider) {
-        const tempoHandler = (/** @type {Event} */ e) => {
-          const target = getInputTarget(e.target);
-          if (!target) {
-            return;
-          }
-          const newTempo = parseInt(target.value, 10);
+        /** @param {number} newTempo */
+        const applyLayerTempoValue = (newTempo) => {
           layerTempos[currentLayerIndex] = newTempo;
           const layerTempoDisplay = queryRequired('layer-tempo');
           layerTempoDisplay.textContent = String(newTempo);
+        };
 
-          if (activeLoopLayers.has(currentLayerIndex)) {
-            stopLayerLoop(currentLayerIndex);
+        const restartCurrentLayerLoopIfActive = () => {
+          if (!activeLoopLayers.has(currentLayerIndex)) {
+            return;
+          }
 
-            const currentLayer = loopLayers[currentLayerIndex];
-            const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
-              (currentLayer ? currentLayer.notes : []);
+          stopLayerLoop(currentLayerIndex);
 
-            if (notesToPlay.length > 0) {
-              setTimeout(() => {
-                startLayerLoop(currentLayerIndex, notesToPlay);
-              }, 200);
-            }
+          const currentLayer = loopLayers[currentLayerIndex];
+          const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
+            (currentLayer ? currentLayer.notes : []);
+
+          if (notesToPlay.length > 0) {
+            setTimeout(() => {
+              startLayerLoop(currentLayerIndex, notesToPlay);
+            }, 200);
           }
         };
 
-        layerTempoSlider.addEventListener('input', tempoHandler);
+        layerTempoSlider.addEventListener('input', (event) => {
+          const target = getInputTarget(event.target);
+          if (!target) {
+            return;
+          }
+          applyLayerTempoValue(parseInt(target.value, 10));
+        });
+
         layerTempoSlider.addEventListener('change', (event) => {
-          tempoHandler(event);
+          const target = getInputTarget(event.target);
+          if (!target) {
+            return;
+          }
+          applyLayerTempoValue(parseInt(target.value, 10));
+          restartCurrentLayerLoopIfActive();
           focusMusicStudioSurface();
         });
       }

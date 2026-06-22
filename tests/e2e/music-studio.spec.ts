@@ -242,6 +242,19 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#composition-panel-scrim')).toHaveClass(/hidden/);
   });
 
+  test('closes the composition panel when switching away from music studio', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.getByRole('button', { name: 'Load composition' }).click();
+    await expect(page.locator('#composition-panel')).not.toHaveClass(/hidden/);
+
+    await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
+    await expect(page.locator('#composition-panel')).toHaveCount(0);
+    await expect(page.locator('#composition-panel-scrim')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Play Advanced Music Studio' }).click();
+    await expect(page.getByText('Click "Start Studio" to begin composing!')).toBeVisible();
+  });
+
   test('cleans up audio and loops when switching games', async ({ page }) => {
     await startMusicStudio(page);
     await page.getByRole('button', { name: 'Record layer' }).click();
