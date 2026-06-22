@@ -291,7 +291,7 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#composition-panel-scrim')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Play Advanced Music Studio' }).click();
-    await expect(page.getByText('Click "Start Studio" to begin composing!')).toBeVisible();
+    await expect(page.getByText('Click "Start Studio" to begin.')).toBeVisible();
   });
 
   test('cleans up audio and loops when switching games', async ({ page }) => {
@@ -317,7 +317,7 @@ test.describe('Advanced Music Studio', () => {
     await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
     await page.getByRole('button', { name: 'Play Advanced Music Studio' }).click();
 
-    await expect(page.getByText('Click "Start Studio" to begin composing!')).toBeVisible();
+    await expect(page.getByText('Click "Start Studio" to begin.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Advanced Music Studio' })).toBeEnabled();
     await expect(page.locator('#music-studio-notes')).toHaveText('0');
   });
@@ -378,7 +378,7 @@ test.describe('Advanced Music Studio', () => {
     await startMusicStudio(page);
     await page.keyboard.press('h');
     await page.getByRole('button', { name: 'Reset Advanced Music Studio' }).click();
-    await expect(page.getByText('Click "Start Studio" to begin composing!')).toBeVisible();
+    await expect(page.getByText('Click "Start Studio" to begin.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Advanced Music Studio' })).toBeEnabled();
   });
 

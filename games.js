@@ -1342,12 +1342,9 @@ onDomReady(() => {
       gameContainer.classList.add('centered-content');
       gameContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
-        <p class="text-xl mb-4">🎹 Advanced Music Studio</p>
-        <p class="mb-2">Create music with a full chromatic keyboard!</p>
-        <p class="mb-2">🎵 Use A-K keys for white notes, W E T Y U O P for black notes</p>
-        <p class="mb-2">🎛️ Apply effects: reverb, delay, chorus & more</p>
-        <p class="mb-2">🔄 Record and loop your compositions</p>
-        <p class="mt-4">Click "Start Studio" to begin composing!</p>
+        <p class="text-xl mb-4">Advanced Music Studio</p>
+        <p class="mb-2">Compose with a chromatic keyboard, multi-layer recording, and real-time effects.</p>
+        <p class="mt-4">Click "Start Studio" to begin.</p>
       </div>
     `;
     }
@@ -1374,6 +1371,48 @@ onDomReady(() => {
         <div class="piano-container">
           <div class="piano-keyboard" id="piano-keyboard">
             <!-- Keys will be generated dynamically -->
+          </div>
+        </div>
+
+        <!-- Keyboard Legend -->
+        <div class="keyboard-legend" aria-label="Keyboard mapping legend">
+          <div class="legend-row legend-white-keys" role="group" aria-label="White keys">
+            <span class="legend-key" data-key="a">A</span>
+            <span class="legend-key" data-key="s">S</span>
+            <span class="legend-key" data-key="d">D</span>
+            <span class="legend-key" data-key="f">F</span>
+            <span class="legend-key" data-key="g">G</span>
+            <span class="legend-key" data-key="h">H</span>
+            <span class="legend-key" data-key="j">J</span>
+            <span class="legend-key" data-key="k">K</span>
+          </div>
+          <div class="legend-row legend-black-keys" role="group" aria-label="Black keys">
+            <span class="legend-key legend-key-black" data-key="w">W</span>
+            <span class="legend-key legend-key-black" data-key="e">E</span>
+            <span class="legend-key legend-key-spacer"></span>
+            <span class="legend-key legend-key-black" data-key="t">T</span>
+            <span class="legend-key legend-key-black" data-key="y">Y</span>
+            <span class="legend-key legend-key-black" data-key="u">U</span>
+            <span class="legend-key legend-key-spacer"></span>
+            <span class="legend-key legend-key-black" data-key="o">O</span>
+            <span class="legend-key legend-key-black" data-key="p">P</span>
+          </div>
+          <div class="legend-row legend-octave-keys" role="group" aria-label="Octave 3">
+            <span class="legend-key" data-key="1">1</span>
+            <span class="legend-key" data-key="2">2</span>
+            <span class="legend-key" data-key="3">3</span>
+            <span class="legend-key" data-key="4">4</span>
+            <span class="legend-key" data-key="5">5</span>
+            <span class="legend-key" data-key="6">6</span>
+            <span class="legend-key" data-key="7">7</span>
+            <span class="legend-key legend-key-label">Octave 3</span>
+          </div>
+          <div class="legend-row legend-arrow-keys" role="group" aria-label="Shortcuts">
+            <span class="legend-key" data-key="ArrowLeft">←</span>
+            <span class="legend-key" data-key="ArrowDown">↓</span>
+            <span class="legend-key" data-key="ArrowUp">↑</span>
+            <span class="legend-key" data-key="ArrowRight">→</span>
+            <span class="legend-key legend-key-label">Shortcuts</span>
           </div>
         </div>
 
@@ -1509,48 +1548,6 @@ onDomReady(() => {
               <button type="button" id="composition-confirm-btn" class="composition-action-btn" aria-label="Confirm action">Confirm</button>
               <button type="button" id="composition-confirm-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
             </div>
-          </div>
-        </div>
-        
-        <!-- Keyboard Legend -->
-        <div class="keyboard-legend" aria-label="Keyboard mapping legend">
-          <div class="legend-row legend-white-keys">
-            <span class="legend-key" data-key="a">A</span>
-            <span class="legend-key" data-key="s">S</span>
-            <span class="legend-key" data-key="d">D</span>
-            <span class="legend-key" data-key="f">F</span>
-            <span class="legend-key" data-key="g">G</span>
-            <span class="legend-key" data-key="h">H</span>
-            <span class="legend-key" data-key="j">J</span>
-            <span class="legend-key" data-key="k">K</span>
-          </div>
-          <div class="legend-row legend-black-keys">
-            <span class="legend-key legend-key-black" data-key="w">W</span>
-            <span class="legend-key legend-key-black" data-key="e">E</span>
-            <span class="legend-key legend-key-spacer"></span>
-            <span class="legend-key legend-key-black" data-key="t">T</span>
-            <span class="legend-key legend-key-black" data-key="y">Y</span>
-            <span class="legend-key legend-key-black" data-key="u">U</span>
-            <span class="legend-key legend-key-spacer"></span>
-            <span class="legend-key legend-key-black" data-key="o">O</span>
-            <span class="legend-key legend-key-black" data-key="p">P</span>
-          </div>
-          <div class="legend-row legend-octave-keys">
-            <span class="legend-key" data-key="1">1</span>
-            <span class="legend-key" data-key="2">2</span>
-            <span class="legend-key" data-key="3">3</span>
-            <span class="legend-key" data-key="4">4</span>
-            <span class="legend-key" data-key="5">5</span>
-            <span class="legend-key" data-key="6">6</span>
-            <span class="legend-key" data-key="7">7</span>
-            <span class="legend-key legend-key-label">Octave 3</span>
-          </div>
-          <div class="legend-row legend-arrow-keys">
-            <span class="legend-key" data-key="ArrowLeft">←</span>
-            <span class="legend-key" data-key="ArrowDown">↓</span>
-            <span class="legend-key" data-key="ArrowUp">↑</span>
-            <span class="legend-key" data-key="ArrowRight">→</span>
-            <span class="legend-key legend-key-label">Shortcuts</span>
           </div>
         </div>
       </div>
