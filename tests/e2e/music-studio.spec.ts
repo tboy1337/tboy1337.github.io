@@ -47,6 +47,15 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#music-studio-notes')).toHaveText('2');
   });
 
+  test('plays notes when piano keys are activated with Enter', async ({ page }) => {
+    await startMusicStudio(page);
+
+    const c4Key = page.locator('.piano-key.white-key[data-note="C4"]');
+    await c4Key.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#music-studio-notes')).toHaveText('1');
+  });
+
   test('records a layer and enables playback controls', async ({ page }) => {
     await startMusicStudio(page);
 
@@ -58,6 +67,21 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#play-btn')).toBeEnabled();
     await expect(page.getByRole('button', { name: 'Loop Current' })).toBeEnabled();
     await expect(page.getByRole('button', { name: 'Save composition' })).toBeEnabled();
+  });
+
+  test('does not inflate the note counter during layer playback', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.getByRole('button', { name: 'Record layer' }).click();
+    await page.keyboard.press('a');
+    await page.keyboard.press('s');
+    await page.keyboard.press('d');
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
+    await expect(page.locator('#music-studio-notes')).toHaveText('3');
+
+    await page.locator('#play-btn').click();
+    await page.waitForTimeout(1500);
+    await expect(page.locator('#music-studio-notes')).toHaveText('3');
   });
 
   test('shows message when stopping empty recording', async ({ page }) => {

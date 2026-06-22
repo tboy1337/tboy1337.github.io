@@ -1447,37 +1447,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <button id="save-btn" class="save-btn" disabled aria-label="Save composition">💾 Save</button>
               <button id="load-btn" class="load-btn" aria-label="Load composition">📁 Load</button>
             </div>
-            <div id="composition-panel-scrim" class="composition-panel-scrim hidden" aria-hidden="true"></div>
-            <div id="composition-panel" class="composition-panel hidden" role="dialog" aria-modal="true" aria-labelledby="composition-panel-title" aria-describedby="composition-panel-error" aria-hidden="true">
-              <div class="composition-panel-header">
-                <h3 id="composition-panel-title" class="composition-panel-title">Composition Library</h3>
-                <button type="button" id="composition-panel-close" class="composition-panel-close" aria-label="Close composition library">×</button>
-              </div>
-              <div id="composition-panel-error" class="composition-panel-error hidden" role="alert" aria-live="polite"></div>
-              <div id="composition-save-view" class="composition-view hidden">
-                <label for="composition-name-input">Composition name</label>
-                <input type="text" id="composition-name-input" class="composition-name-input" maxlength="100" autocomplete="off">
-                <div class="composition-panel-actions">
-                  <button type="button" id="composition-save-confirm" class="composition-action-btn" aria-label="Confirm save">Save composition</button>
-                  <button type="button" id="composition-overwrite-btn" class="composition-action-btn composition-overwrite-btn hidden" aria-label="Overwrite existing composition">Overwrite</button>
-                  <button type="button" id="composition-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
-                </div>
-              </div>
-              <div id="composition-load-view" class="composition-view hidden">
-                <p id="composition-empty-message" class="composition-empty hidden">No saved compositions yet</p>
-                <ul id="composition-list" class="composition-list" role="listbox" aria-label="Saved compositions"></ul>
-                <div class="composition-panel-actions">
-                  <button type="button" id="composition-cancel-load-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
-                </div>
-              </div>
-              <div id="composition-confirm-view" class="composition-view hidden">
-                <p id="composition-confirm-message" class="composition-confirm-message"></p>
-                <div class="composition-panel-actions">
-                  <button type="button" id="composition-confirm-btn" class="composition-action-btn" aria-label="Confirm action">Confirm</button>
-                  <button type="button" id="composition-confirm-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
-                </div>
-              </div>
-            </div>
             <div class="layer-meta-panel">
               <div class="layer-info">
                 <span>Current Layer: <span id="current-layer">1</span></span>
@@ -1496,6 +1465,38 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="layers-display" id="layers-display">
               <!-- Layer indicators will be added here -->
+            </div>
+          </div>
+        </div>
+
+        <div id="composition-panel-scrim" class="composition-panel-scrim hidden" aria-hidden="true"></div>
+        <div id="composition-panel" class="composition-panel hidden" role="dialog" aria-modal="true" aria-labelledby="composition-panel-title" aria-describedby="composition-panel-error" aria-hidden="true">
+          <div class="composition-panel-header">
+            <h3 id="composition-panel-title" class="composition-panel-title">Composition Library</h3>
+            <button type="button" id="composition-panel-close" class="composition-panel-close" aria-label="Close composition library">×</button>
+          </div>
+          <div id="composition-panel-error" class="composition-panel-error hidden" role="alert" aria-live="polite"></div>
+          <div id="composition-save-view" class="composition-view hidden">
+            <label for="composition-name-input">Composition name</label>
+            <input type="text" id="composition-name-input" class="composition-name-input" maxlength="100" autocomplete="off">
+            <div class="composition-panel-actions">
+              <button type="button" id="composition-save-confirm" class="composition-action-btn" aria-label="Confirm save">Save composition</button>
+              <button type="button" id="composition-overwrite-btn" class="composition-action-btn composition-overwrite-btn hidden" aria-label="Overwrite existing composition">Overwrite</button>
+              <button type="button" id="composition-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
+            </div>
+          </div>
+          <div id="composition-load-view" class="composition-view hidden">
+            <p id="composition-empty-message" class="composition-empty hidden">No saved compositions yet</p>
+            <ul id="composition-list" class="composition-list" role="listbox" aria-label="Saved compositions"></ul>
+            <div class="composition-panel-actions">
+              <button type="button" id="composition-cancel-load-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
+            </div>
+          </div>
+          <div id="composition-confirm-view" class="composition-view hidden">
+            <p id="composition-confirm-message" class="composition-confirm-message"></p>
+            <div class="composition-panel-actions">
+              <button type="button" id="composition-confirm-btn" class="composition-action-btn" aria-label="Confirm action">Confirm</button>
+              <button type="button" id="composition-confirm-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
             </div>
           </div>
         </div>
@@ -1598,6 +1599,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /** @type {Promise<void> | null} */
     let audioResumePromise = null;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    let effectSyncTimer = null;
 
     function ensureAudioResumed() {
       const context = musicStudioEngine.audioContext;
@@ -1629,6 +1632,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function syncEngineEffects() {
       musicStudioEngine.setEffects(currentEffects);
+    }
+
+    function scheduleSyncEngineEffects() {
+      if (effectSyncTimer) {
+        clearTimeout(effectSyncTimer);
+      }
+      effectSyncTimer = setTimeout(() => {
+        effectSyncTimer = null;
+        syncEngineEffects();
+      }, 100);
+    }
+
+    function clearScheduledEffectSync() {
+      if (effectSyncTimer) {
+        clearTimeout(effectSyncTimer);
+        effectSyncTimer = null;
+      }
     }
 
     function showAudioUnavailableBanner() {
@@ -1763,8 +1783,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Play a note by name with advanced synthesis
-    /** @param {string} noteName */
-    async function playNoteByName(noteName) {
+    /** @param {string} noteName @param {{ countTowardStats?: boolean }} [options] */
+    async function playNoteByName(noteName, options = {}) {
+      const countTowardStats = options.countTowardStats !== false;
       reinitAudioIfClosed();
       if (!musicStudioEngine.audioContext) {
         return;
@@ -1784,10 +1805,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      notesPlayed++;
-      const notesElement = queryRequired('music-studio-notes');
-      if (notesElement) {
-        notesElement.textContent = String(notesPlayed);
+      if (countTowardStats) {
+        notesPlayed++;
+        const notesElement = queryRequired('music-studio-notes');
+        if (notesElement) {
+          notesElement.textContent = String(notesPlayed);
+        }
       }
     }
   
@@ -1847,6 +1870,27 @@ document.addEventListener('DOMContentLoaded', () => {
       return label;
     }
 
+    /** @param {HTMLElement} key */
+    function wirePianoKeyAccessibility(key) {
+      key.setAttribute('role', 'button');
+      key.setAttribute('tabindex', '0');
+      key.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+          return;
+        }
+        event.preventDefault();
+        const noteName = key.dataset.note;
+        if (!noteName) {
+          return;
+        }
+        playNoteByName(noteName);
+        highlightPianoKey(noteName);
+        if (isRecording) {
+          recordNote(noteName);
+        }
+      });
+    }
+
     // Generate piano keyboard visual
     function generatePianoKeyboard() {
       const pianoKeyboard = queryRequired('piano-keyboard');
@@ -1862,6 +1906,7 @@ document.addEventListener('DOMContentLoaded', () => {
         key.dataset.note = note;
         key.setAttribute('aria-label', `Play ${note}`);
         key.appendChild(createDesktopKeyLabels(note, false));
+        wirePianoKeyAccessibility(key);
 
         if (blackKeys[index] && blackKeys[index].length > 0) {
           const blackNote = blackKeys[index][0];
@@ -1871,6 +1916,7 @@ document.addEventListener('DOMContentLoaded', () => {
             blackKey.dataset.note = blackNote;
             blackKey.setAttribute('aria-label', `Play ${blackNote}`);
             blackKey.appendChild(createDesktopKeyLabels(blackNote, true));
+            wirePianoKeyAccessibility(blackKey);
 
             key.appendChild(blackKey);
           }
@@ -1917,6 +1963,7 @@ document.addEventListener('DOMContentLoaded', () => {
         key.dataset.note = note;
         key.setAttribute('aria-label', `Play ${note}`);
         key.appendChild(createTouchKeyLabel(note));
+        wirePianoKeyAccessibility(key);
 
         if (blackKeys[index] && blackKeys[index].length > 0) {
           const blackNote = blackKeys[index][0];
@@ -1926,6 +1973,7 @@ document.addEventListener('DOMContentLoaded', () => {
             blackKey.dataset.note = blackNote;
             blackKey.setAttribute('aria-label', `Play ${blackNote}`);
             blackKey.appendChild(createTouchKeyLabel(blackNote));
+            wirePianoKeyAccessibility(blackKey);
             key.appendChild(blackKey);
           }
         }
@@ -2093,7 +2141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentEffects[effect].wetness = value;
           }
           target.setAttribute('aria-valuenow', target.value);
-          syncEngineEffects();
+          scheduleSyncEngineEffects();
         });
 
         slider.addEventListener('change', () => {
@@ -2148,6 +2196,8 @@ document.addEventListener('DOMContentLoaded', () => {
       recordedNotes = [];
       isLooping = false;
       isRecording = false;
+      lastTouchNote = '';
+      lastTouchTime = 0;
     }
 
     function safeCloseCompositionPanel() {
@@ -2178,6 +2228,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       audioResumePromise = null;
+      clearScheduledEffectSync();
       clearPlaybackTimeouts();
 
       if (isGameActive) {
@@ -2386,6 +2437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           statusElement.textContent = 'No notes recorded — try again';
         }
+        focusMusicStudioSurface();
       } else {
       // Start recording new layer
         isRecording = true;
@@ -2519,7 +2571,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loopBtn.classList.remove('active');
         isLooping = false;
       }
-    
+
+      focusMusicStudioSurface();
     }
   
     function clearCurrentLayer() {
@@ -2618,7 +2671,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const adjustedTime = time * tempoScale;
         const timeoutId = setTimeout(() => {
           if (!isPlayingPlayback) return;
-          playNoteByName(note);
+          playNoteByName(note, { countTowardStats: false });
           highlightPianoKey(note);
         }, adjustedTime);
         playbackTimeouts.push(timeoutId);
@@ -2728,7 +2781,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const adjustedTime = window.GameUtils.scaleNoteTime(time, layerTempo);
           const timeoutId = setTimeout(() => {
             if (activeLoopLayers.has(layerIndex)) {
-              playNoteByName(note);
+              playNoteByName(note, { countTowardStats: false });
               highlightPianoKey(note);
             }
           }, adjustedTime);
@@ -2900,6 +2953,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (scrim) {
         scrim.classList.toggle('hidden', !visible);
         scrim.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      }
+
+      const studio = gameContainer.querySelector('.music-studio');
+      if (studio) {
+        studio.querySelectorAll(':scope > *').forEach((child) => {
+          if (!(child instanceof HTMLElement)) {
+            return;
+          }
+          if (child.id === 'composition-panel' || child.id === 'composition-panel-scrim') {
+            return;
+          }
+          if (visible) {
+            child.setAttribute('inert', '');
+          } else {
+            child.removeAttribute('inert');
+          }
+        });
       }
     }
 
