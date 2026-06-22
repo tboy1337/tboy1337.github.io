@@ -14,6 +14,8 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.getByRole('checkbox', { name: '🌊 Reverb' })).toBeChecked();
     await expect(page.getByRole('button', { name: '📁 Load' })).toBeEnabled();
     await expect(page.getByText('Metronome:')).toBeVisible();
+    await expect(page.getByRole('slider', { name: 'Reverb amount' })).toBeVisible();
+    await expect(page.getByRole('slider', { name: 'Layer tempo' })).toBeVisible();
   });
 
   test('plays notes from keyboard input', async ({ page }) => {
@@ -285,6 +287,24 @@ test.describe('Advanced Music Studio mobile', () => {
     await expect(page.locator('.piano-container')).toBeHidden();
     await expect(page.locator('.keyboard-legend')).toBeHidden();
     await expect(page.locator('.touch-piano-container')).toBeVisible();
+  });
+
+  test('touch piano black keys show sharp labels not double hash', async ({ page }) => {
+    await startMusicStudio(page);
+    const blackKey = page.locator('.touch-key.black-key[data-note="C#4"]');
+    await expect(blackKey).toHaveText('C#');
+    await expect(blackKey).not.toHaveText('C##');
+  });
+
+  test('touch piano appears above the control panel on mobile', async ({ page }) => {
+    await startMusicStudio(page);
+    const touchBox = await page.locator('.touch-piano-container').boundingBox();
+    const controlBox = await page.locator('.control-panel').boundingBox();
+    expect(touchBox).not.toBeNull();
+    expect(controlBox).not.toBeNull();
+    if (touchBox && controlBox) {
+      expect(touchBox.y).toBeLessThan(controlBox.y);
+    }
   });
 });
 

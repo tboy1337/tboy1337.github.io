@@ -1296,6 +1296,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Keys will be generated dynamically -->
           </div>
         </div>
+
+        <!-- Mobile Touch Controls (placed before controls so piano is reachable on small screens) -->
+        <div class="mobile-controls">
+          <div class="touch-piano-container">
+            <div class="touch-key-row" id="touch-piano-keyboard">
+              <!-- Touch keys generated dynamically -->
+            </div>
+          </div>
+        </div>
         
         <!-- Control Panel -->
         <div class="control-panel">
@@ -1329,27 +1338,27 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="effect-control">
                 <input type="checkbox" id="reverb-toggle" class="effect-toggle" checked>
                 <label for="reverb-toggle">🌊 Reverb</label>
-                <input type="range" id="reverb-amount" min="0" max="100" value="30" class="effect-slider">
+                <input type="range" id="reverb-amount" min="0" max="100" value="30" class="effect-slider" aria-label="Reverb amount">
               </div>
               <div class="effect-control">
                 <input type="checkbox" id="delay-toggle" class="effect-toggle" checked>
                 <label for="delay-toggle">🔄 Delay</label>
-                <input type="range" id="delay-amount" min="0" max="100" value="30" class="effect-slider">
+                <input type="range" id="delay-amount" min="0" max="100" value="30" class="effect-slider" aria-label="Delay amount">
               </div>
               <div class="effect-control">
                 <input type="checkbox" id="chorus-toggle" class="effect-toggle" checked>
                 <label for="chorus-toggle">🌈 Chorus</label>
-                <input type="range" id="chorus-amount" min="0" max="100" value="50" class="effect-slider">
+                <input type="range" id="chorus-amount" min="0" max="100" value="50" class="effect-slider" aria-label="Chorus amount">
               </div>
               <div class="effect-control">
                 <input type="checkbox" id="distortion-toggle" class="effect-toggle" checked>
                 <label for="distortion-toggle">⚡ Distortion</label>
-                <input type="range" id="distortion-amount" min="0" max="100" value="50" class="effect-slider">
+                <input type="range" id="distortion-amount" min="0" max="100" value="50" class="effect-slider" aria-label="Distortion amount">
               </div>
               <div class="effect-control">
                 <input type="checkbox" id="filter-toggle" class="effect-toggle" checked>
                 <label for="filter-toggle">🎛️ Filter</label>
-                <input type="range" id="filter-amount" min="0" max="100" value="80" class="effect-slider">
+                <input type="range" id="filter-amount" min="0" max="100" value="80" class="effect-slider" aria-label="Filter amount">
               </div>
             </div>
           </div>
@@ -1408,7 +1417,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="layer-controls">
                 <button id="prev-layer-btn" class="layer-nav-btn" disabled>◀ Prev</button>
                 <button id="next-layer-btn" class="layer-nav-btn" disabled>Next ▶</button>
-                <input type="range" id="layer-tempo-slider" min="60" max="200" value="120" class="tempo-slider-small">
+                <input type="range" id="layer-tempo-slider" min="60" max="200" value="120" class="tempo-slider-small" aria-label="Layer tempo">
               </div>
             </div>
             <div class="recording-info">
@@ -1468,15 +1477,6 @@ document.addEventListener('DOMContentLoaded', () => {
           <p class="mb-2">🎹 <strong>Keyboard Controls:</strong></p>
           <p>White keys: A S D F G H J K | Black keys: W E T Y U O P</p>
           <p>Lower octave: 1-7 | Higher octave: Arrow keys</p>
-        </div>
-        
-        <!-- Mobile Touch Controls -->
-        <div class="mobile-controls">
-          <div class="touch-piano-container">
-            <div class="touch-key-row" id="touch-piano-keyboard">
-              <!-- Touch keys generated dynamically -->
-            </div>
-          </div>
         </div>
       </div>
     `;
@@ -2012,6 +2012,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    /** @param {string} note */
+    function formatTouchNoteLabel(note) {
+      return note.replace(/\d+$/, '');
+    }
+
     function generateTouchPiano() {
       const touchKeyboard = queryRequired('touch-piano-keyboard');
       if (!touchKeyboard) return;
@@ -2024,7 +2029,7 @@ document.addEventListener('DOMContentLoaded', () => {
         key.className = 'touch-key white-key';
         key.dataset.note = note;
         key.setAttribute('aria-label', `Play ${note}`);
-        key.textContent = note.replace('4', '');
+        key.textContent = formatTouchNoteLabel(note);
 
         if (blackKeys[index] && blackKeys[index].length > 0) {
           const blackNote = blackKeys[index][0];
@@ -2033,7 +2038,7 @@ document.addEventListener('DOMContentLoaded', () => {
             blackKey.className = 'touch-key black-key';
             blackKey.dataset.note = blackNote;
             blackKey.setAttribute('aria-label', `Play ${blackNote}`);
-            blackKey.textContent = blackNote.replace('4', '#');
+            blackKey.textContent = formatTouchNoteLabel(blackNote);
             key.appendChild(blackKey);
           }
         }
@@ -2135,6 +2140,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         slider.value = String(currentEffects[effect].wetness * 100);
       }
+
+      slider.setAttribute('aria-valuenow', slider.value);
     }
 
     // Initialize effect states after DOM is ready
@@ -2184,6 +2191,7 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             currentEffects[effect].wetness = value;
           }
+          target.setAttribute('aria-valuenow', target.value);
         });
       });
     }

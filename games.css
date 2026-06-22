@@ -965,6 +965,7 @@
   
   .touch-piano-container {
     display: block;
+    margin-bottom: 1rem;
   }
   
   .keyboard-help {

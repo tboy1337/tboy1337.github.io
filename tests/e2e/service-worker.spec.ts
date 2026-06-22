@@ -41,4 +41,18 @@ test.describe('Service worker', () => {
     const translationErrors = errors.filter((message) => message.includes('Google Translate'));
     expect(translationErrors).toHaveLength(0);
   });
+
+  test('hash navigation to fun-games survives initial load', async ({ page }) => {
+    await page.goto('/#fun-games');
+    await page.waitForFunction(() => typeof window.GameUtils !== 'undefined');
+    await page.waitForFunction(() => {
+      const section = document.getElementById('fun-games');
+      if (!section) {
+        return false;
+      }
+      const rect = section.getBoundingClientRect();
+      return rect.top >= 0 && rect.top < window.innerHeight * 0.5;
+    }, { timeout: 10000 });
+    await expect(page.locator('#fun-games')).toBeVisible();
+  });
 });

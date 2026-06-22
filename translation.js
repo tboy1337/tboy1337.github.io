@@ -84,12 +84,53 @@ function showTranslateError() {
             </div>
         `;
     // Show the element even in error state
-    translateElement.classList.add('customized');
+    markTranslateReady(translateElement);
   }
 }
 
 // Store the mutation observer globally so it can be disconnected if needed
 window.googleTranslateMutationObserver = null;
+
+const PENDING_HASH_KEY = 'tboy1337-pending-hash';
+let hashScrollRestored = false;
+
+function rememberHashForRestore() {
+  if (window.location.hash) {
+    window.sessionStorage.setItem(PENDING_HASH_KEY, window.location.hash);
+  }
+}
+
+function restoreHashScroll() {
+  if (hashScrollRestored) {
+    return;
+  }
+
+  const hash = window.sessionStorage.getItem(PENDING_HASH_KEY) || window.location.hash;
+  if (!hash) {
+    return;
+  }
+
+  const target = document.querySelector(hash);
+  if (!target) {
+    return;
+  }
+
+  hashScrollRestored = true;
+  window.sessionStorage.removeItem(PENDING_HASH_KEY);
+
+  window.requestAnimationFrame(() => {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+function markTranslateReady(translateElement) {
+  if (!translateElement || translateElement.classList.contains('customized')) {
+    return;
+  }
+
+  translateElement.classList.add('customized');
+  restoreHashScroll();
+}
 
 // Callback function for Google Translate initialization
 // This needs to be in the global scope as it's called by the Google Translate script
@@ -194,7 +235,7 @@ function completeCustomization() {
               gadget.setAttribute('data-custom-styled', 'true'); // Mark as processed
                             
               // Show the translate element now that we've replaced the text
-              translateElement.classList.add('customized');
+              markTranslateReady(translateElement);
             }
           }
         });
@@ -321,7 +362,7 @@ function completeCustomization() {
                   replaced = true; // Only replace once
                                     
                   // Show the translate element now that we've replaced the text
-                  translateElement.classList.add('customized');
+                  markTranslateReady(translateElement);
                 }
               }
             });
@@ -626,6 +667,7 @@ function cleanupGoogleElements() {
 
 // Initialize the translation functionality when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+  rememberHashForRestore();
   initGoogleTranslate();
     
   // Clean up any Google elements periodically to ensure they don't interfere with the page
@@ -643,7 +685,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const translateElement = document.getElementById('google_translate_element');
     if (translateElement && !translateElement.classList.contains('customized')) {
       console.warn('Google Translate customization timeout - showing element anyway');
-      translateElement.classList.add('customized');
+      markTranslateReady(translateElement);
+    } else {
+      restoreHashScroll();
     }
   }, 3000);
+
+  // Fallback for pages without translate widget or when hash survives without customization
+  window.addEventListener('load', () => {
+    setTimeout(restoreHashScroll, 150);
+  });
 });
