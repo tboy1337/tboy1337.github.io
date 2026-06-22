@@ -84,6 +84,21 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#music-studio-notes')).toHaveText('3');
   });
 
+  test('does not inflate the note counter during layer loop', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.getByRole('button', { name: 'Record layer' }).click();
+    await page.keyboard.press('a');
+    await page.keyboard.press('s');
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
+    await expect(page.locator('#music-studio-notes')).toHaveText('2');
+
+    await page.getByRole('button', { name: 'Loop Current' }).click();
+    await page.waitForTimeout(2000);
+    await expect(page.locator('#music-studio-notes')).toHaveText('2');
+    await page.getByRole('button', { name: 'Stop Current' }).click();
+  });
+
   test('shows message when stopping empty recording', async ({ page }) => {
     await startMusicStudio(page);
     await page.getByRole('button', { name: 'Record layer' }).click();

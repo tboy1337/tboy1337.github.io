@@ -1704,7 +1704,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 100);
 
       // Play the note
-      playNoteByName(noteName);
+      activatePianoNote(noteName);
 
       // Add visual feedback animation
       target.classList.add('correct');
@@ -1870,6 +1870,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return label;
     }
 
+    /** @param {string} noteName */
+    function activatePianoNote(noteName) {
+      playNoteByName(noteName);
+      highlightPianoKey(noteName);
+      if (isRecording) {
+        recordNote(noteName);
+      }
+    }
+
     /** @param {HTMLElement} key */
     function wirePianoKeyAccessibility(key) {
       key.setAttribute('role', 'button');
@@ -1883,11 +1892,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!noteName) {
           return;
         }
-        playNoteByName(noteName);
-        highlightPianoKey(noteName);
-        if (isRecording) {
-          recordNote(noteName);
-        }
+        activatePianoNote(noteName);
       });
     }
 
@@ -1935,12 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const noteName = pianoKey.dataset.note;
         if (noteName) {
-          playNoteByName(noteName);
-          highlightPianoKey(noteName);
-
-          if (isRecording) {
-            recordNote(noteName);
-          }
+          activatePianoNote(noteName);
         }
       });
     }
@@ -2039,6 +2039,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Volume control
       const volumeSlider = asInput(queryRequired('volume-slider'));
       const volumeDisplay = queryRequired('volume-display');
+      volumeSlider.setAttribute('aria-valuenow', volumeSlider.value);
       volumeSlider.addEventListener('input', (e) => {
         const target = getInputTarget(e.target);
         if (!target) {
@@ -2046,6 +2047,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         masterVolume = Number(target.value) / 100;
         volumeDisplay.textContent = `${target.value}%`;
+        target.setAttribute('aria-valuenow', target.value);
         musicStudioEngine.setMasterVolume(masterVolume);
       });
       volumeSlider.addEventListener('change', () => {
@@ -2055,6 +2057,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Tempo control
       const tempoSlider = asInput(queryRequired('tempo-slider'));
       const tempoDisplay = queryRequired('tempo-display');
+      tempoSlider.setAttribute('aria-valuenow', tempoSlider.value);
       tempoSlider.addEventListener('input', (e) => {
         const target = getInputTarget(e.target);
         if (!target) {
@@ -2062,6 +2065,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         currentTempo = parseInt(target.value, 10);
         tempoDisplay.textContent = `${target.value} BPM`;
+        target.setAttribute('aria-valuenow', target.value);
         addTempoFeedback(); // Start visual tempo feedback
       });
       tempoSlider.addEventListener('change', () => {
@@ -2145,6 +2149,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         slider.addEventListener('change', () => {
+          clearScheduledEffectSync();
+          syncEngineEffects();
           focusMusicStudioSurface();
         });
       });
@@ -2336,7 +2342,10 @@ document.addEventListener('DOMContentLoaded', () => {
           layerTempos[currentLayerIndex] = newTempo;
           const layerTempoDisplay = queryRequired('layer-tempo');
           layerTempoDisplay.textContent = String(newTempo);
+          layerTempoSlider.setAttribute('aria-valuenow', String(newTempo));
         };
+
+        applyLayerTempoValue(layerTempos[currentLayerIndex] || currentTempo);
 
         const restartCurrentLayerLoopIfActive = () => {
           if (!activeLoopLayers.has(currentLayerIndex)) {
