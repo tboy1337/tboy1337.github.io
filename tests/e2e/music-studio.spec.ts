@@ -23,6 +23,20 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#arrow-notes')).not.toHaveText('0');
   });
 
+  test('plays notes from arrow keys', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.locator('#arrow-notes')).toHaveText('2');
+  });
+
+  test('plays notes from piano key clicks', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.locator('.piano-key.white-key[data-note="C4"]').click();
+    await page.locator('.piano-key.white-key[data-note="D4"]').click();
+    await expect(page.locator('#arrow-notes')).toHaveText('2');
+  });
+
   test('records a layer and enables playback controls', async ({ page }) => {
     await startMusicStudio(page);
     page.once('dialog', async (dialog) => { await dialog.dismiss(); });
@@ -108,11 +122,40 @@ test.describe('Advanced Music Studio', () => {
     expect(audioState.contextClosed).toBe(true);
   });
 
+  test('restores welcome screen when switching back to music studio', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.keyboard.press('a');
+
+    await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
+    await page.getByRole('button', { name: 'Play Advanced Music Studio' }).click();
+
+    await expect(page.getByText('Click "Start Studio" to begin composing!')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start Advanced Music Studio' })).toBeEnabled();
+    await expect(page.locator('#arrow-notes')).toHaveText('0');
+  });
+
+  test('switches layer via layer indicator click', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.keyboard.press('a');
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+
+    await page.getByRole('button', { name: 'Next ▶' }).click();
+    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.keyboard.press('d');
+    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+
+    await page.locator('.layer-indicator').first().click();
+    await expect(page.locator('#current-layer')).toHaveText('1');
+    await expect(page.getByRole('button', { name: '▶️ Play' })).toBeEnabled();
+  });
+
   test('reset clears studio state', async ({ page }) => {
     await startMusicStudio(page);
     await page.keyboard.press('h');
     await page.getByRole('button', { name: 'Reset Advanced Music Studio' }).click();
-    await expect(page.getByText('Click "Start" to begin composing!')).toBeVisible();
+    await expect(page.getByText('Click "Start Studio" to begin composing!')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start Advanced Music Studio' })).toBeEnabled();
   });
 });

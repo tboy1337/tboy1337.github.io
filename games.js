@@ -1058,7 +1058,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let maxLoopLayers = 4; // Maximum number of simultaneous loops
     let layerTempos = [120, 120, 120, 120]; // Individual BPM for each layer
     let currentLayerIndex = 0;
-  
+    let isPlayingPlayback = false;
+    let playbackTimeouts = [];
+
+    const pianoKeyConfig = {
+      whiteKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
+      blackKeys: [['C#4'], ['D#4'], [], ['F#4'], ['G#4'], ['A#4'], [], []]
+    };
+
+    const noteToKeyLabel = {
+      'C4': 'A', 'D4': 'S', 'E4': 'D', 'F4': 'F', 'G4': 'G', 'A4': 'H', 'B4': 'J', 'C5': 'K',
+      'C#4': 'W', 'D#4': 'E', 'F#4': 'T', 'G#4': 'Y', 'A#4': 'U', 'C#5': 'O', 'D#5': 'P'
+    };
+
+    function setBtnLabel(button, label) {
+      if (!button) return;
+      button.textContent = label;
+      button.setAttribute('aria-label', label);
+    }
+
     // Initialize the advanced music studio
     function initArrowDisplay() {
       gameContainer.classList.add('centered-content');
@@ -1066,10 +1084,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
         <p class="text-xl mb-4">🎹 Advanced Music Studio</p>
         <p class="mb-2">Create music with a full chromatic keyboard!</p>
-        <p class="mb-2">🎵 Use A-K keys for white notes, Q-P for black notes</p>
+        <p class="mb-2">🎵 Use A-K keys for white notes, W E T Y U O P for black notes</p>
         <p class="mb-2">🎛️ Apply effects: reverb, delay, chorus & more</p>
         <p class="mb-2">🔄 Record and loop your compositions</p>
-        <p class="mt-4">Click "Start" to begin composing!</p>
+        <p class="mt-4">Click "Start Studio" to begin composing!</p>
       </div>
     `;
     }
@@ -1155,15 +1173,17 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Recording Panel -->
           <div class="recording-panel">
             <div class="recording-title">🎙️ Multi-Layer Recording</div>
-            <div class="recording-controls">
-              <button id="record-btn" class="record-btn">⏺️ Record Layer</button>
-              <button id="play-btn" class="play-btn" disabled>▶️ Play</button>
-              <button id="loop-btn" class="loop-btn" disabled>🔄 Loop Current</button>
-              <button id="loop-all-btn" class="loop-btn" disabled>🔄 Loop All</button>
-              <button id="clear-btn" class="clear-btn" disabled>🗑️ Clear Current</button>
-              <button id="clear-all-btn" class="clear-btn" disabled>🗑️ Clear All</button>
-              <button id="save-btn" class="save-btn" disabled>💾 Save</button>
-              <button id="load-btn" class="load-btn">📁 Load</button>
+            <div class="recording-controls recording-controls-primary">
+              <button id="record-btn" class="record-btn" aria-label="⏺️ Record Layer">⏺️ Record Layer</button>
+              <button id="play-btn" class="play-btn" disabled aria-label="▶️ Play">▶️ Play</button>
+              <button id="loop-btn" class="loop-btn" disabled aria-label="🔄 Loop Current">🔄 Loop Current</button>
+              <button id="loop-all-btn" class="loop-btn" disabled aria-label="🔄 Loop All">🔄 Loop All</button>
+            </div>
+            <div class="recording-controls recording-controls-secondary">
+              <button id="clear-btn" class="clear-btn" disabled aria-label="🗑️ Clear Current">🗑️ Clear Current</button>
+              <button id="clear-all-btn" class="clear-btn" disabled aria-label="🗑️ Clear All">🗑️ Clear All</button>
+              <button id="save-btn" class="save-btn" disabled aria-label="💾 Save">💾 Save</button>
+              <button id="load-btn" class="load-btn" aria-label="📁 Load">📁 Load</button>
             </div>
             <div class="layer-status">
               <div class="layer-info">
@@ -1187,6 +1207,48 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
         
+        <!-- Keyboard Legend -->
+        <div class="keyboard-legend" aria-label="Keyboard mapping legend">
+          <div class="legend-row legend-white-keys">
+            <span class="legend-key" data-key="a">A</span>
+            <span class="legend-key" data-key="s">S</span>
+            <span class="legend-key" data-key="d">D</span>
+            <span class="legend-key" data-key="f">F</span>
+            <span class="legend-key" data-key="g">G</span>
+            <span class="legend-key" data-key="h">H</span>
+            <span class="legend-key" data-key="j">J</span>
+            <span class="legend-key" data-key="k">K</span>
+          </div>
+          <div class="legend-row legend-black-keys">
+            <span class="legend-key legend-key-black" data-key="w">W</span>
+            <span class="legend-key legend-key-black" data-key="e">E</span>
+            <span class="legend-key legend-key-spacer"></span>
+            <span class="legend-key legend-key-black" data-key="t">T</span>
+            <span class="legend-key legend-key-black" data-key="y">Y</span>
+            <span class="legend-key legend-key-black" data-key="u">U</span>
+            <span class="legend-key legend-key-spacer"></span>
+            <span class="legend-key legend-key-black" data-key="o">O</span>
+            <span class="legend-key legend-key-black" data-key="p">P</span>
+          </div>
+          <div class="legend-row legend-octave-keys">
+            <span class="legend-key" data-key="1">1</span>
+            <span class="legend-key" data-key="2">2</span>
+            <span class="legend-key" data-key="3">3</span>
+            <span class="legend-key" data-key="4">4</span>
+            <span class="legend-key" data-key="5">5</span>
+            <span class="legend-key" data-key="6">6</span>
+            <span class="legend-key" data-key="7">7</span>
+            <span class="legend-key legend-key-label">Octave 3</span>
+          </div>
+          <div class="legend-row legend-arrow-keys">
+            <span class="legend-key" data-key="ArrowLeft">←</span>
+            <span class="legend-key" data-key="ArrowDown">↓</span>
+            <span class="legend-key" data-key="ArrowUp">↑</span>
+            <span class="legend-key" data-key="ArrowRight">→</span>
+            <span class="legend-key legend-key-label">Shortcuts</span>
+          </div>
+        </div>
+
         <!-- Keyboard Instruction -->
         <div class="keyboard-help">
           <p class="mb-2">🎹 <strong>Keyboard Controls:</strong></p>
@@ -1197,19 +1259,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <!-- Mobile Touch Controls -->
         <div class="mobile-controls">
           <div class="touch-piano-container">
-            <div class="touch-key-row">
-              <div class="touch-key white-key" data-note="C4">C</div>
-              <div class="touch-key black-key" data-note="C#4">C#</div>
-              <div class="touch-key white-key" data-note="D4">D</div>
-              <div class="touch-key black-key" data-note="D#4">D#</div>
-              <div class="touch-key white-key" data-note="E4">E</div>
-              <div class="touch-key white-key" data-note="F4">F</div>
-              <div class="touch-key black-key" data-note="F#4">F#</div>
-              <div class="touch-key white-key" data-note="G4">G</div>
-              <div class="touch-key black-key" data-note="G#4">G#</div>
-              <div class="touch-key white-key" data-note="A4">A</div>
-              <div class="touch-key black-key" data-note="A#4">A#</div>
-              <div class="touch-key white-key" data-note="B4">B</div>
+            <div class="touch-key-row" id="touch-piano-keyboard">
+              <!-- Touch keys generated dynamically -->
             </div>
           </div>
         </div>
@@ -1218,12 +1269,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Generate piano keyboard visual
       generatePianoKeyboard();
+      generateTouchPiano();
     
       // Setup control event listeners
       setupControlListeners();
-    
-      // Setup touch controls for mobile
-      setupTouchControls();
     
       // IMPORTANT: Initialize effects after DOM elements are created
       setTimeout(() => {
@@ -1263,26 +1312,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle enhanced key press events
     function handleKeyPress(event) {
       if (!isGameActive) return;
-    
-      const key = event.key.toLowerCase();
-    
-      // Check if key is mapped to a note
-      if (keyboardMapping[key]) {
-      // Prevent default browser behavior
-        event.preventDefault();
-      
-        const noteName = keyboardMapping[key];
-      
-        // Play the note
-        playNoteByName(noteName);
-      
-        // Visual feedback
-        highlightKey(key, noteName);
-      
-        // Record if recording is active
-        if (isRecording) {
-          recordNote(noteName);
-        }
+
+      const mappingKey = keyboardMapping[event.key] !== undefined
+        ? event.key
+        : keyboardMapping[event.key.toLowerCase()] !== undefined
+          ? event.key.toLowerCase()
+          : null;
+
+      if (!mappingKey) return;
+
+      event.preventDefault();
+
+      const noteName = keyboardMapping[mappingKey];
+
+      playNoteByName(noteName);
+      highlightKey(mappingKey, noteName);
+
+      if (isRecording) {
+        recordNote(noteName);
       }
     }
   
@@ -1321,29 +1368,37 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Create effect chain
       const effectChain = createEffectChain();
-    
+
       // Create master gain
       const masterGain = window.arrowGameAudioContext.createGain();
       masterGain.gain.value = masterVolume;
-    
+
       // Connect the audio chain
       oscillator.connect(effectChain.input);
       effectChain.output.connect(masterGain);
       masterGain.connect(window.arrowGameAudioContext.destination);
-    
+
       // Start the oscillator
       oscillator.start();
-    
+
       // Apply envelope based on instrument type
       applyEnvelope(effectChain.output, currentInstrument);
-    
+
       // Stop the oscillator after note duration
       const noteDuration = getNoteDuration(currentInstrument);
+      const stopTime = window.arrowGameAudioContext.currentTime + noteDuration / 1000;
       setTimeout(() => {
         try {
           oscillator.stop();
         } catch {
         // Oscillator may have already stopped
+        }
+        if (effectChain.chorusLFO) {
+          try {
+            effectChain.chorusLFO.stop(stopTime);
+          } catch {
+          // LFO may have already stopped
+          }
         }
       }, noteDuration);
     }
@@ -1376,6 +1431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createEffectChain() {
       let input = window.arrowGameAudioContext.createGain();
       let output = input;
+      let chorusLFO = null;
     
       // Filter
       if (currentEffects.filter.enabled) {
@@ -1487,44 +1543,44 @@ document.addEventListener('DOMContentLoaded', () => {
       // Simple chorus effect (using modulated delay)
       if (currentEffects.chorus.enabled) {
         const chorusDelay = window.arrowGameAudioContext.createDelay(0.05);
-        const chorusLFO = window.arrowGameAudioContext.createOscillator();
+        chorusLFO = window.arrowGameAudioContext.createOscillator();
         const chorusGain = window.arrowGameAudioContext.createGain();
         const chorusDepth = window.arrowGameAudioContext.createGain();
         const dryGain = window.arrowGameAudioContext.createGain();
         const mixGain = window.arrowGameAudioContext.createGain();
-      
+
         // Set up LFO for chorus modulation
         chorusLFO.frequency.value = currentEffects.chorus.rate;
         chorusLFO.type = 'sine';
         chorusDepth.gain.value = currentEffects.chorus.depth * 0.002; // Small modulation
-      
+
         // Connect LFO to delay time
         chorusLFO.connect(chorusDepth);
         chorusDepth.connect(chorusDelay.delayTime);
-      
+
         // Set base delay time
         chorusDelay.delayTime.value = 0.02;
-      
+
         // Set gains
         chorusGain.gain.value = currentEffects.chorus.wetness;
         dryGain.gain.value = 1 - currentEffects.chorus.wetness;
-      
+
         // Connect audio path
         output.connect(chorusDelay);
         chorusDelay.connect(chorusGain);
         output.connect(dryGain);
-      
+
         // Mix signals
         dryGain.connect(mixGain);
         chorusGain.connect(mixGain);
-      
+
         // Start LFO
         chorusLFO.start();
-      
+
         output = mixGain;
       }
-    
-      return { input, output };
+
+      return { input, output, chorusLFO };
     }
   
     // Create distortion curve
@@ -1613,45 +1669,100 @@ document.addEventListener('DOMContentLoaded', () => {
     function generatePianoKeyboard() {
       const pianoKeyboard = document.getElementById('piano-keyboard');
       if (!pianoKeyboard) return;
-    
-      const whiteKeys = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
-      const blackKeys = [['C#4'], ['D#4'], [], ['F#4'], ['G#4'], ['A#4'], []];
-    
+
+      const { whiteKeys, blackKeys } = pianoKeyConfig;
+
       pianoKeyboard.innerHTML = '';
-    
-      // Create white keys
+
       whiteKeys.forEach((note, index) => {
         const key = document.createElement('div');
         key.className = 'piano-key white-key';
         key.dataset.note = note;
-        key.textContent = note;
-      
-        // Add black key if it exists
+        key.setAttribute('aria-label', `Play ${note}`);
+
+        const noteLabel = document.createElement('span');
+        noteLabel.className = 'piano-note-name';
+        noteLabel.textContent = note;
+        key.appendChild(noteLabel);
+
+        const keyLabel = noteToKeyLabel[note];
+        if (keyLabel) {
+          const labelSpan = document.createElement('span');
+          labelSpan.className = 'key-label';
+          labelSpan.textContent = keyLabel;
+          key.appendChild(labelSpan);
+        }
+
         if (blackKeys[index] && blackKeys[index].length > 0) {
+          const blackNote = blackKeys[index][0];
           const blackKey = document.createElement('div');
           blackKey.className = 'piano-key black-key';
-          blackKey.dataset.note = blackKeys[index][0];
-          blackKey.textContent = blackKeys[index][0];
+          blackKey.dataset.note = blackNote;
+          blackKey.setAttribute('aria-label', `Play ${blackNote}`);
+
+          const blackNoteLabel = document.createElement('span');
+          blackNoteLabel.className = 'piano-note-name';
+          blackNoteLabel.textContent = blackNote;
+          blackKey.appendChild(blackNoteLabel);
+
+          const blackKeyLabel = noteToKeyLabel[blackNote];
+          if (blackKeyLabel) {
+            const blackLabelSpan = document.createElement('span');
+            blackLabelSpan.className = 'key-label';
+            blackLabelSpan.textContent = blackKeyLabel;
+            blackKey.appendChild(blackLabelSpan);
+          }
+
           key.appendChild(blackKey);
         }
-      
+
         pianoKeyboard.appendChild(key);
       });
-    
-      // Add click event listeners to piano keys
+
       pianoKeyboard.addEventListener('click', (e) => {
-        if (e.target.classList.contains('piano-key')) {
-          const noteName = e.target.dataset.note;
-          if (noteName) {
-            playNoteByName(noteName);
-            highlightPianoKey(noteName);
-          
-            if (isRecording) {
-              recordNote(noteName);
-            }
+        const pianoKey = e.target.closest('.piano-key');
+        if (!pianoKey) return;
+
+        const noteName = pianoKey.dataset.note;
+        if (noteName) {
+          playNoteByName(noteName);
+          highlightPianoKey(noteName);
+
+          if (isRecording) {
+            recordNote(noteName);
           }
         }
       });
+    }
+
+    function generateTouchPiano() {
+      const touchKeyboard = document.getElementById('touch-piano-keyboard');
+      if (!touchKeyboard) return;
+
+      const { whiteKeys, blackKeys } = pianoKeyConfig;
+      touchKeyboard.innerHTML = '';
+
+      whiteKeys.slice(0, 7).forEach((note, index) => {
+        const key = document.createElement('div');
+        key.className = 'touch-key white-key';
+        key.dataset.note = note;
+        key.setAttribute('aria-label', `Play ${note}`);
+        key.textContent = note.replace('4', '');
+
+        if (blackKeys[index] && blackKeys[index].length > 0) {
+          const blackNote = blackKeys[index][0];
+          const blackKey = document.createElement('div');
+          blackKey.className = 'touch-key black-key';
+          blackKey.dataset.note = blackNote;
+          blackKey.setAttribute('aria-label', `Play ${blackNote}`);
+          blackKey.textContent = blackNote.replace('4', '#');
+          key.appendChild(blackKey);
+        }
+
+        touchKeyboard.appendChild(key);
+      });
+
+      setupTouchControls();
     }
 
     // Start the music maker
@@ -1724,33 +1835,33 @@ document.addEventListener('DOMContentLoaded', () => {
       setupRecordingControls();
     }
   
+    function syncEffectSlider(effect, slider) {
+      if (!slider || !currentEffects[effect]) return;
+
+      if (effect === 'distortion') {
+        slider.value = currentEffects[effect].amount;
+      } else if (effect === 'filter') {
+        slider.value = currentEffects[effect].frequency / 50;
+      } else {
+        slider.value = currentEffects[effect].wetness * 100;
+      }
+    }
+
     // Initialize effect states after DOM is ready
     function initializeEffectStates() {
       const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
-    
-    
+
       effects.forEach(effect => {
         const toggle = document.getElementById(`${effect}-toggle`);
         const slider = document.getElementById(`${effect}-amount`);
-      
+
         if (toggle && currentEffects[effect]) {
-        // Set toggle to match currentEffects state
           toggle.checked = currentEffects[effect].enabled;
-        
+
           if (slider) {
-          // Set slider state based on toggle
             slider.disabled = !currentEffects[effect].enabled;
-          
-            // Set slider value
-            if (effect === 'distortion') {
-              slider.value = currentEffects[effect].amount;
-            } else if (effect === 'filter') {
-              slider.value = currentEffects[effect].frequency / 50;
-            } else {
-              slider.value = currentEffects[effect].wetness * 100;
-            }
+            syncEffectSlider(effect, slider);
           }
-        } else {
         }
       });
     }
@@ -1795,13 +1906,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const loopAllBtn = document.getElementById('loop-all-btn');
       if (loopAllBtn) {
-        loopAllBtn.textContent = '🔄 Loop All';
+        setBtnLabel(loopAllBtn, '🔄 Loop All');
         loopAllBtn.classList.remove('active');
+      }
+    }
+
+    function clearPlaybackTimeouts() {
+      playbackTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+      playbackTimeouts = [];
+      isPlayingPlayback = false;
+
+      const playBtn = document.getElementById('play-btn');
+      if (playBtn) {
+        setBtnLabel(playBtn, '▶️ Play');
+        playBtn.classList.remove('playing');
       }
     }
 
     function resetMusicStudioState() {
       stopAllLoops();
+      clearPlaybackTimeouts();
       activeLoopLayers.clear();
 
       if (window.layerIntervals) {
@@ -1845,6 +1969,16 @@ document.addEventListener('DOMContentLoaded', () => {
       resetMusicStudioState();
       closeMusicStudioAudio();
       isGameActive = false;
+
+      notesPlayed = 0;
+      const notesElement = document.getElementById('arrow-notes');
+      if (notesElement) {
+        notesElement.textContent = '0';
+      }
+
+      initArrowDisplay();
+      startButton.disabled = false;
+      resetButton.disabled = true;
     }
 
     window.cleanupMusicStudio = cleanupMusicStudio;
@@ -1949,20 +2083,18 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Highlight key visual feedback
     function highlightKey(keyCode, noteName) {
-    // Highlight keyboard key mapping visualization if present
-      const keyElement = document.querySelector(`[data-key=\"${keyCode}\"]`);
+      const keyElement = document.querySelector(`[data-key="${keyCode}"]`);
       if (keyElement) {
         keyElement.classList.add('active');
         setTimeout(() => keyElement.classList.remove('active'), 100);
       }
-    
-      // Highlight piano key
+
       highlightPianoKey(noteName);
     }
   
     // Highlight piano key
     function highlightPianoKey(noteName) {
-      const pianoKey = document.querySelector(`[data-note=\"${noteName}\"]`);
+      const pianoKey = document.querySelector(`[data-note="${noteName}"]`);
       if (pianoKey) {
         pianoKey.classList.add('active');
         setTimeout(() => pianoKey.classList.remove('active'), 200);
@@ -1977,7 +2109,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isRecording) {
       // Stop recording and save to current layer
         isRecording = false;
-        recordBtn.textContent = '⏺️ Record Layer';
+        setBtnLabel(recordBtn, '⏺️ Record Layer');
         recordBtn.classList.remove('recording');
       
         // Save the current recording to the layer
@@ -1997,7 +2129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isRecording = true;
         recordedNotes = [];
         recordingStartTime = Date.now();
-        recordBtn.textContent = '⏹️ Stop Recording';
+        setBtnLabel(recordBtn, '⏹️ Stop Recording');
         recordBtn.classList.add('recording');
         statusElement.textContent = `Recording layer ${currentLayerIndex + 1}...`;
       }
@@ -2019,12 +2151,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateLayerDisplay() {
       const layersDisplay = document.getElementById('layers-display');
       if (!layersDisplay) return;
-    
+
       layersDisplay.innerHTML = '';
-    
+
       loopLayers.forEach((layer, index) => {
         const layerElement = document.createElement('div');
         layerElement.className = `layer-indicator ${index === currentLayerIndex ? 'current' : ''}`;
+        layerElement.setAttribute('role', 'button');
+        layerElement.setAttribute('tabindex', '0');
+        layerElement.setAttribute('aria-label', `Switch to layer ${index + 1}`);
         layerElement.innerHTML = `
         <span class="layer-number">${index + 1}</span>
         <span class="layer-notes">${layer.notes.length} notes</span>
@@ -2032,6 +2167,15 @@ document.addEventListener('DOMContentLoaded', () => {
           ${activeLoopLayers.has(index) ? '▶️' : '⏸️'}
         </span>
       `;
+
+        layerElement.addEventListener('click', () => switchToLayer(index));
+        layerElement.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            switchToLayer(index);
+          }
+        });
+
         layersDisplay.appendChild(layerElement);
       });
     }
@@ -2098,11 +2242,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update loop button state
       const loopBtn = document.getElementById('loop-btn');
       if (activeLoopLayers.has(layerIndex)) {
-        loopBtn.textContent = '⏹️ Stop Current';
+        setBtnLabel(loopBtn, '⏹️ Stop Current');
         loopBtn.classList.add('active');
         isLooping = true;
       } else {
-        loopBtn.textContent = '🔄 Loop Current';
+        setBtnLabel(loopBtn, '🔄 Loop Current');
         loopBtn.classList.remove('active');
         isLooping = false;
       }
@@ -2144,7 +2288,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
         // Reset UI
         const recordBtn = document.getElementById('record-btn');
-        recordBtn.textContent = '⏺️ Record Layer';
+        setBtnLabel(recordBtn, '⏺️ Record Layer');
         recordBtn.classList.remove('recording');
       
         updateLayerDisplay();
@@ -2177,31 +2321,44 @@ document.addEventListener('DOMContentLoaded', () => {
   
     function playRecording() {
       if (recordedNotes.length === 0) return;
-    
+
       const playBtn = document.getElementById('play-btn');
-      playBtn.textContent = '⏸️ Stop';
-      playBtn.disabled = true;
-    
-      // Use current layer's tempo instead of global tempo
+
+      if (isPlayingPlayback) {
+        clearPlaybackTimeouts();
+        if (playBtn) {
+          playBtn.disabled = recordedNotes.length === 0;
+        }
+        return;
+      }
+
+      isPlayingPlayback = true;
+      if (playBtn) {
+        setBtnLabel(playBtn, '⏸️ Stop');
+        playBtn.classList.add('playing');
+      }
+
       const layerTempo = layerTempos[currentLayerIndex] || 120;
       const tempoScale = 120 / layerTempo;
-    
-      // Play each recorded note at tempo-adjusted time
+
       recordedNotes.forEach(({ note, time }) => {
         const adjustedTime = time * tempoScale;
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
+          if (!isPlayingPlayback) return;
           playNoteByName(note);
           highlightPianoKey(note);
         }, adjustedTime);
+        playbackTimeouts.push(timeoutId);
       });
-    
-      // Reset play button after playback (also tempo-adjusted)
+
       const totalDuration = (recordedNotes[recordedNotes.length - 1].time * tempoScale) + 1000;
-      setTimeout(() => {
-        playBtn.textContent = '▶️ Play';
-        playBtn.disabled = false;
+      const endTimeoutId = setTimeout(() => {
+        clearPlaybackTimeouts();
+        if (playBtn) {
+          playBtn.disabled = false;
+        }
       }, totalDuration);
-    
+      playbackTimeouts.push(endTimeoutId);
     }
   
     // Multi-layer loop management
@@ -2213,7 +2370,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Stop current layer loop
         stopLayerLoop(currentLayerIndex);
         isLooping = false;
-        loopBtn.textContent = '🔄 Loop Current';
+        setBtnLabel(loopBtn, '🔄 Loop Current');
         loopBtn.classList.remove('active');
       } else {
       // Start current layer loop
@@ -2226,7 +2383,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         startLayerLoop(currentLayerIndex, notesToPlay);
         isLooping = true;
-        loopBtn.textContent = '⏹️ Stop Current';
+        setBtnLabel(loopBtn, '⏹️ Stop Current');
         loopBtn.classList.add('active');
       }
     }
@@ -2237,13 +2394,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activeLoopLayers.size > 0) {
       // Stop all loops
         stopAllLoops();
-        loopAllBtn.textContent = '🔄 Loop All';
+        setBtnLabel(loopAllBtn, '🔄 Loop All');
         loopAllBtn.classList.remove('active');
       } else {
       // Start all layer loops
         if (loopLayers.length === 0) return;
         startAllLoops();
-        loopAllBtn.textContent = '⏹️ Stop All';
+        setBtnLabel(loopAllBtn, '⏹️ Stop All');
         loopAllBtn.classList.add('active');
       }
     }
@@ -2312,7 +2469,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isLooping = false;
         const loopBtn = document.getElementById('loop-btn');
         if (loopBtn) {
-          loopBtn.textContent = '🔄 Loop Current';
+          setBtnLabel(loopBtn, '🔄 Loop Current');
           loopBtn.classList.remove('active');
         }
       }
@@ -2401,18 +2558,16 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.keys(currentEffects).forEach(effect => {
           const toggle = document.getElementById(`${effect}-toggle`);
           const slider = document.getElementById(`${effect}-amount`);
-        
+
           if (toggle) {
             toggle.checked = currentEffects[effect].enabled;
             if (slider) {
               slider.disabled = !currentEffects[effect].enabled;
             }
           }
-        
-          if (slider && effect === 'distortion') {
-            slider.value = currentEffects[effect].amount;
-          } else if (slider) {
-            slider.value = currentEffects[effect].wetness * 100;
+
+          if (slider) {
+            syncEffectSlider(effect, slider);
           }
         });
       
