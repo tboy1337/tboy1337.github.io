@@ -1622,6 +1622,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (context && context.state !== 'closed') {
         return;
       }
+      audioResumePromise = null;
+      musicStudioEngine.dispose();
       initAudio();
     }
 
@@ -1721,6 +1723,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!mappingKey) return;
 
       event.preventDefault();
+      event.stopPropagation();
 
       const noteName = keyboardMapping[mappingKey];
       if (!noteName) {
@@ -1956,7 +1959,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Set up keyboard event handler
       window.musicStudioKeyboardHandler = handleKeyPress;
-      document.addEventListener('keydown', window.musicStudioKeyboardHandler);
+      document.addEventListener('keydown', window.musicStudioKeyboardHandler, true);
     
       // Start tempo feedback
       addTempoFeedback();
@@ -2155,9 +2158,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cleanupMusicStudio() {
       if (window.musicStudioKeyboardHandler) {
-        document.removeEventListener('keydown', window.musicStudioKeyboardHandler);
+        document.removeEventListener('keydown', window.musicStudioKeyboardHandler, true);
         window.musicStudioKeyboardHandler = null;
       }
+
+      audioResumePromise = null;
 
       if (isGameActive) {
         resetMusicStudioState();
@@ -2286,7 +2291,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         layerTempoSlider.addEventListener('input', tempoHandler);
-        layerTempoSlider.addEventListener('change', tempoHandler);
+        layerTempoSlider.addEventListener('change', (event) => {
+          tempoHandler(event);
+          focusMusicStudioSurface();
+        });
       }
     }
   
@@ -2898,8 +2906,10 @@ document.addEventListener('DOMContentLoaded', () => {
       setCompositionPanelVisible(false);
 
       if (compositionPanelTrigger) {
-        compositionPanelTrigger.focus();
         compositionPanelTrigger = null;
+      }
+      if (isGameActive) {
+        focusMusicStudioSurface();
       }
     }
 

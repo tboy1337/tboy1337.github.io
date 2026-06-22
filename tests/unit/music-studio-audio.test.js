@@ -406,6 +406,49 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
     expect(engine.audioContext).toBeNull();
   });
 
+  it('reinitializes cleanly after the audio context is closed', () => {
+    let context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({
+      createContext: () => {
+        if (context.state === 'closed') {
+          context = createMockAudioContext();
+        }
+        return context;
+      }
+    });
+    engine.init();
+    expect(engine.playNote('C4')).toBe(true);
+    context.state = 'closed';
+    expect(engine.playNote('D4')).toBe(false);
+    expect(engine.init()).toBe(true);
+    expect(engine.playNote('D4')).toBe(true);
+    expect(engine.destinationConnectionCount).toBe(1);
+    engine.dispose();
+  });
+
+  it('defers effect rebuilds while voices are still active', () => {
+    vi.useFakeTimers();
+    const context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({
+      createContext: () => context,
+      minNoteIntervalMs: 0
+    });
+    engine.init();
+    engine.playNote('C4');
+
+    const tweaked = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    tweaked.reverb.enabled = false;
+    engine.setEffects(tweaked);
+    vi.advanceTimersByTime(120);
+    expect(engine.getActiveVoiceCount()).toBe(1);
+
+    vi.advanceTimersByTime(getNoteDurationMs('synth') + 200);
+    expect(engine.getActiveVoiceCount()).toBe(0);
+    expect(engine.playNote('E4')).toBe(true);
+    engine.dispose();
+    vi.useRealTimers();
+  });
+
   it('debounces rapid effect changes into a single rebuild', () => {
     vi.useFakeTimers();
     const context = createMockAudioContext();

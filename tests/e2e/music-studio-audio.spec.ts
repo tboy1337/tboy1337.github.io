@@ -89,4 +89,15 @@ test.describe('Music Studio audio stability', () => {
     const afterSpam = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
     expect(afterSpam).toBeCloseTo(baseline, 1);
   });
+
+  test('plays notes after toggling an effect without clicking the page', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.locator('#reverb-toggle').click();
+    await page.keyboard.press('d');
+
+    const frequency = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
+    expect(frequency).toBeCloseTo(329.63, 1);
+    await expect(page.locator('#music-studio-notes')).toHaveText('1');
+  });
 });
