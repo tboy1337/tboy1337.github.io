@@ -84,11 +84,16 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function switchGame(gameName) {
     // Stop all active games before switching
-    // Memory game cleanup
-      if (gameName !== 'memory' && window.memoryGameTimer) {
-        clearInterval(window.memoryGameTimer);
-        window.memoryGameTimer = null;
+      // Memory game cleanup
+      if (gameName !== 'memory') {
+        if (window.memoryGameTimer) {
+          clearInterval(window.memoryGameTimer);
+          window.memoryGameTimer = null;
+        }
         window.memoryGameActive = false;
+        if (typeof window.cleanupMemoryGame === 'function') {
+          window.cleanupMemoryGame();
+        }
       }
 
       // Snake game cleanup
@@ -102,6 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
           window.snakeKeyboardHandler = null;
         }
         window.snakeGameActive = false;
+        if (typeof window.cleanupSnakeGame === 'function') {
+          window.cleanupSnakeGame();
+        }
       }
 
       // Typing game cleanup
@@ -286,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.dataset.icon = icon.name;
         card.setAttribute('role', 'button');
         card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-pressed', 'false');
         card.setAttribute('aria-label', `Flip memory card ${index + 1}`);
       
         // Create front face (icon)
@@ -333,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (card === firstCard) return;
 
       card.classList.add('flipped');
+      card.setAttribute('aria-pressed', 'true');
 
       if (!hasFlippedCard) {
       // First card flipped
@@ -374,9 +384,13 @@ document.addEventListener('DOMContentLoaded', () => {
       secondCard.removeEventListener('keydown', handleCardKeydown);
       firstCard.setAttribute('tabindex', '-1');
       secondCard.setAttribute('tabindex', '-1');
-    
       firstCard.classList.add('matched');
       secondCard.classList.add('matched');
+    
+      firstCard.setAttribute('aria-pressed', 'true');
+      secondCard.setAttribute('aria-pressed', 'true');
+      firstCard.setAttribute('aria-label', 'Matched memory card');
+      secondCard.setAttribute('aria-label', 'Matched memory card');
     
       resetBoard();
     
@@ -400,6 +414,8 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         first.classList.remove('flipped');
         second.classList.remove('flipped');
+        first.setAttribute('aria-pressed', 'false');
+        second.setAttribute('aria-pressed', 'false');
 
         resetBoard();
       }, 1000);
@@ -462,7 +478,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
       memoryStartButton.disabled = false;
       memoryResetButton.disabled = false; // Enable reset so user can play again
+
+      const resultBox = memoryContainer.querySelector('.welcome-box');
+      if (resultBox instanceof HTMLElement) {
+        resultBox.setAttribute('role', 'alert');
+      }
     }
+
+    window.cleanupMemoryGame = resetGame;
   
     // Event listeners
     memoryStartButton.addEventListener('click', startGame);
@@ -538,6 +561,8 @@ document.addEventListener('DOMContentLoaded', () => {
       canvas.style.borderRadius = '0.25rem';
       canvas.style.maxWidth = '100%';
       canvas.style.height = 'auto';
+      canvas.setAttribute('role', 'img');
+      canvas.setAttribute('aria-label', 'Snake game board');
     
       ctx = canvas.getContext('2d');
       if (!ctx) {
@@ -568,6 +593,11 @@ document.addEventListener('DOMContentLoaded', () => {
       window.snakeGameActive = true;
       snakeScore = 0;
       snakeScoreElement.textContent = String(snakeScore);
+
+      const snakeStatusEl = getHtmlElement('snake-status');
+      if (snakeStatusEl) {
+        snakeStatusEl.textContent = '';
+      }
     
       // Reset direction to ensure consistent start
       direction = 'right';
@@ -826,7 +856,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
       snakeStartButton.disabled = false;
       snakeResetButton.disabled = false; // Keep reset button enabled so user can reset after game over
+
+      const snakeStatusEl = getHtmlElement('snake-status');
+      if (snakeStatusEl) {
+        snakeStatusEl.textContent = `Game over. Final score: ${snakeScore}`;
+      }
     }
+
+    window.cleanupSnakeGame = resetSnakeGame;
   
     // Event listeners
     if (snakeStartButton && snakeResetButton) {
@@ -1142,7 +1179,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Show final score display
       typingContainer.classList.add('centered-content');
       typingContainer.innerHTML = `
-      <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
+      <div class="welcome-box bg-black/60 p-8 text-center rounded-lg" role="alert">
         <p class="text-2xl mb-4 text-blue-400">🎯 Typing Test Complete!</p>
         <div class="text-lg space-y-2">
           <p><strong>Final WPM:</strong> ${finalWpm}</p>
@@ -1194,27 +1231,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameContainer = assertPresent(gameContainerEl);
     const startButton = asButton(assertPresent(startButtonEl));
     const resetButton = asButton(assertPresent(resetButtonEl));
+
+    const musicStudioEngine = window.MusicStudioAudio.createMusicStudioAudioEngine();
   
     let isGameActive = false;
     window.musicStudioAudioContext = null;
     let notesPlayed = 0;
   
     // Define comprehensive note frequencies (full chromatic scale with multiple octaves)
-    /** @type {Record<string, number>} */
-    const noteFrequencies = {
-    // Octave 3
-      'C3': 130.81, 'C#3': 138.59, 'Db3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'Eb3': 155.56,
-      'E3': 164.81, 'F3': 174.61, 'F#3': 185.00, 'Gb3': 185.00, 'G3': 196.00, 'G#3': 207.65,
-      'Ab3': 207.65, 'A3': 220.00, 'A#3': 233.08, 'Bb3': 233.08, 'B3': 246.94,
-      // Octave 4 (Middle)
-      'C4': 261.63, 'C#4': 277.18, 'Db4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'Eb4': 311.13,
-      'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'Gb4': 369.99, 'G4': 392.00, 'G#4': 415.30,
-      'Ab4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'Bb4': 466.16, 'B4': 493.88,
-      // Octave 5
-      'C5': 523.25, 'C#5': 554.37, 'Db5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'Eb5': 622.25,
-      'E5': 659.25, 'F5': 698.46, 'F#5': 739.99, 'Gb5': 739.99, 'G5': 783.99, 'G#5': 830.61,
-      'Ab5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'Bb5': 932.33, 'B5': 987.77
-    };
+    // Frequencies are maintained in MusicStudioAudio.NOTE_FREQUENCIES.
 
     // Enhanced keyboard mapping for piano-style playing
     /** @type {Record<string, string>} */
@@ -1284,11 +1309,21 @@ document.addEventListener('DOMContentLoaded', () => {
       'C#4': 'W', 'D#4': 'E', 'F#4': 'T', 'G#4': 'Y', 'A#4': 'U', 'C#5': 'O', 'D#5': 'P'
     });
 
+    /** @param {string} label */
+    function toAccessibleButtonLabel(label) {
+      return label
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}]/gu, '')
+        .replace(/\uFE0F/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
     /** @param {HTMLElement | null} button @param {string} label */
     function setBtnLabel(button, label) {
       if (!button) return;
       button.textContent = label;
-      button.setAttribute('aria-label', label);
+      const accessibleLabel = toAccessibleButtonLabel(label);
+      button.setAttribute('aria-label', accessibleLabel || label);
     }
 
     // Initialize the advanced music studio
@@ -1401,17 +1436,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="recording-panel">
             <div class="recording-title">🎙️ Multi-Layer Recording</div>
             <div class="recording-controls recording-controls-primary">
-              <button id="record-btn" class="record-btn" aria-label="⏺️ Record Layer">⏺️ Record Layer</button>
-              <button id="play-btn" class="play-btn" disabled aria-label="▶️ Play">▶️ Play</button>
-              <button id="loop-btn" class="loop-btn" disabled aria-label="🔄 Loop Current">🔄 Loop Current</button>
-              <button id="loop-all-btn" class="loop-btn" disabled aria-label="🔄 Loop All">🔄 Loop All</button>
+              <button id="record-btn" class="record-btn" aria-label="Record layer">⏺️ Record Layer</button>
+              <button id="play-btn" class="play-btn" disabled aria-label="Play">▶️ Play</button>
+              <button id="loop-btn" class="loop-btn" disabled aria-label="Loop current layer">🔄 Loop Current</button>
+              <button id="loop-all-btn" class="loop-btn" disabled aria-label="Loop all layers">🔄 Loop All</button>
             </div>
             <div class="recording-controls recording-controls-secondary">
-              <button id="clear-btn" class="clear-btn" disabled aria-label="🗑️ Clear Current">🗑️ Clear Current</button>
-              <button id="clear-all-btn" class="clear-btn" disabled aria-label="🗑️ Clear All">🗑️ Clear All</button>
-              <button id="save-btn" class="save-btn" disabled aria-label="💾 Save">💾 Save</button>
-              <button id="load-btn" class="load-btn" aria-label="📁 Load">📁 Load</button>
+              <button id="clear-btn" class="clear-btn" disabled aria-label="Clear current layer">🗑️ Clear Current</button>
+              <button id="clear-all-btn" class="clear-btn" disabled aria-label="Clear all layers">🗑️ Clear All</button>
+              <button id="save-btn" class="save-btn" disabled aria-label="Save composition">💾 Save</button>
+              <button id="load-btn" class="load-btn" aria-label="Load composition">📁 Load</button>
             </div>
+            <div id="composition-panel-scrim" class="composition-panel-scrim hidden" aria-hidden="true"></div>
             <div id="composition-panel" class="composition-panel hidden" role="dialog" aria-modal="true" aria-labelledby="composition-panel-title" aria-describedby="composition-panel-error" aria-hidden="true">
               <div class="composition-panel-header">
                 <h3 id="composition-panel-title" class="composition-panel-title">Composition Library</h3>
@@ -1422,7 +1458,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label for="composition-name-input">Composition name</label>
                 <input type="text" id="composition-name-input" class="composition-name-input" maxlength="100" autocomplete="off">
                 <div class="composition-panel-actions">
-                  <button type="button" id="composition-save-confirm" class="composition-action-btn" aria-label="Save composition">Save composition</button>
+                  <button type="button" id="composition-save-confirm" class="composition-action-btn" aria-label="Confirm save">Save composition</button>
                   <button type="button" id="composition-overwrite-btn" class="composition-action-btn composition-overwrite-btn hidden" aria-label="Overwrite existing composition">Overwrite</button>
                   <button type="button" id="composition-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
                 </div>
@@ -1527,12 +1563,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function ensureAudioResumed() {
-      const context = window.musicStudioAudioContext;
+      const context = musicStudioEngine.audioContext;
       if (context && context.state === 'suspended') {
         context.resume().catch((err) => {
           console.warn('Failed to resume audio context:', err);
         });
       }
+    }
+
+    function syncEngineEffects() {
+      musicStudioEngine.setEffects(currentEffects);
     }
 
     function showAudioUnavailableBanner() {
@@ -1560,7 +1600,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function requireAudioContext() {
-      const context = window.musicStudioAudioContext;
+      const context = musicStudioEngine.audioContext;
       if (!context) {
         throw new Error('Audio context not initialized');
       }
@@ -1651,17 +1691,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Web Audio API
     function initAudio() {
       try {
-        window.musicStudioAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-        // Resume audio context if it's suspended (required by browser policies)
+        const initialized = musicStudioEngine.init();
+        window.musicStudioAudioContext = musicStudioEngine.audioContext;
+        if (!initialized) {
+          throw new Error('Audio context not initialized');
+        }
+        musicStudioEngine.setMasterVolume(masterVolume);
+        musicStudioEngine.setInstrument(currentInstrument);
+        musicStudioEngine.setEffects(currentEffects);
         if (requireAudioContext().state === 'suspended') {
           requireAudioContext().resume().catch(err => {
             console.warn('Failed to resume audio context:', err);
           });
         }
         hideAudioUnavailableBanner();
+        window.musicStudioAnalyser = musicStudioEngine.getAnalyser();
       } catch (error) {
         console.warn('Web Audio API not supported in this browser:', error);
+        musicStudioEngine.dispose();
         window.musicStudioAudioContext = null;
+        window.musicStudioAnalyser = null;
         showAudioUnavailableBanner();
       }
     }
@@ -1669,292 +1718,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Play a note by name with advanced synthesis
     /** @param {string} noteName */
     function playNoteByName(noteName) {
-      if (!window.musicStudioAudioContext) return;
+      if (!musicStudioEngine.audioContext) return;
 
       ensureAudioResumed();
-    
-      // Update notes counter
+
+      const played = musicStudioEngine.playNote(noteName);
+      if (!played) {
+        return;
+      }
+
       notesPlayed++;
       const notesElement = queryRequired('music-studio-notes');
       if (notesElement) {
         notesElement.textContent = String(notesPlayed);
-      }
-    
-      const frequency = noteFrequencies[noteName];
-      if (!frequency) return;
-    
-      // Create base oscillator based on instrument type
-      const oscillator = createInstrumentOscillator(frequency);
-    
-      // Create effect chain
-      const effectChain = createEffectChain();
-
-      // Create master gain
-      const masterGain = requireAudioContext().createGain();
-      masterGain.gain.value = masterVolume;
-
-      // Connect the audio chain
-      oscillator.connect(effectChain.input);
-      effectChain.output.connect(masterGain);
-      masterGain.connect(requireAudioContext().destination);
-
-      // Start the oscillator
-      oscillator.start();
-
-      // Apply envelope based on instrument type
-      applyEnvelope(effectChain.output, currentInstrument);
-
-      // Stop the oscillator after note duration
-      const noteDuration = getNoteDuration(currentInstrument);
-      setTimeout(() => {
-        try {
-          oscillator.stop();
-        } catch {
-        // Oscillator may have already stopped
-        }
-        if (effectChain.chorusLFO) {
-          try {
-            effectChain.chorusLFO.stop();
-          } catch {
-          // LFO may have already stopped
-          }
-        }
-      }, noteDuration);
-    }
-  
-    // Create oscillator based on instrument type
-    function createInstrumentOscillator(/** @type {number} */ frequency) {
-      const oscillator = requireAudioContext().createOscillator();
-      oscillator.frequency.value = frequency;
-    
-      switch (currentInstrument) {
-        case 'piano':
-          oscillator.type = 'triangle';
-          break;
-        case 'strings':
-          oscillator.type = 'sawtooth';
-          break;
-        case 'bass':
-          oscillator.type = 'square';
-          break;
-        case 'synth':
-        default:
-          oscillator.type = 'sawtooth';
-          break;
-      }
-    
-      return oscillator;
-    }
-  
-    // Create comprehensive effect chain
-    function createEffectChain() {
-      let input = requireAudioContext().createGain();
-      let output = input;
-      let chorusLFO = null;
-    
-      // Filter
-      if (currentEffects.filter.enabled) {
-        const filter = requireAudioContext().createBiquadFilter();
-        filter.type = currentEffects.filter.type;
-        filter.frequency.value = currentEffects.filter.frequency;
-        filter.Q.value = currentEffects.filter.Q;
-      
-        // Add filter envelope for sweep effect
-        filter.frequency.setValueAtTime(currentEffects.filter.frequency * 0.5, requireAudioContext().currentTime);
-        filter.frequency.exponentialRampToValueAtTime(
-          currentEffects.filter.frequency * 2, 
-          requireAudioContext().currentTime + 0.1
-        );
-        filter.frequency.exponentialRampToValueAtTime(
-          currentEffects.filter.frequency, 
-          requireAudioContext().currentTime + 0.3
-        );
-      
-        output.connect(filter);
-        output = filter;
-      }
-    
-      // Distortion with proper wet/dry mix
-      if (currentEffects.distortion.enabled) {
-        const distortion = requireAudioContext().createWaveShaper();
-        distortion.curve = makeDistortionCurve(currentEffects.distortion.amount);
-        distortion.oversample = '4x';
-      
-        const dryGain = requireAudioContext().createGain();
-        const wetGain = requireAudioContext().createGain();
-        const mixGain = requireAudioContext().createGain();
-      
-        dryGain.gain.value = 1 - currentEffects.distortion.wetness;
-        wetGain.gain.value = currentEffects.distortion.wetness;
-      
-        // Split signal
-        output.connect(dryGain);
-        output.connect(distortion);
-        distortion.connect(wetGain);
-      
-        // Mix back together
-        dryGain.connect(mixGain);
-        wetGain.connect(mixGain);
-        output = mixGain;
-      
-      }
-    
-      // Delay effect (FIXED: tempo should NOT affect delay characteristics)
-      if (currentEffects.delay.enabled) {
-        const delayTime = currentEffects.delay.time; // Fixed delay time, not tempo-dependent
-        const delayNode = requireAudioContext().createDelay(1);
-        const delayGain = requireAudioContext().createGain();
-        const feedbackGain = requireAudioContext().createGain();
-        const wetGain = requireAudioContext().createGain();
-        const dryGain = requireAudioContext().createGain();
-        const mixGain = requireAudioContext().createGain();
-      
-        delayNode.delayTime.value = Math.min(delayTime, 0.8);
-        wetGain.gain.value = currentEffects.delay.wetness;
-        dryGain.gain.value = 1 - currentEffects.delay.wetness;
-        feedbackGain.gain.value = currentEffects.delay.feedback;
-      
-        // Create delay chain
-        output.connect(dryGain);
-        output.connect(delayGain);
-        delayGain.connect(delayNode);
-        delayNode.connect(wetGain);
-        delayNode.connect(feedbackGain);
-        feedbackGain.connect(delayGain); // Feedback loop
-      
-        // Mix signals
-        dryGain.connect(mixGain);
-        wetGain.connect(mixGain);
-        output = mixGain;
-      
-      }
-    
-      // Simple reverb (using multiple delays)
-      if (currentEffects.reverb.enabled) {
-        const reverbGain = requireAudioContext().createGain();
-        const dryGain = requireAudioContext().createGain();
-        const mixGain = requireAudioContext().createGain();
-      
-        reverbGain.gain.value = currentEffects.reverb.wetness;
-        dryGain.gain.value = 1 - currentEffects.reverb.wetness;
-      
-        // Create multiple short delays to simulate reverb
-        [0.03, 0.05, 0.07, 0.09].forEach((time) => {
-          const delay = requireAudioContext().createDelay();
-          const gain = requireAudioContext().createGain();
-          delay.delayTime.value = time * currentEffects.reverb.roomSize;
-          gain.gain.value = 0.3 * (1 - currentEffects.reverb.damping);
-
-          output.connect(delay);
-          delay.connect(gain);
-          gain.connect(reverbGain);
-        });
-      
-        // Mix dry and wet
-        output.connect(dryGain);
-        dryGain.connect(mixGain);
-        reverbGain.connect(mixGain);
-        output = mixGain;
-      
-      }
-    
-      // Simple chorus effect (using modulated delay)
-      if (currentEffects.chorus.enabled) {
-        const chorusDelay = requireAudioContext().createDelay(0.05);
-        chorusLFO = requireAudioContext().createOscillator();
-        const chorusGain = requireAudioContext().createGain();
-        const chorusDepth = requireAudioContext().createGain();
-        const dryGain = requireAudioContext().createGain();
-        const mixGain = requireAudioContext().createGain();
-
-        // Set up LFO for chorus modulation
-        chorusLFO.frequency.value = currentEffects.chorus.rate;
-        chorusLFO.type = 'sine';
-        chorusDepth.gain.value = currentEffects.chorus.depth * 0.002; // Small modulation
-
-        // Connect LFO to delay time
-        chorusLFO.connect(chorusDepth);
-        chorusDepth.connect(chorusDelay.delayTime);
-
-        // Set base delay time
-        chorusDelay.delayTime.value = 0.02;
-
-        // Set gains
-        chorusGain.gain.value = currentEffects.chorus.wetness;
-        dryGain.gain.value = 1 - currentEffects.chorus.wetness;
-
-        // Connect audio path
-        output.connect(chorusDelay);
-        chorusDelay.connect(chorusGain);
-        output.connect(dryGain);
-
-        // Mix signals
-        dryGain.connect(mixGain);
-        chorusGain.connect(mixGain);
-
-        // Start LFO
-        chorusLFO.start();
-
-        output = mixGain;
-      }
-
-      return { input, output, chorusLFO };
-    }
-  
-    // Create distortion curve
-    function makeDistortionCurve(/** @type {number} */ amount) {
-      const k = typeof amount === 'number' ? amount : 50;
-      const samples = 44100;
-      const curve = new Float32Array(samples);
-      const deg = Math.PI / 180;
-    
-      for (let i = 0; i < samples; ++i) {
-        const x = (i * 2 / samples) - 1;
-        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
-      }
-    
-      return curve;
-    }
-  
-    // Apply envelope based on instrument type (FIXED: tempo should NOT affect sound quality)
-    function applyEnvelope(/** @type {GainNode} */ gainNode, /** @type {string} */ instrument) {
-      const now = requireAudioContext().currentTime;
-    
-      switch (instrument) {
-        case 'piano':
-          gainNode.gain.setValueAtTime(0.01, now);
-          gainNode.gain.exponentialRampToValueAtTime(1, now + 0.01);
-          gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.1);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2);
-          break;
-        case 'strings':
-          gainNode.gain.setValueAtTime(0.01, now);
-          gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.3);
-          gainNode.gain.exponentialRampToValueAtTime(0.6, now + 1);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 3);
-          break;
-        case 'bass':
-          gainNode.gain.setValueAtTime(0.01, now);
-          gainNode.gain.exponentialRampToValueAtTime(0.9, now + 0.05);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
-          break;
-        case 'synth':
-        default:
-          gainNode.gain.setValueAtTime(0.01, now);
-          gainNode.gain.exponentialRampToValueAtTime(0.8, now + 0.05);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
-          break;
-      }
-    }
-  
-    // Get note duration based on instrument (FIXED: tempo should NOT affect individual note length)
-    function getNoteDuration(/** @type {string} */ instrument) {
-      switch (instrument) {
-        case 'piano': return 2000;
-        case 'strings': return 3000;
-        case 'bass': return 1000;
-        case 'synth':
-        default: return 800;
       }
     }
   
@@ -2148,6 +1924,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
           currentInstrument = target.value;
+          musicStudioEngine.setInstrument(currentInstrument);
         });
       }
     
@@ -2161,6 +1938,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         masterVolume = Number(target.value) / 100;
         volumeDisplay.textContent = `${target.value}%`;
+        musicStudioEngine.setMasterVolume(masterVolume);
       });
     
       // Tempo control
@@ -2211,6 +1989,7 @@ document.addEventListener('DOMContentLoaded', () => {
         slider.disabled = !currentEffects[effect].enabled;
         syncEffectSlider(effect, slider);
       });
+      syncEngineEffects();
     }
 
     // Setup effect controls (event listeners only)
@@ -2229,6 +2008,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           currentEffects[effect].enabled = target.checked;
           slider.disabled = !target.checked;
+          syncEngineEffects();
         });
       
         slider.addEventListener('input', (e) => {
@@ -2246,6 +2026,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentEffects[effect].wetness = value;
           }
           target.setAttribute('aria-valuenow', target.value);
+          syncEngineEffects();
         });
       });
     }
@@ -2299,12 +2080,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function closeMusicStudioAudio() {
-      if (window.musicStudioAudioContext && requireAudioContext().state !== 'closed') {
-        requireAudioContext().close().catch(err => {
-          console.warn('Failed to close music studio audio context:', err);
-        });
-        window.musicStudioAudioContext = null;
-      }
+      musicStudioEngine.dispose();
+      window.musicStudioAudioContext = null;
+      window.musicStudioAnalyser = null;
     }
 
     function cleanupMusicStudio() {
@@ -2344,6 +2122,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.cleanupMusicStudio = cleanupMusicStudio;
+    window.getMusicStudioActiveVoiceCount = () => musicStudioEngine.getActiveVoiceCount();
+    window.getMusicStudioLastFrequency = () => musicStudioEngine.getLastPlayedFrequency();
+    window.getMusicStudioDestinationConnections = () => musicStudioEngine.destinationConnectionCount;
 
     // Reset the music maker
     function resetMusicStudio() {
@@ -2537,15 +2318,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
       loopLayers.forEach((layer, index) => {
         const layerElement = document.createElement('div');
+        const isPlaying = activeLoopLayers.has(index);
         layerElement.className = `layer-indicator ${index === currentLayerIndex ? 'current' : ''}`;
         layerElement.setAttribute('role', 'button');
         layerElement.setAttribute('tabindex', '0');
-        layerElement.setAttribute('aria-label', `Switch to layer ${index + 1}`);
+        layerElement.setAttribute(
+          'aria-label',
+          `Layer ${index + 1}, ${layer.notes.length} notes, ${isPlaying ? 'looping' : 'stopped'}`
+        );
         layerElement.innerHTML = `
         <span class="layer-number">${index + 1}</span>
         <span class="layer-notes">${layer.notes.length} notes</span>
-        <span class="layer-status ${activeLoopLayers.has(index) ? 'playing' : 'stopped'}">
-          ${activeLoopLayers.has(index) ? '▶️' : '⏸️'}
+        <span class="layer-status ${isPlaying ? 'playing' : 'stopped'}" aria-hidden="true">
+          ${isPlaying ? '▶️' : '⏸️'}
         </span>
       `;
 
@@ -3006,6 +2791,15 @@ document.addEventListener('DOMContentLoaded', () => {
       closeCompositionPanel();
     }
 
+    /** @param {boolean} visible */
+    function setCompositionPanelVisible(visible) {
+      const scrim = getHtmlElement('composition-panel-scrim');
+      if (scrim) {
+        scrim.classList.toggle('hidden', !visible);
+        scrim.setAttribute('aria-hidden', visible ? 'false' : 'true');
+      }
+    }
+
     function closeCompositionPanel() {
       const panel = getHtmlElement('composition-panel');
       const saveView = getHtmlElement('composition-save-view');
@@ -3033,6 +2827,7 @@ document.addEventListener('DOMContentLoaded', () => {
       clearCompositionPanelError();
       pendingConfirmAction = null;
       document.removeEventListener('keydown', handleCompositionPanelKeydown);
+      setCompositionPanelVisible(false);
 
       if (compositionPanelTrigger) {
         compositionPanelTrigger.focus();
@@ -3065,6 +2860,7 @@ document.addEventListener('DOMContentLoaded', () => {
       title.textContent = 'Confirm Action';
       messageEl.textContent = message;
       document.addEventListener('keydown', handleCompositionPanelKeydown);
+      setCompositionPanelVisible(true);
 
       if (confirmBtn instanceof HTMLElement) {
         confirmBtn.focus();
@@ -3100,6 +2896,7 @@ document.addEventListener('DOMContentLoaded', () => {
         overwriteBtn.classList.add('hidden');
       }
       document.addEventListener('keydown', handleCompositionPanelKeydown);
+      setCompositionPanelVisible(true);
 
       if (mode === 'save') {
         title.textContent = 'Save Composition';
@@ -3134,6 +2931,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (saved.length === 0) {
         emptyMessage.classList.remove('hidden');
+        const cancelLoadBtn = getHtmlElement('composition-cancel-load-btn');
+        if (cancelLoadBtn instanceof HTMLElement) {
+          cancelLoadBtn.focus();
+        }
         return;
       }
 
@@ -3344,6 +3145,8 @@ document.addEventListener('DOMContentLoaded', () => {
         slider.disabled = !currentEffects[effect].enabled;
         syncEffectSlider(effect, slider);
       });
+      musicStudioEngine.setInstrument(currentInstrument);
+      syncEngineEffects();
 
       queryRequired('play-btn').disabled = false;
       queryRequired('loop-btn').disabled = false;
@@ -3412,6 +3215,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (closeBtn) {
         closeBtn.addEventListener('click', closeCompositionPanel);
+      }
+      const scrim = getHtmlElement('composition-panel-scrim');
+      if (scrim) {
+        scrim.addEventListener('click', closeCompositionPanel);
       }
       if (nameInput) {
         nameInput.addEventListener('keydown', (event) => {

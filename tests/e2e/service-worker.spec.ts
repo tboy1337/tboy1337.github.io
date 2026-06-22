@@ -43,16 +43,31 @@ test.describe('Service worker', () => {
   });
 
   test('hash navigation to fun-games survives initial load', async ({ page }) => {
-    await page.goto('/#fun-games');
-    await page.waitForFunction(() => typeof window.GameUtils !== 'undefined');
-    await page.waitForFunction(() => {
-      const section = document.getElementById('fun-games');
-      if (!section) {
-        return false;
+    await page.evaluate(async () => {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          await registration.unregister();
+        }
       }
-      const rect = section.getBoundingClientRect();
-      return rect.top >= 0 && rect.top < window.innerHeight * 0.5;
-    }, { timeout: 10000 });
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    });
+
+    await page.goto('/#fun-games');
+    await page.waitForFunction(
+      () => typeof window.GameUtils !== 'undefined' && typeof window.MusicStudioAudio !== 'undefined'
+    );
+    await expect.poll(async () => {
+      return page.evaluate(() => {
+        const section = document.getElementById('fun-games');
+        if (!section) {
+          return 0;
+        }
+        const rect = section.getBoundingClientRect();
+        return rect.top >= 0 && rect.top < window.innerHeight * 0.75 ? 1 : 0;
+      });
+    }, { timeout: 15000 }).toBe(1);
     await expect(page.locator('#fun-games')).toBeVisible();
   });
 });

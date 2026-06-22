@@ -10,13 +10,14 @@ import {
   getStaleCacheNames
 } from './lib/sw-utils.mjs';
 
-const CACHE_NAME = 'tboy1337-v1.2.5';
+const CACHE_NAME = 'tboy1337-v1.2.6';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/games.css',
   '/games.js',
   '/translation.js',
+  '/sw.js',
   '/site.webmanifest',
   '/lib/game-utils.mjs',
   '/lib/bootstrap-site-utils.mjs',
@@ -24,7 +25,8 @@ const STATIC_ASSETS = [
   '/lib/typing-stats.mjs',
   '/lib/memory-game-utils.mjs',
   '/lib/contact-validation.mjs',
-  '/lib/snake-logic.mjs'
+  '/lib/snake-logic.mjs',
+  '/lib/music-studio-audio.mjs'
 ];
 
 // Install event - cache static assets

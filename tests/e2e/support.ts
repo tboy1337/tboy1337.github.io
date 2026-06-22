@@ -3,37 +3,59 @@ import { expect, type Page } from '@playwright/test';
 export async function mockAudio(page: Page) {
   await page.addInitScript(() => {
     class MockOscillator {
+      type = 'sine';
+      frequency = { value: 440, setValueAtTime() {}, exponentialRampToValueAtTime() {} };
       connect() { return this; }
+      disconnect() {}
       start() {}
       stop() {}
-      frequency = { setValueAtTime() {}, exponentialRampToValueAtTime() {} };
     }
 
     class MockGain {
       connect() { return this; }
+      disconnect() {}
       gain = {
         value: 0,
         setValueAtTime() {},
-        exponentialRampToValueAtTime() {}
+        exponentialRampToValueAtTime() {},
+        linearRampToValueAtTime() {},
+        cancelScheduledValues() {}
       };
+    }
+
+    class MockAnalyser {
+      fftSize = 4096;
+      frequencyBinCount = 2048;
+      connect() { return this; }
+      disconnect() {}
+      getByteFrequencyData(buffer: Uint8Array) {
+        buffer.fill(0);
+      }
     }
 
     class MockAudioContext {
       state = 'running';
       currentTime = 0;
-      destination = {};
+      sampleRate = 44100;
+      destination = { connect() { return this; }, disconnect() {} };
       createOscillator() { return new MockOscillator(); }
       createGain() { return new MockGain(); }
+      createAnalyser() { return new MockAnalyser(); }
       createBiquadFilter() {
         return {
           connect() { return this; },
-          frequency: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
+          disconnect() {},
+          frequency: { value: 1000, setValueAtTime() {}, exponentialRampToValueAtTime() {} },
           Q: { value: 1 },
           type: 'lowpass'
         };
       }
-      createWaveShaper() { return { connect() { return this; }, curve: null, oversample: '4x' }; }
-      createDelay() { return { connect() { return this; }, delayTime: { value: 0 } }; }
+      createWaveShaper() {
+        return { connect() { return this; }, disconnect() {}, curve: null, oversample: '4x' };
+      }
+      createDelay() {
+        return { connect() { return this; }, disconnect() {}, delayTime: { value: 0 } };
+      }
       resume() { return Promise.resolve(); }
       close() { this.state = 'closed'; return Promise.resolve(); }
     }
@@ -47,7 +69,7 @@ export async function mockAudio(page: Page) {
 
 export async function gotoHome(page: Page) {
   await page.goto('/');
-  await page.waitForFunction(() => typeof window.GameUtils !== 'undefined');
+  await page.waitForFunction(() => typeof window.GameUtils !== 'undefined' && typeof window.MusicStudioAudio !== 'undefined');
 }
 
 export async function startMemoryGame(page: Page) {
@@ -71,17 +93,17 @@ export async function startTypingGame(page: Page) {
 export async function startMusicStudio(page: Page) {
   await page.getByRole('button', { name: 'Play Advanced Music Studio' }).click();
   await page.getByRole('button', { name: 'Start Advanced Music Studio' }).click();
-  await expect(page.getByRole('button', { name: '⏺️ Record Layer' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Record layer' })).toBeVisible();
 }
 
 export async function saveComposition(page: Page, name: string) {
-  await page.getByRole('button', { name: '💾 Save' }).click();
-  await page.getByLabel('Composition name').fill(name);
   await page.getByRole('button', { name: 'Save composition' }).click();
+  await page.getByLabel('Composition name').fill(name);
+  await page.getByRole('button', { name: 'Confirm save' }).click();
 }
 
 export async function loadComposition(page: Page, namePattern: RegExp | string) {
-  await page.getByRole('button', { name: '📁 Load' }).click();
+  await page.getByRole('button', { name: 'Load composition' }).click();
   const pattern = typeof namePattern === 'string' ? new RegExp(namePattern) : namePattern;
   await page.getByRole('option', { name: pattern }).click();
 }

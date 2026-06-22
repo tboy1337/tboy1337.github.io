@@ -51,9 +51,9 @@ test.describe('Music studio extended interactions', () => {
     await page.keyboard.press('a');
     await expect(page.locator('#music-studio-notes')).not.toHaveText('0');
 
-    await page.getByRole('checkbox', { name: '🌊 Reverb' }).uncheck();
-    await page.getByRole('checkbox', { name: '🌊 Reverb' }).check();
-    await page.getByRole('checkbox', { name: '🔄 Delay' }).check();
+    await page.getByRole('checkbox', { name: 'Reverb' }).uncheck();
+    await page.getByRole('checkbox', { name: 'Reverb' }).check();
+    await page.getByRole('checkbox', { name: 'Delay' }).check();
     await page.getByRole('checkbox', { name: '🌈 Chorus' }).check();
     await page.getByRole('checkbox', { name: '⚡ Distortion' }).check();
   });
@@ -61,32 +61,32 @@ test.describe('Music studio extended interactions', () => {
   test('navigates layers and plays recorded audio', async ({ page }) => {
     await startMusicStudio(page);
 
-    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.getByRole('button', { name: 'Record layer' }).click();
     await page.keyboard.press('a');
     await page.keyboard.press('s');
-    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
 
-    const nextLayerButton = page.getByRole('button', { name: 'Next ▶' });
+    const nextLayerButton = page.getByRole('button', { name: 'Next' });
     await expect(nextLayerButton).toBeEnabled();
     await nextLayerButton.click();
-    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.getByRole('button', { name: 'Record layer' }).click();
     await page.keyboard.press('d');
-    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
 
-    await page.getByRole('button', { name: '▶️ Play' }).click();
+    await page.locator('#play-btn').click();
     await page.waitForTimeout(300);
-    await page.getByRole('button', { name: '⏸️ Stop' }).click();
+    await page.locator('#play-btn').click();
   });
 
   test('clears current layer recording', async ({ page }) => {
     await startMusicStudio(page);
-    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.getByRole('button', { name: 'Record layer' }).click();
     await page.keyboard.press('f');
-    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
 
-    await page.getByRole('button', { name: '🗑️ Clear Current' }).click();
+    await page.getByRole('button', { name: 'Clear current layer' }).click();
     await page.getByRole('button', { name: 'Confirm action' }).click();
-    await expect(page.getByRole('button', { name: '▶️ Play' })).toBeDisabled();
+    await expect(page.locator('#play-btn')).toBeDisabled();
   });
 });
 

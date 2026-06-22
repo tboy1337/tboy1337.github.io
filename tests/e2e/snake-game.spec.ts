@@ -45,4 +45,12 @@ test.describe('Snake Game', () => {
     expect(snakeState.active).toBe(false);
     expect(snakeState.interval).toBeNull();
   });
+
+  test('switching away resets snake welcome screen', async ({ page }) => {
+    await startSnakeGame(page);
+    await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
+    await page.getByRole('button', { name: 'Play Snake Game' }).click();
+    await expect(page.locator('#snake-game').getByText('Click "Start Game" to begin')).toBeVisible();
+    await expect(page.locator('#snake-game canvas')).toHaveCount(0);
+  });
 });

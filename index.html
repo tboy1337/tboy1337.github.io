@@ -525,8 +525,9 @@
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
-                            <strong>Score:</strong> <span id="snake-score">0</span>
+                            <strong id="snake-score-label">Score:</strong> <span id="snake-score" role="status" aria-live="polite" aria-labelledby="snake-score-label">0</span>
                         </div>
+                        <span id="snake-status" class="visually-hidden" role="status" aria-live="assertive"></span>
                     </div>
                     <div class="game-controls">
                         <button type="button" id="start-snake" class="game-btn" aria-label="Start Snake Game">Start Game</button>
@@ -548,10 +549,10 @@
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
-                            <strong>WPM:</strong> <span id="typing-wpm">0</span>
+                            <strong id="typing-wpm-label">WPM:</strong> <span id="typing-wpm" role="status" aria-live="polite" aria-labelledby="typing-wpm-label">0</span>
                         </div>
                         <div class="stat-box">
-                            <strong>Accuracy:</strong> <span id="typing-accuracy">0</span>%
+                            <strong id="typing-accuracy-label">Accuracy:</strong> <span id="typing-accuracy" role="status" aria-live="polite" aria-labelledby="typing-accuracy-label">0</span>%
                         </div>
                     </div>
                     <div class="game-controls">
@@ -573,7 +574,7 @@
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
-                            <strong>Notes:</strong> <span id="music-studio-notes">0</span>
+                            <strong id="music-studio-notes-label">Notes:</strong> <span id="music-studio-notes" role="status" aria-live="polite" aria-labelledby="music-studio-notes-label">0</span>
                         </div>
                     </div>
                     <div class="game-controls">

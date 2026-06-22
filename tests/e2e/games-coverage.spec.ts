@@ -45,33 +45,33 @@ test.describe('Games coverage expansion', () => {
 
   test('music studio loops all layers and clears all', async ({ page }) => {
     await startMusicStudio(page);
-    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.getByRole('button', { name: 'Record layer' }).click();
     await page.keyboard.press('a');
-    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
 
-    await page.getByRole('button', { name: '🔄 Loop All' }).click();
+    await page.getByRole('button', { name: 'Loop All' }).click();
     await page.waitForTimeout(200);
-    await page.getByRole('button', { name: '⏹️ Stop All' }).click();
+    await page.getByRole('button', { name: 'Stop All' }).click();
 
     page.once('dialog', async () => { /* legacy guard */ });
-    await page.getByRole('button', { name: '🗑️ Clear All' }).click();
+    await page.getByRole('button', { name: 'Clear all layers' }).click();
     await page.getByRole('button', { name: 'Confirm action' }).click();
   });
 
   test('music studio navigates to previous layer', async ({ page }) => {
     await startMusicStudio(page);
-    await page.getByRole('button', { name: '⏺️ Record Layer' }).click();
+    await page.getByRole('button', { name: 'Record layer' }).click();
     await page.keyboard.press('a');
-    await page.getByRole('button', { name: '⏹️ Stop Recording' }).click();
-    await page.getByRole('button', { name: 'Next ▶' }).click();
-    await page.getByRole('button', { name: '◀ Prev' }).click();
-    await expect(page.getByRole('button', { name: '◀ Prev' })).toBeDisabled();
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Prev' }).click();
+    await expect(page.getByRole('button', { name: 'Prev' })).toBeDisabled();
   });
 
   test('music studio load handles empty library', async ({ page }) => {
     await startMusicStudio(page);
     await page.evaluate(() => localStorage.setItem('musicCompositions', '[]'));
-    await page.getByRole('button', { name: '📁 Load' }).click();
+    await page.getByRole('button', { name: 'Load composition' }).click();
     await expect(page.getByText('No saved compositions yet')).toBeVisible();
   });
 
@@ -92,7 +92,7 @@ test.describe('Games coverage expansion', () => {
   test('music studio load handles corrupt storage', async ({ page }) => {
     await startMusicStudio(page);
     await page.evaluate(() => localStorage.setItem('musicCompositions', '{bad json'));
-    await page.getByRole('button', { name: '📁 Load' }).click();
+    await page.getByRole('button', { name: 'Load composition' }).click();
     await expect(page.locator('#composition-panel-error')).toContainText('Failed to load');
   });
 
@@ -112,7 +112,7 @@ test.describe('Games coverage expansion', () => {
       }]));
     });
 
-    await page.getByRole('button', { name: '📁 Load' }).click();
+    await page.getByRole('button', { name: 'Load composition' }).click();
     await page.getByRole('option', { name: /Empty Layer/ }).click();
     await expect(page.locator('#recording-length')).toHaveText('0:00');
   });

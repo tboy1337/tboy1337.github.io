@@ -41,12 +41,11 @@ test.describe('Memory Card Game', () => {
     await expect(page.locator('#memory-game').getByText('Click "Start Game" to begin')).toBeVisible();
   });
 
-  test('timer stops when switching away from memory game', async ({ page }) => {
+  test('switching away resets memory welcome screen', async ({ page }) => {
     await startMemoryGame(page);
-    const initialTime = await page.locator('#time').textContent();
     await page.getByRole('button', { name: 'Play Snake Game' }).click();
-    await page.waitForTimeout(1500);
     await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
-    await expect(page.locator('#time')).toHaveText(initialTime || '');
+    await expect(page.locator('#memory-game').getByText('Click "Start Game" to begin')).toBeVisible();
+    await expect(page.locator('.memory-card')).toHaveCount(0);
   });
 });
