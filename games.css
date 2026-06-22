@@ -1119,7 +1119,7 @@
 
 .touch-key.black-key.active {
   background: linear-gradient(to bottom, #4ade80, #22c55e);
-  transform: translateY(2px);
+  transform: translateX(-50%) translateY(2px);
 }
 
 /* Responsive Design for Music Studio */
@@ -1162,7 +1162,9 @@
   }
   
   .recording-controls {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
   
   .touch-piano-container {
@@ -1317,10 +1319,5 @@
   
   .layers-display {
     justify-content: center;
-  }
-  
-  .recording-controls {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
   }
 }
