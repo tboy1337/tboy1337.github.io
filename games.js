@@ -1233,6 +1233,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let layerTempos = [120, 120, 120, 120]; // Individual BPM for each layer
     let currentLayerIndex = 0;
     let isPlayingPlayback = false;
+    /** @type {HTMLElement | null} */
+    let compositionPanelTrigger = null;
+    let lastTouchNote = '';
+    let lastTouchTime = 0;
     /** @type {ReturnType<typeof setTimeout>[]} */
     let playbackTimeouts = [];
 
@@ -1283,6 +1287,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
       gameContainer.innerHTML = `
       <div class="music-studio">
+        <div id="audio-unavailable-banner" class="audio-unavailable-banner hidden" role="alert">
+          Audio unavailable in this browser. Recording and playback are disabled.
+        </div>
         <!-- Piano Keyboard Visual -->
         <div class="piano-container">
           <div class="piano-keyboard" id="piano-keyboard">
@@ -1294,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="control-panel">
           <div class="control-row">
             <div class="control-group">
-              <label>🎼 Instrument:</label>
+              <label for="instrument-select">🎼 Instrument:</label>
               <select id="instrument-select" class="control-select">
                 <option value="synth">🎹 Synthesizer</option>
                 <option value="piano">🎵 Piano</option>
@@ -1303,12 +1310,12 @@ document.addEventListener('DOMContentLoaded', () => {
               </select>
             </div>
             <div class="control-group">
-              <label>🔊 Volume:</label>
+              <label for="volume-slider">🔊 Volume:</label>
               <input type="range" id="volume-slider" min="0" max="100" value="30" class="control-slider">
               <span id="volume-display">30%</span>
             </div>
             <div class="control-group">
-              <label>⏱️ Tempo:</label>
+              <label for="tempo-slider">⏱️ Tempo:</label>
               <input type="range" id="tempo-slider" min="60" max="180" value="120" class="control-slider">
               <span id="tempo-display">120 BPM</span>
             </div>
@@ -1361,6 +1368,28 @@ document.addEventListener('DOMContentLoaded', () => {
               <button id="save-btn" class="save-btn" disabled aria-label="💾 Save">💾 Save</button>
               <button id="load-btn" class="load-btn" aria-label="📁 Load">📁 Load</button>
             </div>
+            <div id="composition-panel" class="composition-panel hidden" role="dialog" aria-modal="true" aria-labelledby="composition-panel-title" aria-hidden="true">
+              <div class="composition-panel-header">
+                <h3 id="composition-panel-title" class="composition-panel-title">Composition Library</h3>
+                <button type="button" id="composition-panel-close" class="composition-panel-close" aria-label="Close composition library">×</button>
+              </div>
+              <div id="composition-panel-error" class="composition-panel-error hidden" role="alert" aria-live="polite"></div>
+              <div id="composition-save-view" class="composition-view hidden">
+                <label for="composition-name-input">Composition name</label>
+                <input type="text" id="composition-name-input" class="composition-name-input" maxlength="100" autocomplete="off">
+                <div class="composition-panel-actions">
+                  <button type="button" id="composition-save-confirm" class="composition-action-btn" aria-label="Save composition">Save composition</button>
+                  <button type="button" id="composition-cancel-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
+                </div>
+              </div>
+              <div id="composition-load-view" class="composition-view hidden">
+                <p id="composition-empty-message" class="composition-empty hidden">No saved compositions yet</p>
+                <ul id="composition-list" class="composition-list" role="listbox" aria-label="Saved compositions"></ul>
+                <div class="composition-panel-actions">
+                  <button type="button" id="composition-cancel-load-btn" class="composition-action-btn composition-cancel-btn" aria-label="Cancel">Cancel</button>
+                </div>
+              </div>
+            </div>
             <div class="layer-status">
               <div class="layer-info">
                 <span>Current Layer: <span id="current-layer">1</span></span>
@@ -1374,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
             <div class="recording-info">
-              <span id="recording-status">Ready to record layer 1</span>
+              <span id="recording-status" aria-live="polite">Ready to record layer 1</span>
               <span id="recording-length">0:00</span>
             </div>
             <div class="layers-display" id="layers-display">
@@ -1449,10 +1478,44 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Setup control event listeners
       setupControlListeners();
+      setupCompositionPanel();
 
       initializeEffectStates();
     }
   
+    function ensureAudioResumed() {
+      const context = window.arrowGameAudioContext;
+      if (context && context.state === 'suspended') {
+        context.resume().catch((err) => {
+          console.warn('Failed to resume audio context:', err);
+        });
+      }
+    }
+
+    function showAudioUnavailableBanner() {
+      const banner = getHtmlElement('audio-unavailable-banner');
+      if (banner) {
+        banner.classList.remove('hidden');
+      }
+      disableAudioControlsForFailure();
+    }
+
+    function hideAudioUnavailableBanner() {
+      const banner = getHtmlElement('audio-unavailable-banner');
+      if (banner) {
+        banner.classList.add('hidden');
+      }
+    }
+
+    function disableAudioControlsForFailure() {
+      ['record-btn', 'play-btn', 'loop-btn', 'loop-all-btn'].forEach((id) => {
+        const button = getHtmlElement(id);
+        if (button instanceof HTMLButtonElement) {
+          button.disabled = true;
+        }
+      });
+    }
+
     function requireAudioContext() {
       const context = window.arrowGameAudioContext;
       if (!context) {
@@ -1475,6 +1538,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const noteName = target.dataset.note;
       if (!noteName) return;
+
+      const now = Date.now();
+      if (noteName === lastTouchNote && now - lastTouchTime < 150) {
+        return;
+      }
+      lastTouchNote = noteName;
+      lastTouchTime = now;
 
       // Visual effect for button press
       target.classList.add('active');
@@ -1532,9 +1602,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('Failed to resume audio context:', err);
           });
         }
+        hideAudioUnavailableBanner();
       } catch (error) {
         console.warn('Web Audio API not supported in this browser:', error);
         window.arrowGameAudioContext = null;
+        showAudioUnavailableBanner();
       }
     }
   
@@ -1542,6 +1614,8 @@ document.addEventListener('DOMContentLoaded', () => {
     /** @param {string} noteName */
     function playNoteByName(noteName) {
       if (!window.arrowGameAudioContext) return;
+
+      ensureAudioResumed();
     
       // Update notes counter
       notesPlayed++;
@@ -1936,7 +2010,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { whiteKeys, blackKeys } = pianoKeyConfig;
       touchKeyboard.innerHTML = '';
 
-      whiteKeys.slice(0, 7).forEach((note, index) => {
+      whiteKeys.forEach((note, index) => {
         const key = document.createElement('div');
         key.className = 'touch-key white-key';
         key.dataset.note = note;
@@ -2110,7 +2184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         stopLayerLoop(layerIndex);
       });
 
-      const loopAllBtn = queryRequired('loop-all-btn');
+      const loopAllBtn = getHtmlElement('loop-all-btn');
       if (loopAllBtn) {
         setBtnLabel(loopAllBtn, '🔄 Loop All');
         loopAllBtn.classList.remove('active');
@@ -2122,7 +2196,7 @@ document.addEventListener('DOMContentLoaded', () => {
       playbackTimeouts = [];
       isPlayingPlayback = false;
 
-      const playBtn = queryRequired('play-btn');
+      const playBtn = getHtmlElement('play-btn');
       if (playBtn) {
         setBtnLabel(playBtn, '▶️ Play');
         playBtn.classList.remove('playing');
@@ -2172,9 +2246,27 @@ document.addEventListener('DOMContentLoaded', () => {
         window.arrowKeyboardHandler = null;
       }
 
-      resetMusicStudioState();
+      if (isGameActive) {
+        resetMusicStudioState();
+      } else {
+        activeLoopLayers.clear();
+        if (window.layerIntervals) {
+          window.layerIntervals.forEach(intervalId => clearInterval(intervalId));
+          window.layerIntervals.clear();
+        }
+        if (loopInterval) {
+          clearInterval(loopInterval);
+          loopInterval = null;
+        }
+        if (window.tempoFeedbackInterval) {
+          clearInterval(window.tempoFeedbackInterval);
+          window.tempoFeedbackInterval = null;
+        }
+      }
+
       closeMusicStudioAudio();
       isGameActive = false;
+      compositionPanelTrigger = null;
 
       notesPlayed = 0;
       const notesElement = queryRequired('arrow-notes');
@@ -2217,6 +2309,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const loadBtn = queryRequired('load-btn');
       const prevLayerBtn = queryRequired('prev-layer-btn');
       const nextLayerBtn = queryRequired('next-layer-btn');
+
+      setBtnLabel(prevLayerBtn, '◀ Prev');
+      setBtnLabel(nextLayerBtn, 'Next ▶');
     
       if (recordBtn) {
         recordBtn.addEventListener('click', toggleRecording);
@@ -2718,11 +2813,185 @@ document.addEventListener('DOMContentLoaded', () => {
       return window.GameUtils.hasRecordableContent(loopLayers, recordedNotes);
     }
 
-    function saveRecording() {
-      if (!hasRecordableContent()) return;
+    /** @returns {unknown[] | null} */
+    function getSavedCompositionsFromStorage() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
+        return Array.isArray(saved) ? saved : [];
+      } catch {
+        return null;
+      }
+    }
 
-      const name = prompt('Enter a name for your composition:');
-      if (!name) return;
+    /** @param {string} message */
+    function showCompositionPanelError(message) {
+      const errorElement = getHtmlElement('composition-panel-error');
+      if (!errorElement) {
+        return;
+      }
+      errorElement.textContent = message;
+      errorElement.classList.remove('hidden');
+    }
+
+    function clearCompositionPanelError() {
+      const errorElement = getHtmlElement('composition-panel-error');
+      if (!errorElement) {
+        return;
+      }
+      errorElement.textContent = '';
+      errorElement.classList.add('hidden');
+    }
+
+    /** @param {KeyboardEvent} event */
+    function handleCompositionPanelKeydown(event) {
+      if (event.key !== 'Escape') {
+        return;
+      }
+      const panel = getHtmlElement('composition-panel');
+      if (!panel || panel.classList.contains('hidden')) {
+        return;
+      }
+      event.preventDefault();
+      closeCompositionPanel();
+    }
+
+    function closeCompositionPanel() {
+      const panel = getHtmlElement('composition-panel');
+      const saveView = getHtmlElement('composition-save-view');
+      const loadView = getHtmlElement('composition-load-view');
+
+      if (panel) {
+        panel.classList.add('hidden');
+        panel.setAttribute('aria-hidden', 'true');
+      }
+      if (saveView) {
+        saveView.classList.add('hidden');
+      }
+      if (loadView) {
+        loadView.classList.add('hidden');
+      }
+
+      clearCompositionPanelError();
+      document.removeEventListener('keydown', handleCompositionPanelKeydown);
+
+      if (compositionPanelTrigger) {
+        compositionPanelTrigger.focus();
+        compositionPanelTrigger = null;
+      }
+    }
+
+    /** @param {'save' | 'load'} mode @param {HTMLElement} trigger */
+    function openCompositionPanel(mode, trigger) {
+      const panel = getHtmlElement('composition-panel');
+      const saveView = getHtmlElement('composition-save-view');
+      const loadView = getHtmlElement('composition-load-view');
+      const title = getHtmlElement('composition-panel-title');
+      const nameInputEl = getHtmlElement('composition-name-input');
+      const nameInput = nameInputEl ? asInput(nameInputEl) : null;
+
+      if (!panel || !saveView || !loadView || !title) {
+        return;
+      }
+
+      compositionPanelTrigger = trigger;
+      clearCompositionPanelError();
+      panel.classList.remove('hidden');
+      panel.setAttribute('aria-hidden', 'false');
+      saveView.classList.add('hidden');
+      loadView.classList.add('hidden');
+      document.addEventListener('keydown', handleCompositionPanelKeydown);
+
+      if (mode === 'save') {
+        title.textContent = 'Save Composition';
+        saveView.classList.remove('hidden');
+        if (nameInput) {
+          nameInput.value = '';
+          nameInput.focus();
+        }
+        return;
+      }
+
+      title.textContent = 'Load Composition';
+      loadView.classList.remove('hidden');
+      renderCompositionList();
+    }
+
+    function renderCompositionList() {
+      const list = getHtmlElement('composition-list');
+      const emptyMessage = getHtmlElement('composition-empty-message');
+      if (!list || !emptyMessage) {
+        return;
+      }
+
+      list.innerHTML = '';
+      const saved = getSavedCompositionsFromStorage();
+
+      if (saved === null) {
+        emptyMessage.classList.add('hidden');
+        showCompositionPanelError('Failed to load compositions.');
+        return;
+      }
+
+      if (saved.length === 0) {
+        emptyMessage.classList.remove('hidden');
+        return;
+      }
+
+      emptyMessage.classList.add('hidden');
+
+      saved.forEach((composition, index) => {
+        if (!composition || typeof composition !== 'object' || !('name' in composition)) {
+          return;
+        }
+
+        const comp = /** @type {{ name: string; timestamp?: string }} */ (composition);
+        const item = document.createElement('li');
+        item.className = 'composition-list-item';
+        item.setAttribute('role', 'option');
+        item.setAttribute('tabindex', '0');
+        const timestamp = comp.timestamp ? new Date(comp.timestamp).toLocaleString() : 'Unknown date';
+        item.setAttribute('aria-label', `${comp.name}, saved ${timestamp}`);
+        item.innerHTML = `
+          <span class="composition-list-name">${comp.name}</span>
+          <span class="composition-list-date">${timestamp}</span>
+        `;
+
+        const loadAtIndex = () => {
+          loadCompositionAtIndex(index);
+        };
+
+        item.addEventListener('click', loadAtIndex);
+        item.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            loadAtIndex();
+          }
+        });
+
+        list.appendChild(item);
+      });
+
+      const firstItem = list.querySelector('.composition-list-item');
+      if (firstItem instanceof HTMLElement) {
+        firstItem.focus();
+      }
+    }
+
+    function confirmSaveComposition() {
+      const nameInputEl = getHtmlElement('composition-name-input');
+      const nameInput = nameInputEl ? asInput(nameInputEl) : null;
+      const name = nameInput?.value.trim() ?? '';
+
+      if (!name) {
+        showCompositionPanelError('Please enter a composition name.');
+        nameInput?.focus();
+        return;
+      }
+
+      if (!hasRecordableContent()) {
+        showCompositionPanelError('Nothing to save. Record at least one note first.');
+        return;
+      }
 
       if (recordedNotes.length > 0) {
         saveCurrentRecordingToLayer();
@@ -2746,102 +3015,135 @@ document.addEventListener('DOMContentLoaded', () => {
         const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
         saved.push(composition);
         localStorage.setItem('musicCompositions', JSON.stringify(saved));
-        alert(`Composition "${name}" saved successfully!`);
+        closeCompositionPanel();
+        queryRequired('recording-status').textContent = `Composition "${name}" saved successfully!`;
       } catch {
-        alert('Failed to save composition. Storage may be full.');
+        showCompositionPanelError('Failed to save composition. Storage may be full.');
+      }
+    }
+
+    /** @param {number} index */
+    function loadCompositionAtIndex(index) {
+      const saved = getSavedCompositionsFromStorage();
+      if (saved === null || index < 0 || index >= saved.length) {
+        showCompositionPanelError('Failed to load compositions.');
+        return;
+      }
+
+      const composition = /** @type {{ name: string; instrument: string; effects: typeof currentEffects; tempo: number }} */ (saved[index]);
+      applyLoadedComposition(composition);
+      closeCompositionPanel();
+      queryRequired('recording-status').textContent = `Loaded "${composition.name}" successfully!`;
+    }
+
+    /** @param {{ name: string; instrument: string; effects: typeof currentEffects; tempo: number }} composition */
+    function applyLoadedComposition(composition) {
+      const restored = window.GameUtils.restoreCompositionState(composition);
+      loopLayers = /** @type {typeof loopLayers} */ (restored.loopLayers);
+      layerTempos = restored.layerTempos;
+      currentLayerIndex = restored.currentLayerIndex;
+      recordedNotes = /** @type {typeof recordedNotes} */ (restored.recordedNotes);
+
+      currentInstrument = composition.instrument || currentInstrument;
+      currentTempo = composition.tempo || currentTempo;
+
+      /** @type {EffectName[]} */
+      const effectNames = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
+      if (composition.effects) {
+        effectNames.forEach((effect) => {
+          const saved = composition.effects[effect];
+          if (saved) {
+            Object.assign(currentEffects[effect], saved);
+          }
+        });
+      }
+
+      queryRequired('instrument-select').value = currentInstrument;
+      queryRequired('tempo-slider').value = String(currentTempo);
+      queryRequired('tempo-display').textContent = `${currentTempo} BPM`;
+
+      effectNames.forEach((effect) => {
+        const toggle = asInput(queryRequired(`${effect}-toggle`));
+        const slider = asInput(queryRequired(`${effect}-amount`));
+
+        toggle.checked = currentEffects[effect].enabled;
+        slider.disabled = !currentEffects[effect].enabled;
+        syncEffectSlider(effect, slider);
+      });
+
+      queryRequired('play-btn').disabled = false;
+      queryRequired('loop-btn').disabled = false;
+      queryRequired('loop-all-btn').disabled = loopLayers.length === 0;
+      queryRequired('clear-btn').disabled = false;
+      queryRequired('clear-all-btn').disabled = loopLayers.length === 0;
+      queryRequired('save-btn').disabled = false;
+      queryRequired('prev-layer-btn').disabled = currentLayerIndex === 0;
+      queryRequired('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
+
+      const layerTempoSlider = queryRequired('layer-tempo-slider');
+      const layerTempo = layerTempos[currentLayerIndex] || currentTempo;
+      layerTempoSlider.value = String(layerTempo);
+      queryRequired('layer-tempo').textContent = String(layerTempo);
+
+      updateLayerDisplay();
+      updateLayerCounts();
+
+      const notesForDuration = recordedNotes.length > 0
+        ? recordedNotes
+        : (loopLayers[currentLayerIndex]?.notes || []);
+      if (notesForDuration.length > 0) {
+        const lastNote = notesForDuration[notesForDuration.length - 1];
+        if (lastNote) {
+          queryRequired('recording-length').textContent =
+            window.GameUtils.formatRecordingLength(lastNote.time);
+        }
+      } else {
+        queryRequired('recording-length').textContent = '0:00';
+      }
+    }
+
+    function setupCompositionPanel() {
+      const saveConfirmBtn = getHtmlElement('composition-save-confirm');
+      const cancelSaveBtn = getHtmlElement('composition-cancel-btn');
+      const cancelLoadBtn = getHtmlElement('composition-cancel-load-btn');
+      const closeBtn = getHtmlElement('composition-panel-close');
+      const nameInputEl = getHtmlElement('composition-name-input');
+      const nameInput = nameInputEl ? asInput(nameInputEl) : null;
+
+      if (saveConfirmBtn) {
+        saveConfirmBtn.addEventListener('click', confirmSaveComposition);
+      }
+      if (cancelSaveBtn) {
+        cancelSaveBtn.addEventListener('click', closeCompositionPanel);
+      }
+      if (cancelLoadBtn) {
+        cancelLoadBtn.addEventListener('click', closeCompositionPanel);
+      }
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeCompositionPanel);
+      }
+      if (nameInput) {
+        nameInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            confirmSaveComposition();
+          }
+        });
+      }
+    }
+
+    function saveRecording() {
+      if (!hasRecordableContent()) return;
+      const saveBtn = getHtmlElement('save-btn');
+      if (saveBtn) {
+        openCompositionPanel('save', saveBtn);
       }
     }
   
     function loadRecording() {
-      try {
-        const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
-      
-        if (saved.length === 0) {
-          alert('No saved compositions found.');
-          return;
-        }
-      
-        const names = saved.map((/** @type {{ name: string; timestamp: string }} */ comp, /** @type {number} */ index) => `${index + 1}. ${comp.name} (${new Date(comp.timestamp).toLocaleString()})`);
-        const choice = prompt(`Select a composition to load:\n\n${names.join('\n')}\n\nEnter the number:`);
-        if (choice === null) {
-          return;
-        }
-      
-        const index = window.GameUtils.parseCompositionSelection(choice, saved.length);
-        if (index === null) {
-          alert('Invalid selection.');
-          return;
-        }
-      
-        const composition = /** @type {{ name: string; instrument: string; effects: typeof currentEffects; tempo: number }} */ (saved[index]);
-        const restored = window.GameUtils.restoreCompositionState(composition);
-        loopLayers = /** @type {typeof loopLayers} */ (restored.loopLayers);
-        layerTempos = restored.layerTempos;
-        currentLayerIndex = restored.currentLayerIndex;
-        recordedNotes = /** @type {typeof recordedNotes} */ (restored.recordedNotes);
-
-        currentInstrument = composition.instrument;
-        currentEffects = composition.effects;
-        currentTempo = composition.tempo;
-      
-        // Update UI
-        queryRequired('instrument-select').value = currentInstrument;
-        queryRequired('tempo-slider').value = String(currentTempo);
-        queryRequired('tempo-display').textContent = `${currentTempo} BPM`;
-      
-        // Update effect controls
-        /** @type {EffectName[]} */
-        const effectNames = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
-        effectNames.forEach((effect) => {
-          const toggle = asInput(queryRequired(`${effect}-toggle`));
-          const slider = asInput(queryRequired(`${effect}-amount`));
-
-          toggle.checked = currentEffects[effect].enabled;
-          slider.disabled = !currentEffects[effect].enabled;
-          syncEffectSlider(effect, slider);
-        });
-      
-        // Enable playback buttons
-        queryRequired('play-btn').disabled = false;
-        queryRequired('loop-btn').disabled = false;
-        queryRequired('loop-all-btn').disabled = loopLayers.length === 0;
-        queryRequired('clear-btn').disabled = false;
-        queryRequired('clear-all-btn').disabled = loopLayers.length === 0;
-        queryRequired('save-btn').disabled = false;
-        queryRequired('prev-layer-btn').disabled = currentLayerIndex === 0;
-        queryRequired('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
-
-        const layerTempoSlider = queryRequired('layer-tempo-slider');
-        const layerTempo = layerTempos[currentLayerIndex] || currentTempo;
-        if (layerTempoSlider) {
-          layerTempoSlider.value = String(layerTempo);
-        }
-        const layerTempoDisplay = queryRequired('layer-tempo');
-        if (layerTempoDisplay) {
-          layerTempoDisplay.textContent = String(layerTempo);
-        }
-
-        updateLayerDisplay();
-        updateLayerCounts();
-
-        queryRequired('recording-status').textContent = `Loaded "${composition.name}"`;
-
-        const notesForDuration = recordedNotes.length > 0
-          ? recordedNotes
-          : (loopLayers[currentLayerIndex]?.notes || []);
-        if (notesForDuration.length > 0) {
-          const lastNote = notesForDuration[notesForDuration.length - 1];
-          if (lastNote) {
-            queryRequired('recording-length').textContent =
-              window.GameUtils.formatRecordingLength(lastNote.time);
-          }
-        } else {
-          queryRequired('recording-length').textContent = '0:00';
-        }
-      
-        alert(`Composition "${composition.name}" loaded successfully!`);
-      } catch {
-        alert('Failed to load compositions.');
+      const loadBtn = getHtmlElement('load-btn');
+      if (loadBtn) {
+        openCompositionPanel('load', loadBtn);
       }
     }
 

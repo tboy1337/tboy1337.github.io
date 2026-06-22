@@ -73,3 +73,15 @@ export async function startMusicStudio(page: Page) {
   await page.getByRole('button', { name: 'Start Advanced Music Studio' }).click();
   await expect(page.getByRole('button', { name: '⏺️ Record Layer' })).toBeVisible();
 }
+
+export async function saveComposition(page: Page, name: string) {
+  await page.getByRole('button', { name: '💾 Save' }).click();
+  await page.getByLabel('Composition name').fill(name);
+  await page.getByRole('button', { name: 'Save composition' }).click();
+}
+
+export async function loadComposition(page: Page, namePattern: RegExp | string) {
+  await page.getByRole('button', { name: '📁 Load' }).click();
+  const pattern = typeof namePattern === 'string' ? new RegExp(namePattern) : namePattern;
+  await page.getByRole('option', { name: pattern }).click();
+}

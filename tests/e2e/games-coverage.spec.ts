@@ -70,37 +70,8 @@ test.describe('Games coverage expansion', () => {
   test('music studio load handles empty library', async ({ page }) => {
     await startMusicStudio(page);
     await page.evaluate(() => localStorage.setItem('musicCompositions', '[]'));
-    page.once('dialog', async (dialog) => {
-      expect(dialog.message()).toContain('No saved compositions');
-      await dialog.accept();
-    });
     await page.getByRole('button', { name: '📁 Load' }).click();
-  });
-
-  test('music studio load handles invalid selection', async ({ page }) => {
-    await startMusicStudio(page);
-    await page.evaluate(() => {
-      localStorage.setItem('musicCompositions', JSON.stringify([{
-        name: 'Test',
-        version: 2,
-        loopLayers: [{ notes: [{ note: 'C4', time: 0 }], name: 'Layer 1' }],
-        layerTempos: [120, 120, 120, 120],
-        currentLayerIndex: 0,
-        instrument: 'piano',
-        effects: { reverb: { enabled: true, wetness: 0.3 } },
-        tempo: 120,
-        timestamp: new Date().toISOString()
-      }]));
-    });
-
-    page.on('dialog', async (dialog) => {
-      if (dialog.type() === 'prompt') {
-        await dialog.accept('999');
-        return;
-      }
-      await dialog.accept();
-    });
-    await page.getByRole('button', { name: '📁 Load' }).click();
+    await expect(page.getByText('No saved compositions yet')).toBeVisible();
   });
 
   test('music studio adjusts global tempo and volume sliders', async ({ page }) => {
@@ -120,11 +91,8 @@ test.describe('Games coverage expansion', () => {
   test('music studio load handles corrupt storage', async ({ page }) => {
     await startMusicStudio(page);
     await page.evaluate(() => localStorage.setItem('musicCompositions', '{bad json'));
-    page.once('dialog', async (dialog) => {
-      expect(dialog.message()).toContain('Failed to load');
-      await dialog.accept();
-    });
     await page.getByRole('button', { name: '📁 Load' }).click();
+    await expect(page.locator('#composition-panel-error')).toContainText('Failed to load');
   });
 
   test('music studio load handles composition without notes', async ({ page }) => {
@@ -143,14 +111,8 @@ test.describe('Games coverage expansion', () => {
       }]));
     });
 
-    page.on('dialog', async (dialog) => {
-      if (dialog.type() === 'prompt') {
-        await dialog.accept('1');
-        return;
-      }
-      await dialog.accept();
-    });
     await page.getByRole('button', { name: '📁 Load' }).click();
+    await page.getByRole('option', { name: /Empty Layer/ }).click();
     await expect(page.locator('#recording-length')).toHaveText('0:00');
   });
 
