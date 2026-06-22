@@ -17,21 +17,13 @@ test.describe('Memory Card Game', () => {
     await startMemoryGame(page);
     const cards = page.locator('.memory-card');
     const icons = await cards.evaluateAll((elements) => elements.map((el) => el.dataset.icon));
-
-    let firstIndex = 0;
-    let secondIndex = icons.findIndex((icon, index) => index > 0 && icon === icons[0]);
-    if (secondIndex < 0) {
-      secondIndex = 1;
-    }
+    const firstIndex = 0;
+    const secondIndex = icons.findIndex((icon, index) => icon === icons[0] && index !== 0);
 
     await cards.nth(firstIndex).click();
     await cards.nth(secondIndex).click();
 
-    if (icons[firstIndex] === icons[secondIndex]) {
-      await expect(page.locator('#score')).toHaveText('10');
-    } else {
-      await expect(page.locator('#score')).toHaveText('0');
-    }
+    await expect(page.locator('#score')).toHaveText('10');
   });
 
   test('reset returns to welcome screen', async ({ page }) => {

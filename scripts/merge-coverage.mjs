@@ -21,7 +21,15 @@ function readCoverageFiles(directory) {
 
   return fs.readdirSync(directory)
     .filter((file) => file.endsWith('.json'))
-    .map((file) => JSON.parse(fs.readFileSync(path.join(directory, file), 'utf8')));
+    .map((file) => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(directory, file), 'utf8'));
+      } catch (error) {
+        console.warn(`Failed to parse coverage file ${file}:`, error);
+        return null;
+      }
+    })
+    .filter(Boolean);
 }
 
 /**
@@ -85,7 +93,11 @@ function main() {
   const e2eChunks = readCoverageFiles(COVERAGE_DIR);
 
   if (fs.existsSync(unitCoveragePath)) {
-    map.merge(JSON.parse(fs.readFileSync(unitCoveragePath, 'utf8')));
+    try {
+      map.merge(JSON.parse(fs.readFileSync(unitCoveragePath, 'utf8')));
+    } catch (error) {
+      console.warn(`Failed to parse unit coverage file ${unitCoveragePath}:`, error);
+    }
   }
 
   for (const chunk of e2eChunks) {

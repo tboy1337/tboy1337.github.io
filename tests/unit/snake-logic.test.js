@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  canQueueDirectionChange,
+  isDirectionQueueAvailable,
   isValidDirectionChange,
   resolveDirectionChange,
   resolveKeyboardDirection,
@@ -14,8 +14,8 @@ import {
 
 describe('snake-logic direction helpers', () => {
   it('only queues when direction matches nextDirection', () => {
-    expect(canQueueDirectionChange('up', 'up')).toBe(true);
-    expect(canQueueDirectionChange('up', 'right')).toBe(false);
+    expect(isDirectionQueueAvailable('up', 'up')).toBe(true);
+    expect(isDirectionQueueAvailable('up', 'right')).toBe(false);
   });
 
   it('blocks opposite direction changes', () => {

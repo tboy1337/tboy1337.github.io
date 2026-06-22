@@ -5,7 +5,7 @@ export default defineConfig({
   root: '.',
   plugins: [
     istanbul({
-      include: ['games.js', 'translation.js', 'sw.js', 'lib/**/*.mjs'],
+      include: ['games.js', 'sw.js', 'lib/**/*.mjs'],
       exclude: ['node_modules/**', 'tests/**', 'translation.js'],
       extension: ['.js', '.mjs'],
       requireEnv: false,

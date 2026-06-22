@@ -1,5 +1,15 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { test, expect } from './test';
 import { mockAudio, gotoHome } from './support';
+
+const swSource = fs.readFileSync(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), '../../sw.js'),
+  'utf8'
+);
+const cacheNameMatch = swSource.match(/const CACHE_NAME = '([^']+)'/);
+const expectedCacheName = cacheNameMatch?.[1] ?? 'tboy1337-v1.2.0';
 
 test.beforeEach(async ({ page }) => {
   await mockAudio(page);
@@ -9,7 +19,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('Service worker', () => {
   test('registers with the expected cache version', async ({ page }) => {
     await expect.poll(async () => {
-      return page.evaluate(async () => {
+      return page.evaluate(async (cacheName) => {
         if (!('serviceWorker' in navigator)) {
           return 0;
         }
@@ -18,8 +28,8 @@ test.describe('Service worker', () => {
           return 0;
         }
         const cacheNames = await caches.keys();
-        return cacheNames.includes('tboy1337-v1.2.0') ? 1 : 0;
-      });
+        return cacheNames.includes(cacheName) ? 1 : 0;
+      }, expectedCacheName);
     }, { timeout: 30000 }).toBe(1);
   });
 

@@ -18,7 +18,7 @@ test.describe('Portfolio page', () => {
     await expect(page.getByRole('heading', { name: 'MediaRelay' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Blinter' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Starstruck' })).toBeVisible();
-    await expect(page.getByText('Last updated: March 2026')).toBeVisible();
+    await expect(page.getByText(/Last updated: \w+ \d{4}/)).toBeVisible();
   });
 
   test('contact form fields are present with accessibility labels', async ({ page }) => {

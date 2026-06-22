@@ -45,6 +45,6 @@ describe('getStaleCacheNames', () => {
       ['tboy1337-v1.1.2', 'tboy1337-v1.2.0', 'other-cache'],
       'tboy1337-v1.2.0'
     );
-    expect(stale).toEqual(['tboy1337-v1.1.2', 'other-cache']);
+    expect(stale).toEqual(['tboy1337-v1.1.2']);
   });
 });

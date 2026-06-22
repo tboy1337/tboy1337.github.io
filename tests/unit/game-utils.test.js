@@ -85,6 +85,21 @@ describe('GameUtils.restoreCompositionState', () => {
     expect(restored.layerTempos[1]).toBe(140);
   });
 
+  it('clamps out-of-bounds currentLayerIndex to the last layer', () => {
+    const restored = GameUtils.restoreCompositionState({
+      version: 2,
+      loopLayers: [
+        { notes: [{ note: 'C4', time: 0 }], name: 'Layer 1' },
+        { notes: [{ note: 'E4', time: 50 }], name: 'Layer 2' }
+      ],
+      layerTempos: [100, 140, 120, 120],
+      currentLayerIndex: 99
+    });
+
+    expect(restored.currentLayerIndex).toBe(1);
+    expect(restored.recordedNotes).toEqual([{ note: 'E4', time: 50 }]);
+  });
+
   it('restores legacy v1 compositions into layer 1', () => {
     const restored = GameUtils.restoreCompositionState({
       notes: [{ note: 'G4', time: 25 }],

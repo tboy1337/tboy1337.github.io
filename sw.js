@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 
+const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {any} */ (self));
 // Service Worker for tboy1337.github.io
 // Provides offline support and caching for better performance
 
@@ -9,7 +10,7 @@ import {
   getStaleCacheNames
 } from './lib/sw-utils.mjs';
 
-const CACHE_NAME = 'tboy1337-v1.2.0';
+const CACHE_NAME = 'tboy1337-v1.2.1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -19,19 +20,24 @@ const STATIC_ASSETS = [
   '/site.webmanifest',
   '/lib/game-utils.mjs',
   '/lib/bootstrap-site-utils.mjs',
-  '/lib/sw-utils.mjs'
+  '/lib/sw-utils.mjs',
+  '/lib/typing-stats.mjs',
+  '/lib/memory-game-utils.mjs',
+  '/lib/contact-validation.mjs',
+  '/lib/snake-logic.mjs'
 ];
 
 // Install event - cache static assets
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
+  const installEvent = /** @type {ExtendableEvent} */ (event);
   console.log('Service Worker installing...');
-  self.skipWaiting();
+  sw.skipWaiting();
 
-  event.waitUntil(
+  installEvent.waitUntil(
     caches.open(CACHE_NAME)
       .then(async (cache) => {
         console.log('Caching static assets...');
-        await Promise.allSettled(
+        await Promise.all(
           STATIC_ASSETS.map((asset) => cache.add(asset))
         );
       })
@@ -42,9 +48,10 @@ self.addEventListener('install', event => {
 });
 
 // Activate event - clean up old caches
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
+  const activateEvent = /** @type {ExtendableEvent} */ (event);
   console.log('Service Worker activating...');
-  event.waitUntil(
+  activateEvent.waitUntil(
     Promise.all([
       // Clean up old caches
       caches.keys().then(cacheNames => {
@@ -56,26 +63,28 @@ self.addEventListener('activate', event => {
         );
       }),
       // Take control of all clients immediately
-      self.clients.claim()
+      sw.clients.claim()
     ])
   );
 });
 
 // Fetch event - smart caching strategy
-self.addEventListener('fetch', event => {
-  if (shouldSkipFetch(event.request.method, event.request.url)) {
+self.addEventListener('fetch', (event) => {
+  const fetchEvent = /** @type {FetchEvent} */ (event);
+  if (shouldSkipFetch(fetchEvent.request.method, fetchEvent.request.url)) {
     return;
   }
 
-  const url = new URL(event.request.url);
-  const isHTML = isHtmlRequest(url, event.request.destination);
+  const url = new URL(fetchEvent.request.url);
+  const isHTML = isHtmlRequest(url, fetchEvent.request.destination);
 
-  event.respondWith(
-    isHTML ? handleHTMLRequest(event.request) : handleAssetRequest(event.request)
+  fetchEvent.respondWith(
+    isHTML ? handleHTMLRequest(fetchEvent.request) : handleAssetRequest(fetchEvent.request, fetchEvent)
   );
 });
 
 // Network-first strategy for HTML files to ensure fresh content
+/** @param {Request} request */
 async function handleHTMLRequest(request) {
   try {
     const networkResponse = await fetch(request);
@@ -95,12 +104,17 @@ async function handleHTMLRequest(request) {
       return cachedResponse;
     }
     // Ultimate fallback to index.html for navigation requests
-    return caches.match('/index.html');
+    const indexFallback = await caches.match('/index.html');
+    if (indexFallback) {
+      return indexFallback;
+    }
+    return new Response('Offline', { status: 503 });
   }
 }
 
 // Stale-while-revalidate strategy for assets
-async function handleAssetRequest(request) {
+/** @param {Request} request @param {FetchEvent} event */
+async function handleAssetRequest(request, event) {
   const cache = await caches.open(CACHE_NAME);
   const cachedResponse = await caches.match(request);
 
@@ -116,9 +130,14 @@ async function handleAssetRequest(request) {
 
   // Return cached version immediately if available, otherwise wait for network
   if (cachedResponse) {
-    fetchPromise; // Update cache in background
+    event.waitUntil(fetchPromise);
     return cachedResponse;
   }
 
-  return fetchPromise;
+  const networkResponse = await fetchPromise;
+  if (networkResponse) {
+    return networkResponse;
+  }
+
+  return new Response('Not found', { status: 404 });
 }

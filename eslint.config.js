@@ -31,7 +31,21 @@ export default [
         prompt: 'readonly',
         confirm: 'readonly',
         alert: 'readonly',
-        localStorage: 'readonly'
+        localStorage: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLButtonElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLCanvasElement: 'readonly',
+        Element: 'readonly',
+        Event: 'readonly',
+        KeyboardEvent: 'readonly',
+        MouseEvent: 'readonly',
+        TouchEvent: 'readonly',
+        Response: 'readonly',
+        ServiceWorkerGlobalScope: 'readonly',
+        ExtendableEvent: 'readonly',
+        FetchEvent: 'readonly'
       }
     },
     rules: {

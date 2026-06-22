@@ -9,6 +9,7 @@ import {
 describe('contact-validation', () => {
   it('validates names', () => {
     expect(validateName('Test User')).toBe(true);
+    expect(validateName('José García')).toBe(true);
     expect(validateName('A')).toBe(false);
     expect(validateName('User123')).toBe(false);
   });

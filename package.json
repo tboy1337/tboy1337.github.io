@@ -6,7 +6,7 @@
     "lint:js": "eslint games.js translation.js sw.js lib/**/*.mjs tests/**/*.js",
     "lint:css": "stylelint \"**/*.css\"",
     "lint": "npm run lint:js && npm run lint:css",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.sw.json",
     "validate:html": "html-validate index.html",
     "validate": "npm run validate:html",
     "test:unit": "vitest run --coverage",

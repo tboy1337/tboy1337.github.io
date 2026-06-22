@@ -10,21 +10,13 @@
     "noImplicitAny": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "lib": ["ES2022", "DOM", "WebWorker"]
+    "lib": ["ES2022", "WebWorker"]
   },
   "include": [
-    "types/**/*.d.ts",
-    "games.js",
-    "lib/**/*.mjs",
-    "tests/**/*.ts",
-    "eslint.config.js",
-    "vitest.config.ts",
-    "playwright.config.ts",
-    "vite.config.ts"
+    "sw.js",
+    "lib/sw-utils.mjs"
   ],
   "exclude": [
-    "node_modules",
-    "coverage",
-    "tests/unit/**"
+    "node_modules"
   ]
 }

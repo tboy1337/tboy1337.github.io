@@ -1,4 +1,71 @@
 // Game Menu System
+
+/**
+ * @param {EventTarget | null} element
+ * @returns {element is HTMLSelectElement}
+ */
+function isSelectElement(element) {
+  return element instanceof HTMLSelectElement;
+}
+
+/**
+ * @param {string} id
+ * @returns {HTMLElement | null}
+ */
+function getHtmlElement(id) {
+  const element = document.getElementById(id);
+  return element instanceof HTMLElement ? element : null;
+}
+
+/**
+ * @param {string} id
+ * @returns {HTMLElement}
+ */
+function queryRequired(id) {
+  const element = document.getElementById(id);
+  if (!(element instanceof HTMLElement)) {
+    throw new Error(`Missing #${id}`);
+  }
+  return element;
+}
+
+/**
+ * @template {HTMLElement} T
+ * @param {T | null} element
+ * @returns {T}
+ */
+function assertPresent(element) {
+  return /** @type {T} */ (element);
+}
+
+/**
+ * @param {HTMLElement} element
+ * @returns {HTMLInputElement}
+ */
+function asInput(element) {
+  return /** @type {HTMLInputElement} */ (element);
+}
+
+/**
+ * @param {HTMLElement} element
+ * @returns {HTMLButtonElement}
+ */
+function asButton(element) {
+  return /** @type {HTMLButtonElement} */ (element);
+}
+
+/**
+ * @param {EventTarget | null} target
+ * @returns {HTMLInputElement | null}
+ */
+function getInputTarget(target) {
+  return target instanceof HTMLInputElement ? target : null;
+}
+
+/**
+ * @typedef {'memory' | 'snake' | 'typing' | 'arrow'} GameName
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
   try {
     const menuItems = document.querySelectorAll('.game-menu-item');
@@ -12,7 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Global reference to the snake keyboard handler
     window.snakeKeyboardHandler = null;
   
-    // Function to switch between games
+    /**
+     * @param {GameName} gameName
+     */
     function switchGame(gameName) {
     // Stop all active games before switching
     // Memory game cleanup
@@ -37,7 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Typing game cleanup
       if (gameName !== 'typing' && window.typingTimerInterval) {
-        clearInterval(window.typingTimerInterval);
+        if (window.typingTimerInterval) {
+          clearInterval(window.typingTimerInterval);
+        }
         window.typingTimerInterval = null;
         window.typingGameActive = false;
       }
@@ -64,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       // Show selected game and activate menu item
-      const gameSection = document.getElementById(`${gameName}-section`);
+      const gameSection = queryRequired(`${gameName}-section`);
       if (gameSection) {
         gameSection.classList.remove('hidden');
       }
@@ -84,10 +155,14 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Add click event listeners to menu items
     menuItems.forEach(item => {
-      item.addEventListener('click', function() {
+      item.addEventListener('click', (event) => {
         try {
-          const gameName = this.getAttribute('data-game');
-          if (gameName) {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLElement)) {
+            return;
+          }
+          const gameName = target.getAttribute('data-game');
+          if (gameName === 'memory' || gameName === 'snake' || gameName === 'typing' || gameName === 'arrow') {
             switchGame(gameName);
           }
         } catch (error) {
@@ -104,21 +179,30 @@ document.addEventListener('DOMContentLoaded', () => {
 // Memory Card Game
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const gameContainer = document.getElementById('memory-game');
-    const startButton = document.getElementById('start-game');
-    const resetButton = document.getElementById('reset-game');
-    const scoreElement = document.getElementById('score');
-    const timeElement = document.getElementById('time');
+    const gameContainer = getHtmlElement('memory-game');
+    const startButton = getHtmlElement('start-game');
+    const resetButton = getHtmlElement('reset-game');
+    const scoreElement = getHtmlElement('score');
+    const timeElement = getHtmlElement('time');
     
     if (!gameContainer || !startButton || !resetButton || !scoreElement || !timeElement) {
       console.warn('Memory game elements not found');
       return;
     }
+
+    const memoryContainer = assertPresent(gameContainer);
+    const memoryStartButton = asButton(startButton);
+    const memoryResetButton = asButton(resetButton);
+    const memoryScoreElement = assertPresent(scoreElement);
+    const memoryTimeElement = assertPresent(timeElement);
   
     let cards = [];
     let hasFlippedCard = false;
     let lockBoard = false;
-    let firstCard, secondCard;
+    /** @type {HTMLElement | null} */
+    let firstCard = null;
+    /** @type {HTMLElement | null} */
+    let secondCard = null;
     let score = 0;
     let timeLeft = 60;
     window.memoryGameTimer = null;
@@ -139,9 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize with a centered start message instead of the grid
     function initializeGameDisplay() {
     // First add the centered-content class to change the display mode
-      gameContainer.classList.add('centered-content');
+      memoryContainer.classList.add('centered-content');
     
-      gameContainer.innerHTML = `
+      memoryContainer.innerHTML = `
       <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
         <p class="text-xl mb-4">Memory Card Game</p>
         <p>Test your memory by matching pairs of tech icons!</p>
@@ -159,11 +243,11 @@ document.addEventListener('DOMContentLoaded', () => {
       window.memoryGameActive = true;
       score = 0;
       timeLeft = 60;
-      scoreElement.textContent = score;
-      timeElement.textContent = timeLeft;
+      memoryScoreElement.textContent = String(score);
+      memoryTimeElement.textContent = String(timeLeft);
     
       // Remove the centered-content class before creating the grid
-      gameContainer.classList.remove('centered-content');
+      memoryContainer.classList.remove('centered-content');
     
       // Create cards
       createCards();
@@ -171,19 +255,19 @@ document.addEventListener('DOMContentLoaded', () => {
       // Start timer
       window.memoryGameTimer = setInterval(() => {
         timeLeft--;
-        timeElement.textContent = timeLeft;
+        memoryTimeElement.textContent = String(timeLeft);
       
         if (timeLeft <= 0) {
           endGame(false); // Game lost - time ran out
         }
       }, 1000);
     
-      startButton.disabled = true;
-      resetButton.disabled = false;
+      memoryStartButton.disabled = true;
+      memoryResetButton.disabled = false;
     }
   
     function createCards() {
-      gameContainer.innerHTML = '';
+      memoryContainer.innerHTML = '';
       cards = [];
     
       // Double the icons to create pairs
@@ -217,45 +301,56 @@ document.addEventListener('DOMContentLoaded', () => {
         card.appendChild(backFace);
       
         card.addEventListener('click', flipCard);
-        gameContainer.appendChild(card);
+        memoryContainer.appendChild(card);
         cards.push(card);
       });
     }
   
-    function flipCard() {
+    /** @param {MouseEvent} event */
+    function flipCard(event) {
       if (lockBoard) return;
-      if (this === firstCard) return;
-    
-      this.classList.add('flipped');
-    
+      const card = event.currentTarget;
+      if (!(card instanceof HTMLElement)) {
+        return;
+      }
+      if (card === firstCard) return;
+
+      card.classList.add('flipped');
+
       if (!hasFlippedCard) {
       // First card flipped
         hasFlippedCard = true;
-        firstCard = this;
+        firstCard = card;
         return;
       }
-    
+
       // Second card flipped
-      secondCard = this;
+      secondCard = card;
       checkForMatch();
     }
   
     function checkForMatch() {
+      if (!firstCard || !secondCard) {
+        return;
+      }
       const isMatch = window.MemoryGameUtils.isMemoryMatch(
-        firstCard.dataset.icon,
-        secondCard.dataset.icon
+        firstCard.dataset.icon ?? '',
+        secondCard.dataset.icon ?? ''
       );
 
       if (isMatch) {
         disableCards();
         score = window.MemoryGameUtils.updateMemoryScore(score, true);
-        scoreElement.textContent = score;
+        memoryScoreElement.textContent = String(score);
       } else {
         unflipCards();
       }
     }
   
     function disableCards() {
+      if (!firstCard || !secondCard) {
+        return;
+      }
       firstCard.removeEventListener('click', flipCard);
       secondCard.removeEventListener('click', flipCard);
     
@@ -274,12 +369,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function unflipCards() {
+      if (!firstCard || !secondCard) {
+        return;
+      }
       lockBoard = true;
-    
+      const first = firstCard;
+      const second = secondCard;
+
       setTimeout(() => {
-        firstCard.classList.remove('flipped');
-        secondCard.classList.remove('flipped');
-      
+        first.classList.remove('flipped');
+        second.classList.remove('flipped');
+
         resetBoard();
       }, 1000);
     }
@@ -290,32 +390,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function resetGame() {
-      clearInterval(window.memoryGameTimer);
+      if (window.memoryGameTimer) {
+        clearInterval(window.memoryGameTimer);
+      }
       window.memoryGameActive = false;
     
       // Reset to initial display
       initializeGameDisplay();
     
-      startButton.disabled = false;
-      resetButton.disabled = true;
+      memoryStartButton.disabled = false;
+      memoryResetButton.disabled = true;
     
       score = 0;
       timeLeft = 60;
-      scoreElement.textContent = score;
-      timeElement.textContent = timeLeft;
+      memoryScoreElement.textContent = String(score);
+      memoryTimeElement.textContent = String(timeLeft);
     
       resetBoard();
     }
   
     function endGame(won = false) {
-      clearInterval(window.memoryGameTimer);
+      if (window.memoryGameTimer) {
+        clearInterval(window.memoryGameTimer);
+      }
       window.memoryGameActive = false;
       lockBoard = true;
     
       // Show result message
-      gameContainer.classList.add('centered-content');
+      memoryContainer.classList.add('centered-content');
       if (won) {
-        gameContainer.innerHTML = `
+        memoryContainer.innerHTML = `
         <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
           <p class="text-2xl mb-4 text-green-400">🎉 You Won!</p>
           <p class="text-lg mb-2">All cards matched!</p>
@@ -325,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
       } else {
-        gameContainer.innerHTML = `
+        memoryContainer.innerHTML = `
         <div class="welcome-box bg-black/60 p-8 text-center rounded-lg">
           <p class="text-2xl mb-4 text-red-400">⏰ Time's Up!</p>
           <p class="text-lg mb-2">Better luck next time!</p>
@@ -335,15 +439,13 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       }
     
-      startButton.disabled = false;
-      resetButton.disabled = false; // Enable reset so user can play again
+      memoryStartButton.disabled = false;
+      memoryResetButton.disabled = false; // Enable reset so user can play again
     }
   
     // Event listeners
-    if (startButton && resetButton) {
-      startButton.addEventListener('click', startGame);
-      resetButton.addEventListener('click', resetGame);
-    }
+    memoryStartButton.addEventListener('click', startGame);
+    memoryResetButton.addEventListener('click', resetGame);
   
   } catch (error) {
     console.error('Error initializing memory game:', error);
@@ -353,19 +455,29 @@ document.addEventListener('DOMContentLoaded', () => {
 // Snake Game
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const snakeContainer = document.getElementById('snake-game');
-    const snakeStartButton = document.getElementById('start-snake');
-    const snakeResetButton = document.getElementById('reset-snake');
-    const snakeScoreElement = document.getElementById('snake-score');
+    const snakeContainerEl = getHtmlElement('snake-game');
+    const snakeStartButtonEl = getHtmlElement('start-snake');
+    const snakeResetButtonEl = getHtmlElement('reset-snake');
+    const snakeScoreElementEl = getHtmlElement('snake-score');
     
-    if (!snakeContainer || !snakeStartButton || !snakeResetButton || !snakeScoreElement) {
+    if (!snakeContainerEl || !snakeStartButtonEl || !snakeResetButtonEl || !snakeScoreElementEl) {
       console.warn('Snake game elements not found');
       return;
     }
+
+    const snakeContainer = assertPresent(snakeContainerEl);
+    const snakeStartButton = asButton(assertPresent(snakeStartButtonEl));
+    const snakeResetButton = asButton(assertPresent(snakeResetButtonEl));
+    const snakeScoreElement = assertPresent(snakeScoreElementEl);
   
-    let canvas, ctx;
+    /** @type {HTMLCanvasElement | undefined} */
+    let canvas;
+    /** @type {CanvasRenderingContext2D | null | undefined} */
+    let ctx;
+    /** @type {Array<{ x: number; y: number }>} */
     let snake = [];
-    let food = {};
+    /** @type {{ x: number; y: number }} */
+    let food = { x: 0, y: 0 };
     let direction = 'right';
     let nextDirection = 'right'; // Buffer for next direction change
     let gameSpeed = 150;
@@ -407,6 +519,10 @@ document.addEventListener('DOMContentLoaded', () => {
       canvas.style.height = 'auto';
     
       ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.warn('Canvas 2D context unavailable');
+        return;
+      }
       snakeContainer.innerHTML = '';
       snakeContainer.appendChild(canvas);
     
@@ -430,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
       window.snakeGameActive = true;
       snakeScore = 0;
-      snakeScoreElement.textContent = snakeScore;
+      snakeScoreElement.textContent = String(snakeScore);
     
       // Reset direction to ensure consistent start
       direction = 'right';
@@ -471,9 +587,15 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.className = 'touch-btn';
         btn.innerHTML = `<i class="fas ${d.icon}"></i>`;
         btn.setAttribute('data-direction', d.dir);
-        btn.addEventListener('click', function() {
-          const dir = this.getAttribute('data-direction');
-          handleDirectionChange(dir);
+        btn.addEventListener('click', (event) => {
+          const target = event.currentTarget;
+          if (!(target instanceof HTMLButtonElement)) {
+            return;
+          }
+          const dir = target.getAttribute('data-direction');
+          if (dir) {
+            handleDirectionChange(dir);
+          }
         });
         touchControlsContainer.appendChild(btn);
       });
@@ -481,7 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
       snakeContainer.appendChild(touchControlsContainer);
     }
   
-    function handleDirectionChange(newDirection) {
+    function handleDirectionChange(/** @type {string} */ newDirection) {
       nextDirection = window.SnakeLogic.resolveDirectionChange(
         direction,
         nextDirection,
@@ -489,6 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     }
   
+    /** @param {KeyboardEvent} e */
     function changeDirection(e) {
     // Prevent default browser scrolling behavior for arrow keys
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || 
@@ -504,13 +627,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function gameLoop() {
-      if (!window.snakeGameActive) return;
+      if (!window.snakeGameActive || !canvas || !ctx) return;
     
       // Apply queued direction change at the start of each game loop
-      const previousDirection = direction;
       direction = nextDirection;
-      if (previousDirection !== direction) {
-      }
     
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -520,10 +640,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Check if food eaten (before collision check to avoid issues)
       let foodEaten = false;
-      if (window.SnakeLogic.isFoodEaten(snake[0], food)) {
+      if (window.SnakeLogic.isFoodEaten(snake[0] ?? { x: -1, y: -1 }, food)) {
       // Increase score
         snakeScore += 10;
-        snakeScoreElement.textContent = snakeScore;
+        snakeScoreElement.textContent = String(snakeScore);
       
         // Create new food
         createFood();
@@ -549,16 +669,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function moveSnake() {
-      const head = window.SnakeLogic.getNextHead(snake[0], direction, snakeSize);
+      const headCell = snake[0];
+      if (!headCell) {
+        return;
+      }
+      const head = window.SnakeLogic.getNextHead(headCell, direction, snakeSize);
       snake.unshift(head);
     }
 
     function checkCollision() {
-      return window.SnakeLogic.hasCollision(snake[0], snake, canvas.width, canvas.height);
+      const headCell = snake[0];
+      if (!headCell || !canvas) {
+        return true;
+      }
+      return window.SnakeLogic.hasCollision(headCell, snake, canvas.width, canvas.height);
     }
   
     function createFood() {
-    // Create food at random position (aligned to grid)
+      if (!canvas) {
+        return;
+      }
+      // Create food at random position (aligned to grid)
       const gridWidth = canvas.width / snakeSize;
       const gridHeight = canvas.height / snakeSize;
     
@@ -575,7 +706,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check if food position conflicts with snake
         let conflictFound = false;
         for (let i = 0; i < snake.length; i++) {
-          if (food.x === snake[i].x && food.y === snake[i].y) {
+          const segment = snake[i];
+          if (!segment) {
+            continue;
+          }
+          if (food.x === segment.x && food.y === segment.y) {
             conflictFound = true;
             break;
           }
@@ -592,23 +727,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function drawSnake() {
+      const context = ctx;
+      if (!context) {
+        return;
+      }
       snake.forEach((segment, index) => {
       // Make head a different color
         if (index === 0) {
-          ctx.fillStyle = '#22c55e'; // Green
+          context.fillStyle = '#22c55e'; // Green
         } else {
-          ctx.fillStyle = '#4ade80'; // Light green
+          context.fillStyle = '#4ade80'; // Light green
         }
       
-        ctx.fillRect(segment.x, segment.y, snakeSize, snakeSize);
+        context.fillRect(segment.x, segment.y, snakeSize, snakeSize);
       
         // Add border
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.strokeRect(segment.x, segment.y, snakeSize, snakeSize);
+        context.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        context.strokeRect(segment.x, segment.y, snakeSize, snakeSize);
       });
     }
   
     function drawFood() {
+      if (!ctx) {
+        return;
+      }
       ctx.fillStyle = '#f87171'; // Red
       ctx.fillRect(food.x, food.y, snakeSize, snakeSize);
     
@@ -625,9 +767,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Reset game state
       snake = [];
-      food = {};
+      food = { x: 0, y: 0 };
       snakeScore = 0;
-      snakeScoreElement.textContent = snakeScore;
+      snakeScoreElement.textContent = String(snakeScore);
       direction = 'right';
       nextDirection = 'right';
       gameSpeed = 150;
@@ -637,7 +779,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function endSnakeGame() {
-      clearInterval(window.snakeGameInterval);
+      if (window.snakeGameInterval) {
+        clearInterval(window.snakeGameInterval);
+      }
     
       // Remove keyboard event listener
       if (window.snakeKeyboardHandler) {
@@ -675,17 +819,24 @@ document.addEventListener('DOMContentLoaded', () => {
 // Typing Speed Test Game
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const typingContainer = document.getElementById('typing-game');
-    const typingStartButton = document.getElementById('start-typing');
-    const typingResetButton = document.getElementById('reset-typing');
-    const wpmElement = document.getElementById('typing-wpm');
-    const accuracyElement = document.getElementById('typing-accuracy');
+    const typingContainerEl = getHtmlElement('typing-game');
+    const typingStartButtonEl = getHtmlElement('start-typing');
+    const typingResetButtonEl = getHtmlElement('reset-typing');
+    const wpmElementEl = getHtmlElement('typing-wpm');
+    const accuracyElementEl = getHtmlElement('typing-accuracy');
     
-    if (!typingContainer || !typingStartButton || !typingResetButton || !wpmElement || !accuracyElement) {
+    if (!typingContainerEl || !typingStartButtonEl || !typingResetButtonEl || !wpmElementEl || !accuracyElementEl) {
       console.warn('Typing game elements not found');
       return;
     }
+
+    const typingContainer = assertPresent(typingContainerEl);
+    const typingStartButton = asButton(assertPresent(typingStartButtonEl));
+    const typingResetButton = asButton(assertPresent(typingResetButtonEl));
+    const wpmElement = assertPresent(wpmElementEl);
+    const accuracyElement = assertPresent(accuracyElementEl);
   
+    /** @type {Date | undefined} */
     let startTime;
     window.typingTimerInterval = null;
     window.typingGameActive = false;
@@ -780,8 +931,8 @@ document.addEventListener('DOMContentLoaded', () => {
       loadNewSentence();
     
       // Get elements
-      const typingInput = document.getElementById('typing-input');
-      const timerDisplay = document.getElementById('timer-display');
+      const typingInput = asInput(queryRequired('typing-input'));
+      const timerDisplay = queryRequired('timer-display');
     
       // Enable input and focus
       typingInput.disabled = false;
@@ -790,12 +941,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Start timer (60 seconds)
       let timeLeft = 60;
-      timerDisplay.textContent = timeLeft;
+      timerDisplay.textContent = String(timeLeft);
     
       startTime = new Date();
       window.typingTimerInterval = setInterval(() => {
         timeLeft--;
-        timerDisplay.textContent = timeLeft;
+        timerDisplay.textContent = String(timeLeft);
       
         if (timeLeft <= 0) {
           endTypingGame();
@@ -810,12 +961,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function loadNewSentence() {
-      const textDisplay = document.getElementById('text-display');
-      const typingInput = document.getElementById('typing-input');
+      const textDisplay = queryRequired('text-display');
+      const typingInput = asInput(queryRequired('typing-input'));
     
       // Select random prompt
       const randomIndex = Math.floor(Math.random() * textPrompts.length);
-      const currentPrompt = textPrompts[randomIndex];
+      const currentPrompt = textPrompts[randomIndex] ?? textPrompts[0] ?? '';
+      if (!currentPrompt) {
+        return;
+      }
     
       // Display text character by character with spans for tracking
       textDisplay.innerHTML = '';
@@ -834,8 +988,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function checkTyping() {
-      const textDisplay = document.getElementById('text-display');
-      const typingInput = document.getElementById('typing-input');
+      const textDisplay = queryRequired('text-display');
+      const typingInput = asInput(queryRequired('typing-input'));
     
       const arrayPrompt = textDisplay.querySelectorAll('span');
       const arrayValue = typingInput.value.split('');
@@ -876,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sentencesCompleted++;
       
         // Update sentence counter display
-        const sentenceCounter = document.getElementById('sentence-counter');
+        const sentenceCounter = queryRequired('sentence-counter');
         if (sentenceCounter) {
           sentenceCounter.textContent = `Sentences: ${sentencesCompleted}`;
         }
@@ -896,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStats() {
     // Calculate words per minute (WPM) based on cumulative stats
     // Assuming 5 characters = 1 word, which is a common standard
-      const elapsedMs = new Date() - startTime;
+      const elapsedMs = startTime ? Date.now() - startTime.getTime() : 0;
       const wpm = window.TypingStats.calculateWpm(totalCorrectCharacters, correctTyped, elapsedMs);
       const accuracy = window.TypingStats.calculateAccuracy(
         totalCharactersTyped,
@@ -906,12 +1060,14 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     
       // Update displays
-      wpmElement.textContent = wpm;
-      accuracyElement.textContent = accuracy;
+      wpmElement.textContent = String(wpm);
+      accuracyElement.textContent = String(accuracy);
     }
   
     function resetTypingGame() {
-      clearInterval(window.typingTimerInterval);
+      if (window.typingTimerInterval) {
+        clearInterval(window.typingTimerInterval);
+      }
     
       window.typingGameActive = false;
       typingStartButton.disabled = false;
@@ -926,10 +1082,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function endTypingGame() {
-      clearInterval(window.typingTimerInterval);
+      if (window.typingTimerInterval) {
+        clearInterval(window.typingTimerInterval);
+      }
       window.typingGameActive = false;
     
-      const typingInput = document.getElementById('typing-input');
+      const typingInput = asInput(queryRequired('typing-input'));
       if (typingInput) {
         typingInput.disabled = true;
         typingInput.removeEventListener('input', checkTyping);
@@ -940,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => {
       totalCorrectCharacters += correctTyped;
     
       // Final statistics calculation
-      const elapsedMs = new Date() - startTime;
+      const elapsedMs = startTime ? Date.now() - startTime.getTime() : 0;
       const { wpm: finalWpm, accuracy: finalAccuracy } = window.TypingStats.calculateFinalStats(
         totalCorrectCharacters,
         totalCharactersTyped,
@@ -972,8 +1130,8 @@ document.addEventListener('DOMContentLoaded', () => {
       typingResetButton.disabled = false;
     
       // Update final displays one more time
-      wpmElement.textContent = finalWpm;
-      accuracyElement.textContent = finalAccuracy;
+      wpmElement.textContent = String(finalWpm);
+      accuracyElement.textContent = String(finalAccuracy);
     }
   
     // Event listeners
@@ -990,20 +1148,25 @@ document.addEventListener('DOMContentLoaded', () => {
 // Advanced Music Studio
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    const startButton = document.getElementById('start-arrow');
-    const resetButton = document.getElementById('reset-arrow');
-    const gameContainer = document.getElementById('arrow-game');
+    const startButtonEl = getHtmlElement('start-arrow');
+    const resetButtonEl = getHtmlElement('reset-arrow');
+    const gameContainerEl = getHtmlElement('arrow-game');
     
-    if (!startButton || !resetButton || !gameContainer) {
+    if (!gameContainerEl || !startButtonEl || !resetButtonEl) {
       console.warn('Music studio elements not found');
       return;
     }
+
+    const gameContainer = assertPresent(gameContainerEl);
+    const startButton = asButton(assertPresent(startButtonEl));
+    const resetButton = asButton(assertPresent(resetButtonEl));
   
     let isGameActive = false;
     window.arrowGameAudioContext = null;
     let notesPlayed = 0;
   
     // Define comprehensive note frequencies (full chromatic scale with multiple octaves)
+    /** @type {Record<string, number>} */
     const noteFrequencies = {
     // Octave 3
       'C3': 130.81, 'C#3': 138.59, 'Db3': 138.59, 'D3': 146.83, 'D#3': 155.56, 'Eb3': 155.56,
@@ -1020,6 +1183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Enhanced keyboard mapping for piano-style playing
+    /** @type {Record<string, string>} */
     const keyboardMapping = {
     // Lower row (white keys) - Major scale starting from C4
       'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4', 'g': 'G4', 'h': 'A4', 'j': 'B4', 'k': 'C5',
@@ -1032,6 +1196,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Effect types and parameters - ALL ENABLED BY DEFAULT
+    /** @type {{
+     *   reverb: { enabled: boolean; roomSize: number; damping: number; wetness: number };
+     *   delay: { enabled: boolean; time: number; feedback: number; wetness: number };
+     *   chorus: { enabled: boolean; rate: number; depth: number; wetness: number };
+     *   distortion: { enabled: boolean; amount: number; wetness: number };
+     *   filter: { enabled: boolean; frequency: number; Q: number; type: BiquadFilterType };
+     * }} */
     let currentEffects = {
       reverb: { enabled: true, roomSize: 0.3, damping: 0.5, wetness: 0.3 },
       delay: { enabled: true, time: 0.3, feedback: 0.3, wetness: 0.3 },
@@ -1045,20 +1216,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Multi-layer recording system
     let isRecording = false;
+    /** @type {Array<{ note: string; time: number }>} */
     let recordedNotes = [];
     let recordingStartTime = 0;
     let isLooping = false;
+    /** @type {ReturnType<typeof setInterval> | null} */
     let loopInterval = null;
     let currentTempo = 120; // BPM
     let masterVolume = 0.3;
   
     // Multi-layer loop system with individual tempos
-    let loopLayers = []; // Array of loop tracks with individual tempo settings
+    /** @type {Array<{ notes: Array<{ note: string; time: number }>; name?: string }>} */
+    let loopLayers = [];
     let activeLoopLayers = new Set(); // Which layers are currently playing
     let maxLoopLayers = 4; // Maximum number of simultaneous loops
     let layerTempos = [120, 120, 120, 120]; // Individual BPM for each layer
     let currentLayerIndex = 0;
     let isPlayingPlayback = false;
+    /** @type {ReturnType<typeof setTimeout>[]} */
     let playbackTimeouts = [];
 
     const pianoKeyConfig = {
@@ -1066,11 +1241,12 @@ document.addEventListener('DOMContentLoaded', () => {
       blackKeys: [['C#4'], ['D#4'], [], ['F#4'], ['G#4'], ['A#4'], [], []]
     };
 
-    const noteToKeyLabel = {
+    const noteToKeyLabel = /** @type {Record<string, string>} */ ({
       'C4': 'A', 'D4': 'S', 'E4': 'D', 'F4': 'F', 'G4': 'G', 'A4': 'H', 'B4': 'J', 'C5': 'K',
       'C#4': 'W', 'D#4': 'E', 'F#4': 'T', 'G#4': 'Y', 'A#4': 'U', 'C#5': 'O', 'D#5': 'P'
-    };
+    });
 
+    /** @param {HTMLElement | null} button @param {string} label */
     function setBtnLabel(button, label) {
       if (!button) return;
       button.textContent = label;
@@ -1096,7 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initArrowDisplay();
   
     // Initialize notes counter
-    const notesElement = document.getElementById('arrow-notes');
+    const notesElement = queryRequired('arrow-notes');
     if (notesElement) {
       notesElement.textContent = '0';
     }
@@ -1273,43 +1449,53 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Setup control event listeners
       setupControlListeners();
-    
-      // IMPORTANT: Initialize effects after DOM elements are created
-      setTimeout(() => {
-        initializeEffectStates();
-      }, 100);
+
+      initializeEffectStates();
     }
   
-    // Handle touch events for mobile
+    function requireAudioContext() {
+      const context = window.arrowGameAudioContext;
+      if (!context) {
+        throw new Error('Audio context not initialized');
+      }
+      return context;
+    }
+
+    /** @param {TouchEvent | MouseEvent} event */
     function handleTouchStart(event) {
       if (!isGameActive) return;
-    
+
+      const target = event.currentTarget;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
       // Prevent default behavior to avoid scrolling
       event.preventDefault();
-    
-      const noteName = this.dataset.note;
+
+      const noteName = target.dataset.note;
       if (!noteName) return;
-    
+
       // Visual effect for button press
-      this.classList.add('active');
+      target.classList.add('active');
       setTimeout(() => {
-        this.classList.remove('active');
+        target.classList.remove('active');
       }, 100);
-    
+
       // Play the note
       playNoteByName(noteName);
-    
+
       // Add visual feedback animation
-      this.classList.add('correct');
-      setTimeout(() => this.classList.remove('correct'), 300);
-    
+      target.classList.add('correct');
+      setTimeout(() => target.classList.remove('correct'), 300);
+
       // Record if recording is active
       if (isRecording) {
         recordNote(noteName);
       }
     }
-  
-    // Handle enhanced key press events
+
+    /** @param {KeyboardEvent} event */
     function handleKeyPress(event) {
       if (!isGameActive) return;
 
@@ -1324,6 +1510,9 @@ document.addEventListener('DOMContentLoaded', () => {
       event.preventDefault();
 
       const noteName = keyboardMapping[mappingKey];
+      if (!noteName) {
+        return;
+      }
 
       playNoteByName(noteName);
       highlightKey(mappingKey, noteName);
@@ -1338,8 +1527,8 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         window.arrowGameAudioContext = new (window.AudioContext || window.webkitAudioContext)();
         // Resume audio context if it's suspended (required by browser policies)
-        if (window.arrowGameAudioContext.state === 'suspended') {
-          window.arrowGameAudioContext.resume().catch(err => {
+        if (requireAudioContext().state === 'suspended') {
+          requireAudioContext().resume().catch(err => {
             console.warn('Failed to resume audio context:', err);
           });
         }
@@ -1350,14 +1539,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Play a note by name with advanced synthesis
+    /** @param {string} noteName */
     function playNoteByName(noteName) {
       if (!window.arrowGameAudioContext) return;
     
       // Update notes counter
       notesPlayed++;
-      const notesElement = document.getElementById('arrow-notes');
+      const notesElement = queryRequired('arrow-notes');
       if (notesElement) {
-        notesElement.textContent = notesPlayed;
+        notesElement.textContent = String(notesPlayed);
       }
     
       const frequency = noteFrequencies[noteName];
@@ -1370,13 +1560,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const effectChain = createEffectChain();
 
       // Create master gain
-      const masterGain = window.arrowGameAudioContext.createGain();
+      const masterGain = requireAudioContext().createGain();
       masterGain.gain.value = masterVolume;
 
       // Connect the audio chain
       oscillator.connect(effectChain.input);
       effectChain.output.connect(masterGain);
-      masterGain.connect(window.arrowGameAudioContext.destination);
+      masterGain.connect(requireAudioContext().destination);
 
       // Start the oscillator
       oscillator.start();
@@ -1386,7 +1576,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Stop the oscillator after note duration
       const noteDuration = getNoteDuration(currentInstrument);
-      const stopTime = window.arrowGameAudioContext.currentTime + noteDuration / 1000;
       setTimeout(() => {
         try {
           oscillator.stop();
@@ -1395,7 +1584,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (effectChain.chorusLFO) {
           try {
-            effectChain.chorusLFO.stop(stopTime);
+            effectChain.chorusLFO.stop();
           } catch {
           // LFO may have already stopped
           }
@@ -1404,8 +1593,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Create oscillator based on instrument type
-    function createInstrumentOscillator(frequency) {
-      const oscillator = window.arrowGameAudioContext.createOscillator();
+    function createInstrumentOscillator(/** @type {number} */ frequency) {
+      const oscillator = requireAudioContext().createOscillator();
       oscillator.frequency.value = frequency;
     
       switch (currentInstrument) {
@@ -1429,26 +1618,26 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Create comprehensive effect chain
     function createEffectChain() {
-      let input = window.arrowGameAudioContext.createGain();
+      let input = requireAudioContext().createGain();
       let output = input;
       let chorusLFO = null;
     
       // Filter
       if (currentEffects.filter.enabled) {
-        const filter = window.arrowGameAudioContext.createBiquadFilter();
+        const filter = requireAudioContext().createBiquadFilter();
         filter.type = currentEffects.filter.type;
         filter.frequency.value = currentEffects.filter.frequency;
         filter.Q.value = currentEffects.filter.Q;
       
         // Add filter envelope for sweep effect
-        filter.frequency.setValueAtTime(currentEffects.filter.frequency * 0.5, window.arrowGameAudioContext.currentTime);
+        filter.frequency.setValueAtTime(currentEffects.filter.frequency * 0.5, requireAudioContext().currentTime);
         filter.frequency.exponentialRampToValueAtTime(
           currentEffects.filter.frequency * 2, 
-          window.arrowGameAudioContext.currentTime + 0.1
+          requireAudioContext().currentTime + 0.1
         );
         filter.frequency.exponentialRampToValueAtTime(
           currentEffects.filter.frequency, 
-          window.arrowGameAudioContext.currentTime + 0.3
+          requireAudioContext().currentTime + 0.3
         );
       
         output.connect(filter);
@@ -1457,13 +1646,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Distortion with proper wet/dry mix
       if (currentEffects.distortion.enabled) {
-        const distortion = window.arrowGameAudioContext.createWaveShaper();
+        const distortion = requireAudioContext().createWaveShaper();
         distortion.curve = makeDistortionCurve(currentEffects.distortion.amount);
         distortion.oversample = '4x';
       
-        const dryGain = window.arrowGameAudioContext.createGain();
-        const wetGain = window.arrowGameAudioContext.createGain();
-        const mixGain = window.arrowGameAudioContext.createGain();
+        const dryGain = requireAudioContext().createGain();
+        const wetGain = requireAudioContext().createGain();
+        const mixGain = requireAudioContext().createGain();
       
         dryGain.gain.value = 1 - currentEffects.distortion.wetness;
         wetGain.gain.value = currentEffects.distortion.wetness;
@@ -1483,12 +1672,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // Delay effect (FIXED: tempo should NOT affect delay characteristics)
       if (currentEffects.delay.enabled) {
         const delayTime = currentEffects.delay.time; // Fixed delay time, not tempo-dependent
-        const delayNode = window.arrowGameAudioContext.createDelay(1);
-        const delayGain = window.arrowGameAudioContext.createGain();
-        const feedbackGain = window.arrowGameAudioContext.createGain();
-        const wetGain = window.arrowGameAudioContext.createGain();
-        const dryGain = window.arrowGameAudioContext.createGain();
-        const mixGain = window.arrowGameAudioContext.createGain();
+        const delayNode = requireAudioContext().createDelay(1);
+        const delayGain = requireAudioContext().createGain();
+        const feedbackGain = requireAudioContext().createGain();
+        const wetGain = requireAudioContext().createGain();
+        const dryGain = requireAudioContext().createGain();
+        const mixGain = requireAudioContext().createGain();
       
         delayNode.delayTime.value = Math.min(delayTime, 0.8);
         wetGain.gain.value = currentEffects.delay.wetness;
@@ -1512,24 +1701,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Simple reverb (using multiple delays)
       if (currentEffects.reverb.enabled) {
-        const reverbGain = window.arrowGameAudioContext.createGain();
-        const dryGain = window.arrowGameAudioContext.createGain();
-        const mixGain = window.arrowGameAudioContext.createGain();
+        const reverbGain = requireAudioContext().createGain();
+        const dryGain = requireAudioContext().createGain();
+        const mixGain = requireAudioContext().createGain();
       
         reverbGain.gain.value = currentEffects.reverb.wetness;
         dryGain.gain.value = 1 - currentEffects.reverb.wetness;
       
         // Create multiple short delays to simulate reverb
-        void [0.03, 0.05, 0.07, 0.09].map(time => {
-          const delay = window.arrowGameAudioContext.createDelay();
-          const gain = window.arrowGameAudioContext.createGain();
+        [0.03, 0.05, 0.07, 0.09].forEach((time) => {
+          const delay = requireAudioContext().createDelay();
+          const gain = requireAudioContext().createGain();
           delay.delayTime.value = time * currentEffects.reverb.roomSize;
           gain.gain.value = 0.3 * (1 - currentEffects.reverb.damping);
-        
+
           output.connect(delay);
           delay.connect(gain);
           gain.connect(reverbGain);
-          return { delay, gain };
         });
       
         // Mix dry and wet
@@ -1542,12 +1730,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Simple chorus effect (using modulated delay)
       if (currentEffects.chorus.enabled) {
-        const chorusDelay = window.arrowGameAudioContext.createDelay(0.05);
-        chorusLFO = window.arrowGameAudioContext.createOscillator();
-        const chorusGain = window.arrowGameAudioContext.createGain();
-        const chorusDepth = window.arrowGameAudioContext.createGain();
-        const dryGain = window.arrowGameAudioContext.createGain();
-        const mixGain = window.arrowGameAudioContext.createGain();
+        const chorusDelay = requireAudioContext().createDelay(0.05);
+        chorusLFO = requireAudioContext().createOscillator();
+        const chorusGain = requireAudioContext().createGain();
+        const chorusDepth = requireAudioContext().createGain();
+        const dryGain = requireAudioContext().createGain();
+        const mixGain = requireAudioContext().createGain();
 
         // Set up LFO for chorus modulation
         chorusLFO.frequency.value = currentEffects.chorus.rate;
@@ -1584,7 +1772,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Create distortion curve
-    function makeDistortionCurve(amount) {
+    function makeDistortionCurve(/** @type {number} */ amount) {
       const k = typeof amount === 'number' ? amount : 50;
       const samples = 44100;
       const curve = new Float32Array(samples);
@@ -1599,8 +1787,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Apply envelope based on instrument type (FIXED: tempo should NOT affect sound quality)
-    function applyEnvelope(gainNode, instrument) {
-      const now = window.arrowGameAudioContext.currentTime;
+    function applyEnvelope(/** @type {GainNode} */ gainNode, /** @type {string} */ instrument) {
+      const now = requireAudioContext().currentTime;
     
       switch (instrument) {
         case 'piano':
@@ -1630,7 +1818,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Get note duration based on instrument (FIXED: tempo should NOT affect individual note length)
-    function getNoteDuration(instrument) {
+    function getNoteDuration(/** @type {string} */ instrument) {
       switch (instrument) {
         case 'piano': return 2000;
         case 'strings': return 3000;
@@ -1642,7 +1830,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Tempo-based metronome click (visual feedback)
     function addTempoFeedback() {
-      const tempoDisplay = document.getElementById('tempo-display');
+      const tempoDisplay = queryRequired('tempo-display');
       if (tempoDisplay && currentTempo > 0) {
         const beatInterval = 60000 / currentTempo; // ms per beat
       
@@ -1667,7 +1855,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Generate piano keyboard visual
     function generatePianoKeyboard() {
-      const pianoKeyboard = document.getElementById('piano-keyboard');
+      const pianoKeyboard = queryRequired('piano-keyboard');
       if (!pianoKeyboard) return;
 
       const { whiteKeys, blackKeys } = pianoKeyConfig;
@@ -1695,33 +1883,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (blackKeys[index] && blackKeys[index].length > 0) {
           const blackNote = blackKeys[index][0];
-          const blackKey = document.createElement('div');
-          blackKey.className = 'piano-key black-key';
-          blackKey.dataset.note = blackNote;
-          blackKey.setAttribute('aria-label', `Play ${blackNote}`);
+          if (blackNote) {
+            const blackKey = document.createElement('div');
+            blackKey.className = 'piano-key black-key';
+            blackKey.dataset.note = blackNote;
+            blackKey.setAttribute('aria-label', `Play ${blackNote}`);
 
-          const blackNoteLabel = document.createElement('span');
-          blackNoteLabel.className = 'piano-note-name';
-          blackNoteLabel.textContent = blackNote;
-          blackKey.appendChild(blackNoteLabel);
+            const blackNoteLabel = document.createElement('span');
+            blackNoteLabel.className = 'piano-note-name';
+            blackNoteLabel.textContent = blackNote;
+            blackKey.appendChild(blackNoteLabel);
 
-          const blackKeyLabel = noteToKeyLabel[blackNote];
-          if (blackKeyLabel) {
-            const blackLabelSpan = document.createElement('span');
-            blackLabelSpan.className = 'key-label';
-            blackLabelSpan.textContent = blackKeyLabel;
-            blackKey.appendChild(blackLabelSpan);
+            const blackKeyLabel = noteToKeyLabel[blackNote];
+            if (blackKeyLabel) {
+              const blackLabelSpan = document.createElement('span');
+              blackLabelSpan.className = 'key-label';
+              blackLabelSpan.textContent = blackKeyLabel;
+              blackKey.appendChild(blackLabelSpan);
+            }
+
+            key.appendChild(blackKey);
           }
-
-          key.appendChild(blackKey);
         }
 
         pianoKeyboard.appendChild(key);
       });
 
       pianoKeyboard.addEventListener('click', (e) => {
-        const pianoKey = e.target.closest('.piano-key');
-        if (!pianoKey) return;
+        const target = e.target;
+        if (!(target instanceof Element)) {
+          return;
+        }
+        const pianoKey = target.closest('.piano-key');
+        if (!(pianoKey instanceof HTMLElement)) return;
 
         const noteName = pianoKey.dataset.note;
         if (noteName) {
@@ -1736,7 +1930,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generateTouchPiano() {
-      const touchKeyboard = document.getElementById('touch-piano-keyboard');
+      const touchKeyboard = queryRequired('touch-piano-keyboard');
       if (!touchKeyboard) return;
 
       const { whiteKeys, blackKeys } = pianoKeyConfig;
@@ -1751,12 +1945,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (blackKeys[index] && blackKeys[index].length > 0) {
           const blackNote = blackKeys[index][0];
-          const blackKey = document.createElement('div');
-          blackKey.className = 'touch-key black-key';
-          blackKey.dataset.note = blackNote;
-          blackKey.setAttribute('aria-label', `Play ${blackNote}`);
-          blackKey.textContent = blackNote.replace('4', '#');
-          key.appendChild(blackKey);
+          if (blackNote) {
+            const blackKey = document.createElement('div');
+            blackKey.className = 'touch-key black-key';
+            blackKey.dataset.note = blackNote;
+            blackKey.setAttribute('aria-label', `Play ${blackNote}`);
+            blackKey.textContent = blackNote.replace('4', '#');
+            key.appendChild(blackKey);
+          }
         }
 
         touchKeyboard.appendChild(key);
@@ -1773,9 +1969,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Reset notes counter
       notesPlayed = 0;
-      const notesElement = document.getElementById('arrow-notes');
+      const notesElement = queryRequired('arrow-notes');
       if (notesElement) {
-        notesElement.textContent = notesPlayed;
+        notesElement.textContent = String(notesPlayed);
       }
     
       // Create the UI
@@ -1797,36 +1993,46 @@ document.addEventListener('DOMContentLoaded', () => {
       resetButton.disabled = false;
     }
   
+    /** @typedef {'reverb' | 'delay' | 'chorus' | 'distortion' | 'filter'} EffectName */
+
     // Setup control panel event listeners
     function setupControlListeners() {
     // Instrument selector
-      const instrumentSelect = document.getElementById('instrument-select');
-      if (instrumentSelect) {
+      const instrumentSelect = queryRequired('instrument-select');
+      if (isSelectElement(instrumentSelect)) {
         instrumentSelect.addEventListener('change', (e) => {
-          currentInstrument = e.target.value;
+          const target = e.target;
+          if (!isSelectElement(target)) {
+            return;
+          }
+          currentInstrument = target.value;
         });
       }
     
       // Volume control
-      const volumeSlider = document.getElementById('volume-slider');
-      const volumeDisplay = document.getElementById('volume-display');
-      if (volumeSlider && volumeDisplay) {
-        volumeSlider.addEventListener('input', (e) => {
-          masterVolume = e.target.value / 100;
-          volumeDisplay.textContent = e.target.value + '%';
-        });
-      }
+      const volumeSlider = asInput(queryRequired('volume-slider'));
+      const volumeDisplay = queryRequired('volume-display');
+      volumeSlider.addEventListener('input', (e) => {
+        const target = getInputTarget(e.target);
+        if (!target) {
+          return;
+        }
+        masterVolume = Number(target.value) / 100;
+        volumeDisplay.textContent = `${target.value}%`;
+      });
     
       // Tempo control
-      const tempoSlider = document.getElementById('tempo-slider');
-      const tempoDisplay = document.getElementById('tempo-display');
-      if (tempoSlider && tempoDisplay) {
-        tempoSlider.addEventListener('input', (e) => {
-          currentTempo = parseInt(e.target.value);
-          tempoDisplay.textContent = e.target.value + ' BPM';
-          addTempoFeedback(); // Start visual tempo feedback
-        });
-      }
+      const tempoSlider = asInput(queryRequired('tempo-slider'));
+      const tempoDisplay = queryRequired('tempo-display');
+      tempoSlider.addEventListener('input', (e) => {
+        const target = getInputTarget(e.target);
+        if (!target) {
+          return;
+        }
+        currentTempo = parseInt(target.value, 10);
+        tempoDisplay.textContent = `${target.value} BPM`;
+        addTempoFeedback(); // Start visual tempo feedback
+      });
     
       // Effect toggles and sliders
       setupEffectControls();
@@ -1835,67 +2041,67 @@ document.addEventListener('DOMContentLoaded', () => {
       setupRecordingControls();
     }
   
+    /** @param {EffectName} effect @param {HTMLInputElement} slider */
     function syncEffectSlider(effect, slider) {
       if (!slider || !currentEffects[effect]) return;
 
       if (effect === 'distortion') {
-        slider.value = currentEffects[effect].amount;
+        slider.value = String(currentEffects[effect].amount);
       } else if (effect === 'filter') {
-        slider.value = currentEffects[effect].frequency / 50;
+        slider.value = String(currentEffects[effect].frequency / 50);
       } else {
-        slider.value = currentEffects[effect].wetness * 100;
+        slider.value = String(currentEffects[effect].wetness * 100);
       }
     }
 
     // Initialize effect states after DOM is ready
     function initializeEffectStates() {
+      /** @type {EffectName[]} */
       const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
 
-      effects.forEach(effect => {
-        const toggle = document.getElementById(`${effect}-toggle`);
-        const slider = document.getElementById(`${effect}-amount`);
+      effects.forEach((effect) => {
+        const toggle = asInput(queryRequired(`${effect}-toggle`));
+        const slider = asInput(queryRequired(`${effect}-amount`));
 
-        if (toggle && currentEffects[effect]) {
-          toggle.checked = currentEffects[effect].enabled;
-
-          if (slider) {
-            slider.disabled = !currentEffects[effect].enabled;
-            syncEffectSlider(effect, slider);
-          }
-        }
+        toggle.checked = currentEffects[effect].enabled;
+        slider.disabled = !currentEffects[effect].enabled;
+        syncEffectSlider(effect, slider);
       });
     }
 
     // Setup effect controls (event listeners only)
     function setupEffectControls() {
+      /** @type {EffectName[]} */
       const effects = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
     
-      effects.forEach(effect => {
-        const toggle = document.getElementById(`${effect}-toggle`);
-        const slider = document.getElementById(`${effect}-amount`);
+      effects.forEach((effect) => {
+        const toggle = asInput(queryRequired(`${effect}-toggle`));
+        const slider = asInput(queryRequired(`${effect}-amount`));
       
-        if (toggle) {
-          toggle.addEventListener('change', (e) => {
-            currentEffects[effect].enabled = e.target.checked;
-            if (slider) {
-              slider.disabled = !e.target.checked;
-            }
-          });
-        }
+        toggle.addEventListener('change', (e) => {
+          const target = getInputTarget(e.target);
+          if (!target) {
+            return;
+          }
+          currentEffects[effect].enabled = target.checked;
+          slider.disabled = !target.checked;
+        });
       
-        if (slider) {
-          slider.addEventListener('input', (e) => {
-            const value = e.target.value / 100;
-            if (effect === 'distortion') {
-              currentEffects[effect].amount = parseInt(e.target.value);
-              currentEffects[effect].wetness = value;
-            } else if (effect === 'filter') {
-              currentEffects[effect].frequency = parseInt(e.target.value) * 50;
-            } else {
-              currentEffects[effect].wetness = value;
-            }
-          });
-        }
+        slider.addEventListener('input', (e) => {
+          const target = getInputTarget(e.target);
+          if (!target) {
+            return;
+          }
+          const value = Number(target.value) / 100;
+          if (effect === 'distortion') {
+            currentEffects[effect].amount = parseInt(target.value, 10);
+            currentEffects[effect].wetness = value;
+          } else if (effect === 'filter') {
+            currentEffects[effect].frequency = parseInt(target.value, 10) * 50;
+          } else {
+            currentEffects[effect].wetness = value;
+          }
+        });
       });
     }
 
@@ -1904,7 +2110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         stopLayerLoop(layerIndex);
       });
 
-      const loopAllBtn = document.getElementById('loop-all-btn');
+      const loopAllBtn = queryRequired('loop-all-btn');
       if (loopAllBtn) {
         setBtnLabel(loopAllBtn, '🔄 Loop All');
         loopAllBtn.classList.remove('active');
@@ -1916,7 +2122,7 @@ document.addEventListener('DOMContentLoaded', () => {
       playbackTimeouts = [];
       isPlayingPlayback = false;
 
-      const playBtn = document.getElementById('play-btn');
+      const playBtn = queryRequired('play-btn');
       if (playBtn) {
         setBtnLabel(playBtn, '▶️ Play');
         playBtn.classList.remove('playing');
@@ -1952,8 +2158,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function closeMusicStudioAudio() {
-      if (window.arrowGameAudioContext && window.arrowGameAudioContext.state !== 'closed') {
-        window.arrowGameAudioContext.close().catch(err => {
+      if (window.arrowGameAudioContext && requireAudioContext().state !== 'closed') {
+        requireAudioContext().close().catch(err => {
           console.warn('Failed to close music studio audio context:', err);
         });
         window.arrowGameAudioContext = null;
@@ -1971,7 +2177,7 @@ document.addEventListener('DOMContentLoaded', () => {
       isGameActive = false;
 
       notesPlayed = 0;
-      const notesElement = document.getElementById('arrow-notes');
+      const notesElement = queryRequired('arrow-notes');
       if (notesElement) {
         notesElement.textContent = '0';
       }
@@ -1988,7 +2194,7 @@ document.addEventListener('DOMContentLoaded', () => {
       cleanupMusicStudio();
       notesPlayed = 0;
 
-      const notesElement = document.getElementById('arrow-notes');
+      const notesElement = queryRequired('arrow-notes');
       if (notesElement) {
         notesElement.textContent = '0';
       }
@@ -2001,16 +2207,16 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Setup recording controls
     function setupRecordingControls() {
-      const recordBtn = document.getElementById('record-btn');
-      const playBtn = document.getElementById('play-btn');
-      const loopBtn = document.getElementById('loop-btn');
-      const loopAllBtn = document.getElementById('loop-all-btn');
-      const clearBtn = document.getElementById('clear-btn');
-      const clearAllBtn = document.getElementById('clear-all-btn');
-      const saveBtn = document.getElementById('save-btn');
-      const loadBtn = document.getElementById('load-btn');
-      const prevLayerBtn = document.getElementById('prev-layer-btn');
-      const nextLayerBtn = document.getElementById('next-layer-btn');
+      const recordBtn = queryRequired('record-btn');
+      const playBtn = queryRequired('play-btn');
+      const loopBtn = queryRequired('loop-btn');
+      const loopAllBtn = queryRequired('loop-all-btn');
+      const clearBtn = queryRequired('clear-btn');
+      const clearAllBtn = queryRequired('clear-all-btn');
+      const saveBtn = queryRequired('save-btn');
+      const loadBtn = queryRequired('load-btn');
+      const prevLayerBtn = queryRequired('prev-layer-btn');
+      const nextLayerBtn = queryRequired('next-layer-btn');
     
       if (recordBtn) {
         recordBtn.addEventListener('click', toggleRecording);
@@ -2044,21 +2250,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     
       // Layer tempo control
-      const layerTempoSlider = document.getElementById('layer-tempo-slider');
+      const layerTempoSlider = queryRequired('layer-tempo-slider');
       if (layerTempoSlider) {
-        const tempoHandler = (e) => {
-          const newTempo = parseInt(e.target.value, 10);
-          layerTempos[currentLayerIndex] = newTempo;
-          const layerTempoDisplay = document.getElementById('layer-tempo');
-          if (layerTempoDisplay) {
-            layerTempoDisplay.textContent = newTempo;
+        const tempoHandler = (/** @type {Event} */ e) => {
+          const target = getInputTarget(e.target);
+          if (!target) {
+            return;
           }
+          const newTempo = parseInt(target.value, 10);
+          layerTempos[currentLayerIndex] = newTempo;
+          const layerTempoDisplay = queryRequired('layer-tempo');
+          layerTempoDisplay.textContent = String(newTempo);
 
           if (activeLoopLayers.has(currentLayerIndex)) {
             stopLayerLoop(currentLayerIndex);
 
+            const currentLayer = loopLayers[currentLayerIndex];
             const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
-              (loopLayers[currentLayerIndex] ? loopLayers[currentLayerIndex].notes : []);
+              (currentLayer ? currentLayer.notes : []);
 
             if (notesToPlay.length > 0) {
               setTimeout(() => {
@@ -2075,13 +2284,16 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Setup touch controls for mobile
     function setupTouchControls() {
-      document.querySelectorAll('.touch-key').forEach(key => {
-        key.addEventListener('touchstart', handleTouchStart);
-        key.addEventListener('click', handleTouchStart);
+      const useTouch = 'ontouchstart' in window;
+      document.querySelectorAll('.touch-key').forEach((key) => {
+        key.addEventListener(useTouch ? 'touchstart' : 'click', (event) => {
+          handleTouchStart(/** @type {MouseEvent | TouchEvent} */ (event));
+        });
       });
     }
   
     // Highlight key visual feedback
+    /** @param {string} keyCode @param {string} noteName */
     function highlightKey(keyCode, noteName) {
       const keyElement = document.querySelector(`[data-key="${keyCode}"]`);
       if (keyElement) {
@@ -2093,6 +2305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Highlight piano key
+    /** @param {string} noteName */
     function highlightPianoKey(noteName) {
       const pianoKey = document.querySelector(`[data-note="${noteName}"]`);
       if (pianoKey) {
@@ -2103,8 +2316,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Recording functions
     function toggleRecording() {
-      const recordBtn = document.getElementById('record-btn');
-      const statusElement = document.getElementById('recording-status');
+      const recordBtn = queryRequired('record-btn');
+      const statusElement = queryRequired('recording-status');
     
       if (isRecording) {
       // Stop recording and save to current layer
@@ -2118,11 +2331,11 @@ document.addEventListener('DOMContentLoaded', () => {
           statusElement.textContent = `Layer ${currentLayerIndex + 1}: ${recordedNotes.length} notes recorded`;
         
           // Enable controls
-          document.getElementById('play-btn').disabled = false;
-          document.getElementById('loop-btn').disabled = false;
-          document.getElementById('loop-all-btn').disabled = false;
-          document.getElementById('clear-btn').disabled = false;
-          document.getElementById('save-btn').disabled = false;
+          queryRequired('play-btn').disabled = false;
+          queryRequired('loop-btn').disabled = false;
+          queryRequired('loop-all-btn').disabled = false;
+          queryRequired('clear-btn').disabled = false;
+          queryRequired('save-btn').disabled = false;
         }
       } else {
       // Start recording new layer
@@ -2142,14 +2355,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     
       // Save current recording to the layer
-      loopLayers[currentLayerIndex].notes = [...recordedNotes];
+      const currentLayer = loopLayers[currentLayerIndex];
+      if (currentLayer) {
+        currentLayer.notes = [...recordedNotes];
+      }
     
       updateLayerDisplay();
       updateLayerCounts();
     }
   
     function updateLayerDisplay() {
-      const layersDisplay = document.getElementById('layers-display');
+      const layersDisplay = queryRequired('layers-display');
       if (!layersDisplay) return;
 
       layersDisplay.innerHTML = '';
@@ -2181,13 +2397,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function updateLayerCounts() {
-      document.getElementById('current-layer').textContent = currentLayerIndex + 1;
-      document.getElementById('total-layers').textContent = loopLayers.length;
+      queryRequired('current-layer').textContent = String(currentLayerIndex + 1);
+      queryRequired('total-layers').textContent = String(loopLayers.length);
     
       // Update navigation buttons
-      document.getElementById('prev-layer-btn').disabled = currentLayerIndex === 0;
-      document.getElementById('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
-      document.getElementById('clear-all-btn').disabled = loopLayers.length === 0;
+      queryRequired('prev-layer-btn').disabled = currentLayerIndex === 0;
+      queryRequired('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
+      queryRequired('clear-all-btn').disabled = loopLayers.length === 0;
     }
   
     function switchToPrevLayer() {
@@ -2204,12 +2420,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
+    /** @param {number} layerIndex */
     function switchToLayer(layerIndex) {
       currentLayerIndex = layerIndex;
     
       // Load the layer's recorded notes
-      if (loopLayers[layerIndex]) {
-        recordedNotes = [...loopLayers[layerIndex].notes];
+      const targetLayer = loopLayers[layerIndex];
+      if (targetLayer) {
+        recordedNotes = [...targetLayer.notes];
       } else {
         recordedNotes = [];
       }
@@ -2220,27 +2438,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Update layer tempo display and slider
       const layerTempo = layerTempos[layerIndex] || 120;
-      document.getElementById('layer-tempo').textContent = layerTempo;
-      const layerTempoSlider = document.getElementById('layer-tempo-slider');
-      if (layerTempoSlider) {
-        layerTempoSlider.value = layerTempo;
-      }
+      queryRequired('layer-tempo').textContent = String(layerTempo);
+      const layerTempoSlider = queryRequired('layer-tempo-slider');
+      layerTempoSlider.value = String(layerTempo);
     
-      const statusElement = document.getElementById('recording-status');
+      const statusElement = queryRequired('recording-status');
       if (recordedNotes.length > 0) {
         statusElement.textContent = `Layer ${layerIndex + 1}: ${recordedNotes.length} notes @ ${layerTempo} BPM`;
-        document.getElementById('play-btn').disabled = false;
-        document.getElementById('loop-btn').disabled = false;
-        document.getElementById('clear-btn').disabled = false;
+        queryRequired('play-btn').disabled = false;
+        queryRequired('loop-btn').disabled = false;
+        queryRequired('clear-btn').disabled = false;
       } else {
         statusElement.textContent = `Ready to record layer ${layerIndex + 1} @ ${layerTempo} BPM`;
-        document.getElementById('play-btn').disabled = true;
-        document.getElementById('loop-btn').disabled = true;
-        document.getElementById('clear-btn').disabled = true;
+        queryRequired('play-btn').disabled = true;
+        queryRequired('loop-btn').disabled = true;
+        queryRequired('clear-btn').disabled = true;
       }
     
       // Update loop button state
-      const loopBtn = document.getElementById('loop-btn');
+      const loopBtn = queryRequired('loop-btn');
       if (activeLoopLayers.has(layerIndex)) {
         setBtnLabel(loopBtn, '⏹️ Stop Current');
         loopBtn.classList.add('active');
@@ -2261,17 +2477,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       
         // Clear the layer
-        if (loopLayers[currentLayerIndex]) {
-          loopLayers[currentLayerIndex].notes = [];
+        const currentLayer = loopLayers[currentLayerIndex];
+        if (currentLayer) {
+          currentLayer.notes = [];
         }
         recordedNotes = [];
       
         // Update UI
         updateLayerDisplay();
-        document.getElementById('recording-status').textContent = `Layer ${currentLayerIndex + 1} cleared`;
-        document.getElementById('play-btn').disabled = true;
-        document.getElementById('loop-btn').disabled = true;
-        document.getElementById('clear-btn').disabled = true;
+        queryRequired('recording-status').textContent = `Layer ${currentLayerIndex + 1} cleared`;
+        queryRequired('play-btn').disabled = true;
+        queryRequired('loop-btn').disabled = true;
+        queryRequired('clear-btn').disabled = true;
       }
     }
   
@@ -2287,23 +2504,24 @@ document.addEventListener('DOMContentLoaded', () => {
         isRecording = false;
       
         // Reset UI
-        const recordBtn = document.getElementById('record-btn');
+        const recordBtn = queryRequired('record-btn');
         setBtnLabel(recordBtn, '⏺️ Record Layer');
         recordBtn.classList.remove('recording');
       
         updateLayerDisplay();
         updateLayerCounts();
       
-        document.getElementById('recording-status').textContent = 'All layers cleared - ready to record layer 1';
-        document.getElementById('play-btn').disabled = true;
-        document.getElementById('loop-btn').disabled = true;
-        document.getElementById('loop-all-btn').disabled = true;
-        document.getElementById('clear-btn').disabled = true;
-        document.getElementById('clear-all-btn').disabled = true;
-        document.getElementById('save-btn').disabled = true;
+        queryRequired('recording-status').textContent = 'All layers cleared - ready to record layer 1';
+        queryRequired('play-btn').disabled = true;
+        queryRequired('loop-btn').disabled = true;
+        queryRequired('loop-all-btn').disabled = true;
+        queryRequired('clear-btn').disabled = true;
+        queryRequired('clear-all-btn').disabled = true;
+        queryRequired('save-btn').disabled = true;
       }
     }
   
+    /** @param {string} noteName */
     function recordNote(noteName) {
       if (!isRecording) return;
     
@@ -2311,7 +2529,7 @@ document.addEventListener('DOMContentLoaded', () => {
       recordedNotes.push({ note: noteName, time: timestamp });
     
       // Update recording length display
-      const lengthElement = document.getElementById('recording-length');
+      const lengthElement = queryRequired('recording-length');
       if (lengthElement) {
         const seconds = Math.floor(timestamp / 1000);
         const minutes = Math.floor(seconds / 60);
@@ -2322,7 +2540,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function playRecording() {
       if (recordedNotes.length === 0) return;
 
-      const playBtn = document.getElementById('play-btn');
+      const playBtn = queryRequired('play-btn');
 
       if (isPlayingPlayback) {
         clearPlaybackTimeouts();
@@ -2351,7 +2569,10 @@ document.addEventListener('DOMContentLoaded', () => {
         playbackTimeouts.push(timeoutId);
       });
 
-      const totalDuration = (recordedNotes[recordedNotes.length - 1].time * tempoScale) + 1000;
+      const lastRecordedNote = recordedNotes[recordedNotes.length - 1];
+      const totalDuration = lastRecordedNote
+        ? (lastRecordedNote.time * tempoScale) + 1000
+        : 1000;
       const endTimeoutId = setTimeout(() => {
         clearPlaybackTimeouts();
         if (playBtn) {
@@ -2363,7 +2584,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Multi-layer loop management
     function toggleLoop() {
-      const loopBtn = document.getElementById('loop-btn');
+      const loopBtn = queryRequired('loop-btn');
     
     
       if (isLooping) {
@@ -2374,8 +2595,9 @@ document.addEventListener('DOMContentLoaded', () => {
         loopBtn.classList.remove('active');
       } else {
       // Start current layer loop
+        const activeLayer = loopLayers[currentLayerIndex];
         const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
-          (loopLayers[currentLayerIndex] ? loopLayers[currentLayerIndex].notes : []);
+          (activeLayer ? activeLayer.notes : []);
 
         if (notesToPlay.length === 0) {
           return;
@@ -2389,7 +2611,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function toggleLoopAll() {
-      const loopAllBtn = document.getElementById('loop-all-btn');
+      const loopAllBtn = queryRequired('loop-all-btn');
     
       if (activeLoopLayers.size > 0) {
       // Stop all loops
@@ -2405,6 +2627,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
+    /** @param {number} layerIndex @param {Array<{ note: string; time: number }>} notes */
     function startLayerLoop(layerIndex, notes) {
       if (activeLoopLayers.has(layerIndex)) {
         stopLayerLoop(layerIndex);
@@ -2437,9 +2660,14 @@ document.addEventListener('DOMContentLoaded', () => {
       playLoop();
     
       // Set up interval for looping (tempo-adjusted)
+      const lastNote = notes[notes.length - 1];
+      if (!lastNote) {
+        return;
+      }
+
       const loopDuration = window.GameUtils.calculateLoopDuration(
         layerTempo,
-        notes[notes.length - 1].time
+        lastNote.time
       );
     
       const intervalId = setInterval(() => {
@@ -2457,6 +2685,7 @@ document.addEventListener('DOMContentLoaded', () => {
       updateLayerDisplay();
     }
   
+    /** @param {number} layerIndex */
     function stopLayerLoop(layerIndex) {
       activeLoopLayers.delete(layerIndex);
     
@@ -2467,7 +2696,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
       if (layerIndex === currentLayerIndex) {
         isLooping = false;
-        const loopBtn = document.getElementById('loop-btn');
+        const loopBtn = queryRequired('loop-btn');
         if (loopBtn) {
           setBtnLabel(loopBtn, '🔄 Loop Current');
           loopBtn.classList.remove('active');
@@ -2501,7 +2730,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const composition = window.GameUtils.buildCompositionPayload({
         name,
-        loopLayers,
+        loopLayers: loopLayers.map((layer, layerIndex) => ({
+          notes: layer.notes,
+          name: layer.name ?? `Layer ${layerIndex + 1}`
+        })),
         layerTempos,
         currentLayerIndex,
         instrument: currentInstrument,
@@ -2529,8 +2761,11 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
       
-        const names = saved.map((comp, index) => `${index + 1}. ${comp.name} (${new Date(comp.timestamp).toLocaleString()})`);
+        const names = saved.map((/** @type {{ name: string; timestamp: string }} */ comp, /** @type {number} */ index) => `${index + 1}. ${comp.name} (${new Date(comp.timestamp).toLocaleString()})`);
         const choice = prompt(`Select a composition to load:\n\n${names.join('\n')}\n\nEnter the number:`);
+        if (choice === null) {
+          return;
+        }
       
         const index = window.GameUtils.parseCompositionSelection(choice, saved.length);
         if (index === null) {
@@ -2538,73 +2773,70 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
       
-        const composition = saved[index];
+        const composition = /** @type {{ name: string; instrument: string; effects: typeof currentEffects; tempo: number }} */ (saved[index]);
         const restored = window.GameUtils.restoreCompositionState(composition);
-        loopLayers = restored.loopLayers;
+        loopLayers = /** @type {typeof loopLayers} */ (restored.loopLayers);
         layerTempos = restored.layerTempos;
         currentLayerIndex = restored.currentLayerIndex;
-        recordedNotes = restored.recordedNotes;
+        recordedNotes = /** @type {typeof recordedNotes} */ (restored.recordedNotes);
 
         currentInstrument = composition.instrument;
         currentEffects = composition.effects;
         currentTempo = composition.tempo;
       
         // Update UI
-        document.getElementById('instrument-select').value = currentInstrument;
-        document.getElementById('tempo-slider').value = currentTempo;
-        document.getElementById('tempo-display').textContent = currentTempo + ' BPM';
+        queryRequired('instrument-select').value = currentInstrument;
+        queryRequired('tempo-slider').value = String(currentTempo);
+        queryRequired('tempo-display').textContent = `${currentTempo} BPM`;
       
         // Update effect controls
-        Object.keys(currentEffects).forEach(effect => {
-          const toggle = document.getElementById(`${effect}-toggle`);
-          const slider = document.getElementById(`${effect}-amount`);
+        /** @type {EffectName[]} */
+        const effectNames = ['reverb', 'delay', 'chorus', 'distortion', 'filter'];
+        effectNames.forEach((effect) => {
+          const toggle = asInput(queryRequired(`${effect}-toggle`));
+          const slider = asInput(queryRequired(`${effect}-amount`));
 
-          if (toggle) {
-            toggle.checked = currentEffects[effect].enabled;
-            if (slider) {
-              slider.disabled = !currentEffects[effect].enabled;
-            }
-          }
-
-          if (slider) {
-            syncEffectSlider(effect, slider);
-          }
+          toggle.checked = currentEffects[effect].enabled;
+          slider.disabled = !currentEffects[effect].enabled;
+          syncEffectSlider(effect, slider);
         });
       
         // Enable playback buttons
-        document.getElementById('play-btn').disabled = false;
-        document.getElementById('loop-btn').disabled = false;
-        document.getElementById('loop-all-btn').disabled = loopLayers.length === 0;
-        document.getElementById('clear-btn').disabled = false;
-        document.getElementById('clear-all-btn').disabled = loopLayers.length === 0;
-        document.getElementById('save-btn').disabled = false;
-        document.getElementById('prev-layer-btn').disabled = currentLayerIndex === 0;
-        document.getElementById('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
+        queryRequired('play-btn').disabled = false;
+        queryRequired('loop-btn').disabled = false;
+        queryRequired('loop-all-btn').disabled = loopLayers.length === 0;
+        queryRequired('clear-btn').disabled = false;
+        queryRequired('clear-all-btn').disabled = loopLayers.length === 0;
+        queryRequired('save-btn').disabled = false;
+        queryRequired('prev-layer-btn').disabled = currentLayerIndex === 0;
+        queryRequired('next-layer-btn').disabled = currentLayerIndex >= maxLoopLayers - 1;
 
-        const layerTempoSlider = document.getElementById('layer-tempo-slider');
+        const layerTempoSlider = queryRequired('layer-tempo-slider');
         const layerTempo = layerTempos[currentLayerIndex] || currentTempo;
         if (layerTempoSlider) {
-          layerTempoSlider.value = layerTempo;
+          layerTempoSlider.value = String(layerTempo);
         }
-        const layerTempoDisplay = document.getElementById('layer-tempo');
+        const layerTempoDisplay = queryRequired('layer-tempo');
         if (layerTempoDisplay) {
-          layerTempoDisplay.textContent = layerTempo;
+          layerTempoDisplay.textContent = String(layerTempo);
         }
 
         updateLayerDisplay();
         updateLayerCounts();
 
-        document.getElementById('recording-status').textContent = `Loaded "${composition.name}"`;
+        queryRequired('recording-status').textContent = `Loaded "${composition.name}"`;
 
         const notesForDuration = recordedNotes.length > 0
           ? recordedNotes
           : (loopLayers[currentLayerIndex]?.notes || []);
         if (notesForDuration.length > 0) {
-          const totalTime = notesForDuration[notesForDuration.length - 1].time;
-          document.getElementById('recording-length').textContent =
-          window.GameUtils.formatRecordingLength(totalTime);
+          const lastNote = notesForDuration[notesForDuration.length - 1];
+          if (lastNote) {
+            queryRequired('recording-length').textContent =
+              window.GameUtils.formatRecordingLength(lastNote.time);
+          }
         } else {
-          document.getElementById('recording-length').textContent = '0:00';
+          queryRequired('recording-length').textContent = '0:00';
         }
       
         alert(`Composition "${composition.name}" loaded successfully!`);

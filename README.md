@@ -135,7 +135,7 @@ tboy1337.github.io/
 - **Features**: Chromatic piano keyboard, multi-layer recording (up to 4 layers), per-layer tempo control, save/load compositions
 - **Effects**: Reverb, delay, chorus, distortion, and filter with real-time mixing
 - **Instruments**: Synthesizer, piano, strings, and bass
-- **Controls**: A-K for white keys, Q-P for black keys (desktop); touch piano on mobile
+- **Controls**: A-K for white keys, W E T Y U O P for black keys (desktop); touch piano on mobile
 
 ## 📱 Responsive Design
 
