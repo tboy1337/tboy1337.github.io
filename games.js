@@ -66,7 +66,18 @@ function getInputTarget(target) {
  * @typedef {'memory' | 'snake' | 'typing' | 'music-studio'} GameName
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+/**
+ * @param {() => void} callback
+ */
+function onDomReady(callback) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', callback);
+  } else {
+    callback();
+  }
+}
+
+onDomReady(() => {
   try {
     const menuItems = document.querySelectorAll('.game-menu-item');
     const gameSections = document.querySelectorAll('.game-section');
@@ -188,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Memory Card Game
-document.addEventListener('DOMContentLoaded', () => {
+onDomReady(() => {
   try {
     const gameContainer = getHtmlElement('memory-game');
     const startButton = getHtmlElement('start-game');
@@ -497,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
 }); 
 
 // Snake Game
-document.addEventListener('DOMContentLoaded', () => {
+onDomReady(() => {
   try {
     const snakeContainerEl = getHtmlElement('snake-game');
     const snakeStartButtonEl = getHtmlElement('start-snake');
@@ -877,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Typing Speed Test Game
-document.addEventListener('DOMContentLoaded', () => {
+onDomReady(() => {
   try {
     const typingContainerEl = getHtmlElement('typing-game');
     const typingStartButtonEl = getHtmlElement('start-typing');
@@ -1217,7 +1228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 }); 
 
 // Advanced Music Studio
-document.addEventListener('DOMContentLoaded', () => {
+onDomReady(() => {
   try {
     const startButtonEl = getHtmlElement('start-music-studio');
     const resetButtonEl = getHtmlElement('reset-music-studio');

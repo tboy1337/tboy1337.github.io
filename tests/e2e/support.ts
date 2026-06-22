@@ -67,8 +67,18 @@ export async function mockAudio(page: Page) {
   });
 }
 
-export async function gotoHome(page: Page) {
+export async function gotoHome(page: Page, options?: { loadGames?: boolean }) {
   await page.goto('/');
+  if (options?.loadGames === false) {
+    return;
+  }
+  await page.evaluate(async () => {
+    if (typeof window.loadGamesBundle === 'function') {
+      await window.loadGamesBundle();
+      return;
+    }
+    document.getElementById('fun-games')?.scrollIntoView();
+  });
   await page.waitForFunction(() => typeof window.GameUtils !== 'undefined' && typeof window.MusicStudioAudio !== 'undefined');
 }
 

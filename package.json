@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint:js": "eslint games.js translation.js sw.js lib/**/*.mjs tests/**/*.js",
+    "build:css": "tailwindcss -i ./src/tailwind.css -o ./tailwind.css --minify",
+    "lint:js": "eslint games.js translation.js sw.js site-sw-register.js contact-form.js lib/**/*.mjs tests/**/*.js",
     "lint:css": "stylelint \"**/*.css\"",
     "lint": "npm run lint:js && npm run lint:css",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.sw.json",
@@ -19,7 +20,7 @@
     "@playwright/test": "^1.61.0",
     "@types/node": "^26.0.0",
     "@vitest/coverage-istanbul": "^4.1.9",
-    "@vitest/coverage-v8": "^4.1.9",
+    "tailwindcss": "^3.4.17",
     "eslint": "^10.5.0",
     "html-validate": "^11.5.3",
     "istanbul-lib-coverage": "^3.2.2",

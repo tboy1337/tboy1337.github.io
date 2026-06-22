@@ -3,7 +3,7 @@ import { mockAudio, gotoHome } from './support';
 
 test.beforeEach(async ({ page }) => {
   await mockAudio(page);
-  await gotoHome(page);
+  await gotoHome(page, { loadGames: false });
 });
 
 test.describe('Portfolio page', () => {

@@ -5,7 +5,7 @@
   ],
   "rules": {
     "no-trailing-whitespace": "off",
-    "require-sri": "off",
+    "require-sri": ["error", { "target": "crossorigin" }],
     "attribute-misuse": "off",
     "wcag/h30": "off",
     "wcag/h32": "off",

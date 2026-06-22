@@ -15,7 +15,11 @@ declare global {
     ContactValidation: typeof ContactValidationModule;
     SnakeLogic: typeof SnakeLogicModule;
     MusicStudioAudio: typeof MusicStudioAudioModule;
+    loadGamesBundle?: () => Promise<void>;
     cleanupMusicStudio?: () => void;
+    googleTranslateInitialized?: boolean;
+    googleTranslateElementInit?: () => void;
+    googleTranslateMutationObserver?: MutationObserver | null;
     getMusicStudioActiveVoiceCount?: () => number;
     getMusicStudioLastFrequency?: () => number;
     getMusicStudioDestinationConnections?: () => number;
@@ -37,4 +41,13 @@ declare global {
     tempoFeedbackInterval?: ReturnType<typeof setInterval> | null;
     layerIntervals?: Map<number, ReturnType<typeof setInterval>>;
   }
+
+  const google: {
+    translate: {
+      TranslateElement: {
+        new (options: Record<string, unknown>, elementId: string): void;
+        InlineLayout: Record<string, number>;
+      };
+    };
+  };
 }

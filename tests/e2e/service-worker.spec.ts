@@ -70,4 +70,17 @@ test.describe('Service worker', () => {
     }, { timeout: 15000 }).toBe(1);
     await expect(page.locator('#fun-games')).toBeVisible();
   });
+
+  test('precaches achievement images for offline use', async ({ page }) => {
+    await expect.poll(async () => {
+      return page.evaluate(async (cacheName) => {
+        if (!('caches' in window)) {
+          return 0;
+        }
+        const cache = await caches.open(cacheName);
+        const response = await cache.match('/quickdraw-default.png');
+        return response?.ok ? 1 : 0;
+      }, expectedCacheName);
+    }, { timeout: 30000 }).toBe(1);
+  });
 });

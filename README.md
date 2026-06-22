@@ -29,14 +29,14 @@ The site includes four fully-featured browser games:
 - **Form Validation**: Real-time client-side validation with user-friendly error messages
 - **Progressive Enhancement**: Works without JavaScript, enhanced with interactive features
 - **Accessibility**: ARIA labels, keyboard navigation, and screen reader support
-- **Performance Optimization**: Lazy loading, efficient event handling, and minimal dependencies
+- **Lazy Loading**: Games bundle loads when the games section is near the viewport
 
 ## 🛠️ Technologies Used
 
 ### Frontend Technologies
 - **HTML5**: Semantic markup with accessibility features
 - **CSS3**: Modern styling with custom properties and responsive design
-- **Tailwind CSS**: Utility-first CSS framework via CDN
+- **Tailwind CSS**: Built static CSS (`tailwind.css`) generated from utility classes in `index.html` and `games.js`
 - **Vanilla JavaScript**: No frameworks, pure JavaScript for optimal performance
 
 ### APIs & Services
@@ -93,10 +93,17 @@ The portfolio showcases the following key projects:
 ```
 tboy1337.github.io/
 ├── index.html              # Main portfolio webpage
+├── tailwind.css            # Built Tailwind CSS (run npm run build:css)
+├── src/tailwind.css        # Tailwind source file
 ├── games.css               # Styling for interactive games
 ├── games.js                # Game logic and functionality
 ├── translation.js          # Google Translate integration
+├── site-sw-register.js     # Service worker registration
+├── contact-form.js         # Contact form handler
 ├── sw.js                   # Service worker for offline functionality
+├── lib/                    # Shared ES modules (game logic, SW utils, lazy loader)
+├── tests/                  # Vitest unit tests and Playwright e2e tests
+├── scripts/                # Coverage merge and tooling scripts
 ├── site.webmanifest        # Progressive web app manifest
 ├── robots.txt              # Search engine crawling instructions
 ├── sitemap.xml             # Site structure for SEO
@@ -111,7 +118,8 @@ tboy1337.github.io/
 ├── quickdraw-default.png   # GitHub achievement badge
 ├── pull-shark-default.png  # GitHub achievement badge
 ├── pair-extraordinaire-default.png  # GitHub achievement badge
-└── yolo-default.png        # GitHub achievement badge
+├── yolo-default.png        # GitHub achievement badge
+└── starstruck-default.png  # GitHub achievement badge
 ```
 
 ## 🎮 Interactive Games
@@ -152,6 +160,7 @@ The website is automatically deployed through GitHub Pages:
 - **URL**: [https://tboy1337.github.io](https://tboy1337.github.io)
 - **Updates**: Automatic deployment on every push to main branch
 - **CDN**: Global content delivery via GitHub's infrastructure
+- **Security headers**: GitHub Pages does not support custom HTTP headers (CSP, HSTS); use a reverse proxy such as Cloudflare if needed
 
 ## 🗣️ Multi-language Support
 
@@ -185,6 +194,14 @@ Visual showcase of GitHub accomplishments including:
 - **Progressive Enhancement**: Core functionality works without JavaScript
 
 ## 🔧 Development
+
+Install dependencies and run quality checks:
+
+```bash
+npm install
+npm run build:css
+npm run check
+```
 
 To run locally:
 1. Clone the repository

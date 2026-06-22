@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Portfolio of tboy1337 - Software developer and innovator. Explore my projects including networking tools, multimedia utilities, system administration scripts, and more.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="canonical" href="https://tboy1337.github.io/">
     <title>tboy1337 | Developer &amp; Innovator</title>
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tboy1337.github.io/">
+    <meta property="og:site_name" content="tboy1337 Portfolio">
+    <meta property="og:locale" content="en_US">
     <meta property="og:title" content="tboy1337 | Developer &amp; Innovator">
     <meta property="og:description" content="Portfolio of tboy1337 - Software developer and innovator. Explore my projects including networking tools, multimedia utilities, system administration scripts, and more.">
     <meta property="og:image" content="https://tboy1337.github.io/android-chrome-512x512.png">
@@ -27,19 +31,26 @@
     <link rel="manifest" href="/site.webmanifest">
     <link rel="shortcut icon" href="/favicon.ico">
     <meta name="theme-color" content="#0f0c29">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "tboy1337",
+      "url": "https://tboy1337.github.io/",
+      "sameAs": ["https://github.com/tboy1337"]
+    }
+    </script>
     
     <!-- Preconnect to external domains for better performance -->
-    <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://translate.google.com">
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="tailwind.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <!-- Game styles -->
     <link rel="stylesheet" href="games.css">
-    <!-- Translation script -->
-    <script src="translation.js"></script>
     <style>
         body {
             margin: 0;
@@ -131,6 +142,12 @@
         html {
             scroll-behavior: smooth;
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+        }
         
         /* Improve mobile background appearance */
         @media (max-width: 768px) {
@@ -143,6 +160,7 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header class="bg-black/50 py-8 text-center backdrop-blur-sm">
         <div class="flex justify-end px-4 mb-2">
             <!-- Translation dropdown positioned at top right -->
@@ -154,20 +172,20 @@
             <a href="https://github.com/tboy1337" class="text-gray-300 hover:text-white transition-colors" aria-label="GitHub Profile" target="_blank" rel="noopener noreferrer">
                 <i class="fab fa-github text-2xl"></i>
             </a>
-            <a href="#contact-form" class="text-gray-300 hover:text-white transition-colors" aria-label="Contact Form" onclick="document.getElementById('contact-form').scrollIntoView({behavior: 'smooth'})">
+            <a href="#contact-form" class="text-gray-300 hover:text-white transition-colors" aria-label="Contact Form">
                 <i class="far fa-envelope text-2xl"></i>
             </a>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
+    <main id="main-content" class="flex-grow container mx-auto px-4 py-8">
         <section class="grid md:grid-cols-2 gap-8">
             <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
                 <h2 class="text-2xl font-semibold mb-4">👋 About Me</h2>
                 <p class="text-gray-300">Passionate developer with a diverse portfolio of projects spanning multiple technologies and programming languages. Always exploring new ideas and building innovative solutions across various domains.</p>
                 <div class="mt-4 flex space-x-4">
                     <a href="https://github.com/tboy1337" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer">GitHub Profile</a>
-                    <a href="#contact-form" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded transition-colors" onclick="document.getElementById('contact-form').scrollIntoView({behavior: 'smooth'})">Contact</a>
+                    <a href="#contact-form" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded transition-colors">Contact</a>
                 </div>
             </div>
 
@@ -483,7 +501,7 @@
                     </li>
                     <li class="game-menu-item" data-game="snake">
                         <button type="button" class="px-4 py-2" aria-label="Play Snake Game" aria-controls="snake-section" aria-pressed="false">
-                            <i class="fas fa-snake mr-2" aria-hidden="true"></i>Snake Game
+                            <i class="fas fa-staff-snake mr-2" aria-hidden="true"></i>Snake Game
                         </button>
                     </li>
                     <li class="game-menu-item" data-game="typing">
@@ -644,276 +662,10 @@
         </div>
     </footer>
 
-    <!-- Game utilities (module loads before deferred games.js) -->
-    <script type="module" src="lib/bootstrap-site-utils.mjs"></script>
-    <!-- Game script -->
-    <script defer src="games.js"></script>
-    
-    <!-- Service Worker Registration -->
-    <script>
-        function rememberHashBeforeReload() {
-            if (window.location.hash) {
-                window.sessionStorage.setItem('tboy1337-pending-hash', window.location.hash);
-            }
-        }
-
-        function showServiceWorkerUpdateBanner() {
-            if (document.getElementById('sw-update-banner')) {
-                return;
-            }
-
-            const banner = document.createElement('div');
-            banner.id = 'sw-update-banner';
-            banner.className = 'sw-update-banner';
-            banner.setAttribute('role', 'status');
-            banner.setAttribute('aria-live', 'polite');
-            banner.innerHTML = `
-                <p class="sw-update-banner-text">A new version of this site is available.</p>
-                <div class="sw-update-banner-actions">
-                    <button type="button" id="sw-update-refresh" class="sw-update-banner-btn sw-update-banner-btn-primary">Refresh</button>
-                    <button type="button" id="sw-update-dismiss" class="sw-update-banner-btn">Later</button>
-                </div>
-            `;
-            document.body.appendChild(banner);
-
-            const refreshButton = document.getElementById('sw-update-refresh');
-            const dismissButton = document.getElementById('sw-update-dismiss');
-            if (refreshButton) {
-                refreshButton.addEventListener('click', function() {
-                    rememberHashBeforeReload();
-                    window.location.reload();
-                });
-            }
-            if (dismissButton) {
-                dismissButton.addEventListener('click', function() {
-                    banner.remove();
-                });
-            }
-        }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js', { type: 'module' })
-                    .then(function(registration) {
-                        console.log('ServiceWorker registration successful');
-                        
-                        // Check for service worker updates
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('New service worker installed');
-                                    showServiceWorkerUpdateBanner();
-                                }
-                            });
-                        });
-                        
-                        // Force update check every time page loads
-                        registration.update();
-                    })
-                    .catch(function(error) {
-                        console.log('ServiceWorker registration failed:', error);
-                    });
-            });
-        }
-    </script>
-
-    <!-- Contact Form Script -->
-    <script>
-        // Contact form functionality
-        (function() {
-            const form = document.querySelector('#contact-form form');
-            const submitBtn = document.getElementById('submit-btn');
-            const submitText = document.getElementById('submit-text');
-            const formStatus = document.getElementById('form-status');
-            const successMessage = document.getElementById('success-message');
-            const errorMessage = document.getElementById('error-message');
-            const errorText = document.getElementById('error-text');
-
-            // Form validation functions
-            function validateName(name) {
-                return window.ContactValidation.validateName(name);
-            }
-
-            function validateEmail(email) {
-                return window.ContactValidation.validateEmail(email);
-            }
-
-            function validateSubject(subject) {
-                return window.ContactValidation.validateSubject(subject);
-            }
-
-            function validateMessage(message) {
-                return window.ContactValidation.validateMessage(message);
-            }
-
-            function showError(fieldId, message) {
-                const errorElement = document.getElementById(fieldId + '-error');
-                const inputElement = document.getElementById('contact-' + fieldId);
-                
-                errorElement.textContent = message;
-                errorElement.classList.remove('hidden');
-                inputElement.classList.add('border-red-500');
-                inputElement.classList.remove('border-white/20');
-            }
-
-            function clearError(fieldId) {
-                const errorElement = document.getElementById(fieldId + '-error');
-                const inputElement = document.getElementById('contact-' + fieldId);
-                
-                errorElement.classList.add('hidden');
-                inputElement.classList.remove('border-red-500');
-                inputElement.classList.add('border-white/20');
-            }
-
-            function clearAllErrors() {
-                ['name', 'email', 'subject', 'message'].forEach(clearError);
-            }
-
-            function showFormStatus(type, message = '') {
-                formStatus.classList.remove('hidden');
-                
-                if (type === 'success') {
-                    successMessage.classList.remove('hidden');
-                    errorMessage.classList.add('hidden');
-                } else {
-                    errorMessage.classList.remove('hidden');
-                    successMessage.classList.add('hidden');
-                    if (message) {
-                        errorText.textContent = message;
-                    }
-                }
-            }
-
-            function hideFormStatus() {
-                formStatus.classList.add('hidden');
-                successMessage.classList.add('hidden');
-                errorMessage.classList.add('hidden');
-            }
-
-            function setSubmitState(submitting) {
-                if (submitting) {
-                    submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    submitText.textContent = 'Sending...';
-                } else {
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    submitText.textContent = 'Send Message';
-                }
-            }
-
-            // Form submission handler
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                // Clear previous errors and status
-                clearAllErrors();
-                hideFormStatus();
-                
-                // Get form data
-                const formData = new FormData(form);
-                const data = {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    subject: formData.get('subject'),
-                    message: formData.get('message')
-                };
-
-                // Validate form data
-                let isValid = true;
-
-                if (!validateName(data.name)) {
-                    showError('name', 'Please enter a valid name (2-50 characters, letters only)');
-                    isValid = false;
-                }
-
-                if (!validateEmail(data.email)) {
-                    showError('email', 'Please enter a valid email address');
-                    isValid = false;
-                }
-
-                if (!validateSubject(data.subject)) {
-                    showError('subject', 'Subject must be between 3-100 characters');
-                    isValid = false;
-                }
-
-                if (!validateMessage(data.message)) {
-                    showError('message', 'Message must be between 10-1000 characters');
-                    isValid = false;
-                }
-
-                if (!isValid) {
-                    return;
-                }
-
-                // Set submitting state
-                setSubmitState(true);
-
-                try {
-                    // Submit form to Formspree endpoint (replace YOUR_FORM_ID with actual form ID)
-                    const response = await fetch('https://formspree.io/f/xrbabznl', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    if (response.ok) {
-                        showFormStatus('success');
-                        form.reset();
-                        
-                        // Auto-hide success message after 5 seconds
-                        setTimeout(() => {
-                            hideFormStatus();
-                        }, 5000);
-                    } else {
-                        const errorData = await response.json().catch(() => ({}));
-                        showFormStatus('error', errorData.message || 'Failed to send message. Please try again.');
-                    }
-                } catch (error) {
-                    console.error('Form submission error:', error);
-                    showFormStatus('error', 'Network error. Please check your connection and try again.');
-                } finally {
-                    setSubmitState(false);
-                }
-            });
-
-            // Real-time validation
-            document.getElementById('contact-name').addEventListener('blur', function() {
-                if (this.value && !validateName(this.value)) {
-                    showError('name', 'Please enter a valid name (2-50 characters, letters only)');
-                } else {
-                    clearError('name');
-                }
-            });
-
-            document.getElementById('contact-email').addEventListener('blur', function() {
-                if (this.value && !validateEmail(this.value)) {
-                    showError('email', 'Please enter a valid email address');
-                } else {
-                    clearError('email');
-                }
-            });
-
-            document.getElementById('contact-subject').addEventListener('blur', function() {
-                if (this.value && !validateSubject(this.value)) {
-                    showError('subject', 'Subject must be between 3-100 characters');
-                } else {
-                    clearError('subject');
-                }
-            });
-
-            document.getElementById('contact-message').addEventListener('blur', function() {
-                if (this.value && !validateMessage(this.value)) {
-                    showError('message', 'Message must be between 10-1000 characters');
-                } else {
-                    clearError('message');
-                }
-            });
-        })();
-    </script>
+    <script defer src="translation.js"></script>
+    <script defer src="site-sw-register.js"></script>
+    <script type="module" src="lib/lazy-games-loader.mjs"></script>
+    <script type="module" src="contact-form.js"></script>
 </body>
 </html>
 

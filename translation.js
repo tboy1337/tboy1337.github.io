@@ -136,6 +136,7 @@ function restoreHashScroll() {
   });
 }
 
+/** @param {HTMLElement | null} translateElement */
 function markTranslateReady(translateElement) {
   if (!translateElement) {
     return;
@@ -176,6 +177,7 @@ window.googleTranslateElementInit = function() {
   }
 };
 
+/** @param {HTMLElement} gadget @param {(element: Element, styles: Record<string, string>) => void} applyForceStyle */
 function bindTranslateGadgetHover(gadget, applyForceStyle) {
   if (gadget.getAttribute('data-hover-bound') === 'true') {
     return;
@@ -220,14 +222,21 @@ function completeCustomization() {
     }
         
     // Apply aggressive styling to override Google's CSS
+    /** @param {Element} element @param {Record<string, string>} styles */
     const applyForceStyle = (element, styles) => {
+      if (!(element instanceof HTMLElement)) {
+        return;
+      }
       Object.keys(styles).forEach(property => {
-        element.style.setProperty(property, styles[property], 'important');
+        element.style.setProperty(property, styles[property] ?? '', 'important');
       });
     };
         
     // Style all gadget elements
     gadgets.forEach(gadget => {
+      if (!(gadget instanceof HTMLElement)) {
+        return;
+      }
       // Force the correct layout first
       applyForceStyle(gadget, {
         'display': 'inline-flex',
@@ -334,6 +343,9 @@ function completeCustomization() {
         
     // Add hover effects via event listeners since CSS might not work
     gadgets.forEach(gadget => {
+      if (!(gadget instanceof HTMLElement)) {
+        return;
+      }
       bindTranslateGadgetHover(gadget, applyForceStyle);
     });
         
@@ -347,6 +359,9 @@ function completeCustomization() {
       setTimeout(() => {
         const currentGadgets = translateElement.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple');
         currentGadgets.forEach(gadget => {
+          if (!(gadget instanceof HTMLElement)) {
+            return;
+          }
           // Only reapply if it hasn't been processed and doesn't already have our styling
           if (!gadget.getAttribute('data-custom-styled') && (!gadget.style.background || !gadget.style.background.includes('linear-gradient')) && !gadget.querySelector('svg')) {
             // Fix layout first

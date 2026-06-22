@@ -1,6 +1,14 @@
 {
   "extends": "stylelint-config-standard",
-  "ignoreFiles": ["coverage/**", "coverage-merged/**", "node_modules/**", "playwright-report/**", "test-results/**"],
+  "ignoreFiles": [
+    "coverage/**",
+    "coverage-merged/**",
+    "node_modules/**",
+    "playwright-report/**",
+    "test-results/**",
+    "tailwind.css",
+    "src/tailwind.css"
+  ],
   "rules": {
     "selector-class-pattern": null,
     "custom-property-pattern": null,

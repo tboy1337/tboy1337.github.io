@@ -15,6 +15,9 @@
   "include": [
     "types/**/*.d.ts",
     "games.js",
+    "translation.js",
+    "site-sw-register.js",
+    "contact-form.js",
     "lib/**/*.mjs",
     "tests/**/*.ts",
     "eslint.config.js",

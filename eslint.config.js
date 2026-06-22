@@ -25,6 +25,9 @@ export default [
         Request: 'readonly',
         URL: 'readonly',
         fetch: 'readonly',
+        FormData: 'readonly',
+        navigator: 'readonly',
+        IntersectionObserver: 'readonly',
         importScripts: 'readonly',
         GameUtils: 'readonly',
         SwUtils: 'readonly',
@@ -33,6 +36,7 @@ export default [
         alert: 'readonly',
         localStorage: 'readonly',
         HTMLElement: 'readonly',
+        HTMLFormElement: 'readonly',
         HTMLButtonElement: 'readonly',
         HTMLInputElement: 'readonly',
         HTMLSelectElement: 'readonly',
@@ -58,6 +62,18 @@ export default [
       'quotes': ['error', 'single', { avoidEscape: true }],
       'indent': ['error', 2, { SwitchCase: 1 }],
       'no-undef': 'error'
+    }
+  },
+  {
+    files: ['site-sw-register.js'],
+    languageOptions: {
+      sourceType: 'script'
+    }
+  },
+  {
+    files: ['sw.js', 'site-sw-register.js'],
+    rules: {
+      'no-console': ['warn', { allow: ['warn', 'error'] }]
     }
   },
   {
