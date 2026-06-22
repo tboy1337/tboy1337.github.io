@@ -10,7 +10,7 @@ import {
   getStaleCacheNames
 } from './lib/sw-utils.mjs';
 
-const CACHE_NAME = 'tboy1337-v1.2.2';
+const CACHE_NAME = 'tboy1337-v1.2.3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
