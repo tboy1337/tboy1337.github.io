@@ -5,7 +5,9 @@ export default defineConfig({
   root: '.',
   plugins: [
     istanbul({
-      include: ['games.js', 'sw.js', 'lib/**/*.mjs'],
+      // Lib modules are covered by unit tests; instrument only app entry points here
+      // so merged Istanbul maps do not double-count divergent branch layouts.
+      include: ['games.js', 'sw.js'],
       exclude: ['node_modules/**', 'tests/**', 'translation.js'],
       extension: ['.js', '.mjs'],
       requireEnv: false,

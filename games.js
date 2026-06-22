@@ -1562,13 +1562,67 @@ document.addEventListener('DOMContentLoaded', () => {
       initializeEffectStates();
     }
   
+    /** @param {EventTarget | null} target */
+    function isMusicStudioTextEntryTarget(target) {
+      if (!(target instanceof HTMLElement)) {
+        return false;
+      }
+      if (target.isContentEditable) {
+        return true;
+      }
+      if (target.tagName === 'TEXTAREA') {
+        return true;
+      }
+      if (target.tagName === 'INPUT') {
+        if (!(target instanceof HTMLInputElement)) {
+          return false;
+        }
+        const inputType = target.type.toLowerCase();
+        return inputType === 'text'
+          || inputType === 'search'
+          || inputType === 'password'
+          || inputType === 'email'
+          || inputType === 'number'
+          || inputType === 'url';
+      }
+      return false;
+    }
+
+    function focusMusicStudioSurface() {
+      const surface = getHtmlElement('music-studio-game');
+      if (surface instanceof HTMLElement) {
+        surface.tabIndex = -1;
+        surface.focus({ preventScroll: true });
+      }
+    }
+
+    /** @type {Promise<void> | null} */
+    let audioResumePromise = null;
+
     function ensureAudioResumed() {
       const context = musicStudioEngine.audioContext;
-      if (context && context.state === 'suspended') {
-        context.resume().catch((err) => {
+      if (!context || context.state === 'running') {
+        return Promise.resolve();
+      }
+      if (context.state === 'closed') {
+        return Promise.resolve();
+      }
+      if (!audioResumePromise) {
+        audioResumePromise = context.resume().catch((err) => {
           console.warn('Failed to resume audio context:', err);
+        }).finally(() => {
+          audioResumePromise = null;
         });
       }
+      return audioResumePromise;
+    }
+
+    function reinitAudioIfClosed() {
+      const context = musicStudioEngine.audioContext;
+      if (context && context.state !== 'closed') {
+        return;
+      }
+      initAudio();
     }
 
     function syncEngineEffects() {
@@ -1597,14 +1651,6 @@ document.addEventListener('DOMContentLoaded', () => {
           button.disabled = true;
         }
       });
-    }
-
-    function requireAudioContext() {
-      const context = musicStudioEngine.audioContext;
-      if (!context) {
-        throw new Error('Audio context not initialized');
-      }
-      return context;
     }
 
     /** @param {TouchEvent | MouseEvent} event */
@@ -1652,12 +1698,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleKeyPress(event) {
       if (!isGameActive) return;
 
+      if (event.repeat) {
+        return;
+      }
+
       const eventTarget = event.target;
-      if (eventTarget instanceof HTMLElement) {
-        const tagName = eventTarget.tagName;
-        if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT' || eventTarget.isContentEditable) {
-          return;
-        }
+      if (isMusicStudioTextEntryTarget(eventTarget)) {
+        return;
       }
 
       const compositionPanel = getHtmlElement('composition-panel');
@@ -1687,7 +1734,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recordNote(noteName);
       }
     }
-  
+
     // Initialize Web Audio API
     function initAudio() {
       try {
@@ -1699,12 +1746,9 @@ document.addEventListener('DOMContentLoaded', () => {
         musicStudioEngine.setMasterVolume(masterVolume);
         musicStudioEngine.setInstrument(currentInstrument);
         musicStudioEngine.setEffects(currentEffects);
-        if (requireAudioContext().state === 'suspended') {
-          requireAudioContext().resume().catch(err => {
-            console.warn('Failed to resume audio context:', err);
-          });
-        }
+        void ensureAudioResumed();
         hideAudioUnavailableBanner();
+        window.musicStudioAnalyser = musicStudioEngine.getAnalyser();
         window.musicStudioAnalyser = musicStudioEngine.getAnalyser();
       } catch (error) {
         console.warn('Web Audio API not supported in this browser:', error);
@@ -1717,12 +1761,22 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Play a note by name with advanced synthesis
     /** @param {string} noteName */
-    function playNoteByName(noteName) {
-      if (!musicStudioEngine.audioContext) return;
+    async function playNoteByName(noteName) {
+      reinitAudioIfClosed();
+      if (!musicStudioEngine.audioContext) {
+        return;
+      }
 
-      ensureAudioResumed();
+      await ensureAudioResumed();
+      if (musicStudioEngine.audioContext?.state !== 'running') {
+        return;
+      }
 
-      const played = musicStudioEngine.playNote(noteName);
+      let played = musicStudioEngine.playNote(noteName);
+      if (!played) {
+        await ensureAudioResumed();
+        played = musicStudioEngine.playNote(noteName);
+      }
       if (!played) {
         return;
       }
@@ -1897,7 +1951,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
       // Init audio context
       initAudio();
-    
+
+      focusMusicStudioSurface();
+
       // Set up keyboard event handler
       window.musicStudioKeyboardHandler = handleKeyPress;
       document.addEventListener('keydown', window.musicStudioKeyboardHandler);
@@ -1925,6 +1981,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           currentInstrument = target.value;
           musicStudioEngine.setInstrument(currentInstrument);
+          focusMusicStudioSurface();
         });
       }
     
@@ -1940,6 +1997,9 @@ document.addEventListener('DOMContentLoaded', () => {
         volumeDisplay.textContent = `${target.value}%`;
         musicStudioEngine.setMasterVolume(masterVolume);
       });
+      volumeSlider.addEventListener('change', () => {
+        focusMusicStudioSurface();
+      });
     
       // Tempo control
       const tempoSlider = asInput(queryRequired('tempo-slider'));
@@ -1952,6 +2012,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTempo = parseInt(target.value, 10);
         tempoDisplay.textContent = `${target.value} BPM`;
         addTempoFeedback(); // Start visual tempo feedback
+      });
+      tempoSlider.addEventListener('change', () => {
+        focusMusicStudioSurface();
       });
     
       // Effect toggles and sliders
@@ -2009,6 +2072,7 @@ document.addEventListener('DOMContentLoaded', () => {
           currentEffects[effect].enabled = target.checked;
           slider.disabled = !target.checked;
           syncEngineEffects();
+          focusMusicStudioSurface();
         });
       
         slider.addEventListener('input', (e) => {
@@ -2027,6 +2091,10 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           target.setAttribute('aria-valuenow', target.value);
           syncEngineEffects();
+        });
+
+        slider.addEventListener('change', () => {
+          focusMusicStudioSurface();
         });
       });
     }

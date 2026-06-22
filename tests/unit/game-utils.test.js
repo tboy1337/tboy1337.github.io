@@ -143,6 +143,41 @@ describe('GameUtils.restoreCompositionState', () => {
     expect(restored.recordedNotes).toEqual([]);
   });
 
+  it('clamps negative currentLayerIndex to zero', () => {
+    const restored = GameUtils.restoreCompositionState({
+      version: 2,
+      loopLayers: [{ notes: [{ note: 'C4', time: 0 }], name: 'Layer 1' }],
+      currentLayerIndex: -5
+    });
+
+    expect(restored.currentLayerIndex).toBe(0);
+    expect(restored.recordedNotes).toEqual([{ note: 'C4', time: 0 }]);
+  });
+
+  it('handles empty loopLayers in v2 payloads', () => {
+    const restored = GameUtils.restoreCompositionState({
+      version: 2,
+      loopLayers: [],
+      currentLayerIndex: 2
+    });
+
+    expect(restored.loopLayers).toEqual([]);
+    expect(restored.currentLayerIndex).toBe(0);
+    expect(restored.recordedNotes).toEqual([]);
+    expect(restored.layerTempos).toEqual([120, 120, 120, 120]);
+  });
+
+  it('fills missing layer notes arrays in v2 payloads', () => {
+    const restored = GameUtils.restoreCompositionState({
+      version: 2,
+      loopLayers: [{ name: 'Layer without notes' }],
+      currentLayerIndex: 0
+    });
+
+    expect(restored.loopLayers[0].notes).toEqual([]);
+    expect(restored.recordedNotes).toEqual([]);
+  });
+
   it('restores legacy compositions when notes are absent', () => {
     const restored = GameUtils.restoreCompositionState({ tempo: 80 });
 

@@ -50,4 +50,43 @@ test.describe('Music Studio audio stability', () => {
     );
     expect(destinationConnections).toBe(1);
   });
+
+  test('ignores held-key repeat events when playing notes', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.keyboard.down('a');
+    await page.waitForTimeout(250);
+    await page.keyboard.up('a');
+    const notesPlayed = Number(await page.locator('#music-studio-notes').textContent());
+    expect(notesPlayed).toBe(1);
+  });
+
+  test('plays notes after changing instrument without clicking the page', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.locator('#instrument-select').selectOption('piano');
+    await page.keyboard.press('a');
+
+    const frequency = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
+    expect(frequency).toBeCloseTo(C4_HZ, 1);
+    await expect(page.locator('#music-studio-notes')).toHaveText('1');
+  });
+
+  test('maintains pitch after rapid W and D key spam', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.keyboard.press('w');
+    const baseline = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
+    expect(baseline).toBeGreaterThan(C4_HZ);
+
+    for (let round = 0; round < 40; round += 1) {
+      await page.keyboard.press('w');
+      await page.keyboard.press('d');
+    }
+
+    await page.waitForTimeout(1200);
+
+    await page.keyboard.press('w');
+    const afterSpam = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
+    expect(afterSpam).toBeCloseTo(baseline, 1);
+  });
 });

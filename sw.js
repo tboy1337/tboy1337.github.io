@@ -7,10 +7,11 @@ const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {any} */ (self));
 import {
   shouldSkipFetch,
   isHtmlRequest,
+  isScriptRequest,
   getStaleCacheNames
 } from './lib/sw-utils.mjs';
 
-const CACHE_NAME = 'tboy1337-v1.2.6';
+const CACHE_NAME = 'tboy1337-v1.2.7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -80,9 +81,17 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(fetchEvent.request.url);
   const isHTML = isHtmlRequest(url, fetchEvent.request.destination);
 
-  fetchEvent.respondWith(
-    isHTML ? handleHTMLRequest(fetchEvent.request) : handleAssetRequest(fetchEvent.request, fetchEvent)
-  );
+  if (isHTML) {
+    fetchEvent.respondWith(handleHTMLRequest(fetchEvent.request));
+    return;
+  }
+
+  if (isScriptRequest(url)) {
+    fetchEvent.respondWith(handleScriptRequest(fetchEvent.request));
+    return;
+  }
+
+  fetchEvent.respondWith(handleAssetRequest(fetchEvent.request, fetchEvent));
 });
 
 // Network-first strategy for HTML files to ensure fresh content
@@ -109,6 +118,28 @@ async function handleHTMLRequest(request) {
     const indexFallback = await caches.match('/index.html');
     if (indexFallback) {
       return indexFallback;
+    }
+    return new Response('Offline', { status: 503 });
+  }
+}
+
+// Network-first for JS/MJS so a service worker update cannot pair fresh HTML with stale scripts.
+/** @param {Request} request */
+async function handleScriptRequest(request) {
+  const cache = await caches.open(CACHE_NAME);
+
+  try {
+    const networkResponse = await fetch(request);
+
+    if (networkResponse.status === 200) {
+      await cache.put(request, networkResponse.clone());
+    }
+
+    return networkResponse;
+  } catch {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
     }
     return new Response('Offline', { status: 503 });
   }

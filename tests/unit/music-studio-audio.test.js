@@ -8,7 +8,8 @@ import {
   getNoteDurationMs,
   applyVoiceEnvelope,
   buildSharedEffectChain,
-  createMusicStudioAudioEngine
+  createMusicStudioAudioEngine,
+  createInstrumentOscillator
 } from '../../lib/music-studio-audio.mjs';
 
 describe('MusicStudioAudio.makeDistortionCurve', () => {
@@ -17,6 +18,12 @@ describe('MusicStudioAudio.makeDistortionCurve', () => {
     expect(curve).toHaveLength(44100);
     expect(curve[0]).toBeLessThan(0);
     expect(curve[curve.length - 1]).toBeGreaterThan(0);
+  });
+
+  it('falls back to a default amount when input is not numeric', () => {
+    const defaultCurve = makeDistortionCurve(50);
+    const invalidCurve = makeDistortionCurve(/** @type {number} */ (/** @type {unknown} */ ('heavy')));
+    expect(invalidCurve).toEqual(defaultCurve);
   });
 });
 
@@ -31,6 +38,28 @@ describe('MusicStudioAudio.estimateDominantFrequency', () => {
 
     const estimate = estimateDominantFrequency(bins, sampleRate, fftSize);
     expect(Math.abs(estimate - targetHz)).toBeLessThan(30);
+  });
+
+  it('returns the minimum frequency bin when the spectrum is flat', () => {
+    const fftSize = 2048;
+    const sampleRate = 44100;
+    const bins = new Uint8Array(fftSize / 2);
+    const estimate = estimateDominantFrequency(bins, sampleRate, fftSize, 120);
+    expect(estimate).toBeCloseTo((Math.floor((120 * fftSize) / sampleRate) * sampleRate) / fftSize, 1);
+  });
+});
+
+describe('MusicStudioAudio.createInstrumentOscillator', () => {
+  it('selects oscillator waveforms per instrument', () => {
+    const context = createMockAudioContext();
+    expect(createInstrumentOscillator(/** @type {AudioContext} */ (context), 440, 'piano').type)
+      .toBe('triangle');
+    expect(createInstrumentOscillator(/** @type {AudioContext} */ (context), 440, 'strings').type)
+      .toBe('sawtooth');
+    expect(createInstrumentOscillator(/** @type {AudioContext} */ (context), 440, 'bass').type)
+      .toBe('square');
+    expect(createInstrumentOscillator(/** @type {AudioContext} */ (context), 440, 'synth').type)
+      .toBe('sawtooth');
   });
 });
 
@@ -142,6 +171,25 @@ describe('MusicStudioAudio.buildSharedEffectChain', () => {
     expect(chain.output).toBeTruthy();
     expect(chain.chorusLFO).toBeNull();
   });
+
+  it('builds chains when only one effect type is enabled', () => {
+    const context = createMockAudioContext();
+    const effectKeys = ['filter', 'distortion', 'delay', 'reverb', 'chorus'];
+
+    for (const enabledKey of effectKeys) {
+      const effects = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+      for (const key of effectKeys) {
+        effects[key].enabled = key === enabledKey;
+      }
+      const chain = buildSharedEffectChain(/** @type {AudioContext} */ (context), effects);
+      expect(chain.output).toBeTruthy();
+      if (enabledKey === 'chorus') {
+        expect(chain.chorusLFO).toBeTruthy();
+      } else {
+        expect(chain.chorusLFO).toBeNull();
+      }
+    }
+  });
 });
 
 describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
@@ -213,6 +261,7 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
   });
 
   it('rebuilds the shared effect chain when effects change', () => {
+    vi.useFakeTimers();
     const context = createMockAudioContext();
     const engine = createMusicStudioAudioEngine({ createContext: () => context });
     engine.init();
@@ -222,14 +271,18 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
     nextEffects.reverb.enabled = false;
     nextEffects.chorus.enabled = false;
     engine.setEffects(nextEffects);
+    vi.advanceTimersByTime(120);
     expect(context.createdNodes.length).toBeGreaterThan(initialNodeCount);
     engine.dispose();
+    vi.useRealTimers();
   });
 
   it('returns false when playing before initialization', () => {
     const engine = createMusicStudioAudioEngine();
     expect(engine.playNote('C4')).toBe(false);
     expect(engine.readDominantFrequency()).toBeNull();
+    engine.setEffects(JSON.parse(JSON.stringify(DEFAULT_EFFECTS)));
+    expect(engine.getEffects().reverb.enabled).toBe(true);
   });
 
   it('returns false when init fails', () => {
@@ -266,7 +319,7 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
     engine.dispose();
   });
 
-  it('resumes suspended contexts when playing', () => {
+  it('does not play notes while the audio context is suspended', () => {
     const context = createMockAudioContext();
     context.state = 'suspended';
     const engine = createMusicStudioAudioEngine({
@@ -274,6 +327,8 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
       minNoteIntervalMs: 0
     });
     engine.init();
+    expect(engine.playNote('D4')).toBe(false);
+    context.state = 'running';
     expect(engine.playNote('D4')).toBe(true);
     engine.dispose();
   });
@@ -301,6 +356,22 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
     engine.dispose();
   });
 
+  it('disables all effects without leaving a chorus LFO running', () => {
+    const context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({ createContext: () => context });
+    engine.init();
+    const disabled = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    disabled.reverb.enabled = false;
+    disabled.delay.enabled = false;
+    disabled.chorus.enabled = false;
+    disabled.distortion.enabled = false;
+    disabled.filter.enabled = false;
+    engine.setEffects(disabled);
+    expect(engine.playNote('C4')).toBe(true);
+    engine.dispose();
+    expect(engine.getActiveVoiceCount()).toBe(0);
+  });
+
   it('releases voices even when disconnect throws', () => {
     vi.useFakeTimers();
     const context = createMockAudioContext();
@@ -314,6 +385,76 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
     if (voiceOsc) {
       voiceOsc.disconnect = () => {
         throw new Error('already disconnected');
+      };
+    }
+    vi.advanceTimersByTime(getNoteDurationMs('synth') + 200);
+    expect(engine.getActiveVoiceCount()).toBe(0);
+    engine.dispose();
+    vi.useRealTimers();
+  });
+
+  it('survives teardown when effect nodes throw on disconnect', () => {
+    const context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({ createContext: () => context });
+    engine.init();
+    context.createdNodes.forEach((node) => {
+      node.disconnect = () => {
+        throw new Error('disconnect failed');
+      };
+    });
+    expect(() => engine.dispose()).not.toThrow();
+    expect(engine.audioContext).toBeNull();
+  });
+
+  it('debounces rapid effect changes into a single rebuild', () => {
+    vi.useFakeTimers();
+    const context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({ createContext: () => context });
+    engine.init();
+
+    const tweaked = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    tweaked.reverb.enabled = false;
+    engine.setEffects(tweaked);
+    engine.setEffects(tweaked);
+    engine.setEffects(tweaked);
+    vi.advanceTimersByTime(120);
+
+    expect(engine.playNote('C4')).toBe(true);
+    engine.dispose();
+    vi.useRealTimers();
+  });
+
+  it('ignores resume failures on suspended contexts', async () => {
+    const context = createMockAudioContext();
+    context.state = 'suspended';
+    context.resume = () => Promise.reject(new Error('blocked'));
+    const engine = createMusicStudioAudioEngine({
+      createContext: () => context,
+      minNoteIntervalMs: 0
+    });
+    engine.init();
+    expect(engine.playNote('E4')).toBe(false);
+    engine.dispose();
+  });
+
+  it('does not change master volume before initialization', () => {
+    const engine = createMusicStudioAudioEngine();
+    expect(() => engine.setMasterVolume(0.8)).not.toThrow();
+  });
+
+  it('releases voices when oscillator stop throws', () => {
+    vi.useFakeTimers();
+    const context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({
+      createContext: () => context,
+      minNoteIntervalMs: 0
+    });
+    engine.init();
+    engine.playNote('C4');
+    const voiceOsc = context.createdOscillators.at(-1);
+    if (voiceOsc) {
+      voiceOsc.stop = () => {
+        throw new Error('already stopped');
       };
     }
     vi.advanceTimersByTime(getNoteDurationMs('synth') + 200);

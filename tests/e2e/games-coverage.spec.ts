@@ -121,9 +121,16 @@ test.describe('Games coverage expansion', () => {
     await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
     await page.getByRole('button', { name: 'Start Memory Card Game' }).click();
     const cards = page.locator('.memory-card');
-    await cards.nth(0).click();
-    await cards.nth(1).click();
+    const [firstIndex, secondIndex] = await page.evaluate(() => {
+      const icons = Array.from(document.querySelectorAll('.memory-card'))
+        .map((card) => (card instanceof HTMLElement ? card.dataset.icon : '') ?? '');
+      return window.MemoryGameUtils.findMismatchedCardIndexes(icons);
+    });
+    await cards.nth(firstIndex).click();
+    await cards.nth(secondIndex).click();
     await page.waitForTimeout(1100);
     await expect(page.locator('#score')).toHaveText('0');
+    await expect(cards.nth(firstIndex)).not.toHaveClass(/flipped/);
+    await expect(cards.nth(secondIndex)).not.toHaveClass(/flipped/);
   });
 });

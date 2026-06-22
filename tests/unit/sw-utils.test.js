@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   shouldSkipFetch,
   isHtmlRequest,
+  isScriptRequest,
   getStaleCacheNames
 } from '../../lib/sw-utils.mjs';
 
@@ -36,6 +37,14 @@ describe('isHtmlRequest', () => {
 
   it('treats extensionless paths as HTML requests', () => {
     expect(isHtmlRequest(new URL('https://tboy1337.github.io/games'))).toBe(true);
+  });
+});
+
+describe('isScriptRequest', () => {
+  it('detects JavaScript module and script assets', () => {
+    expect(isScriptRequest(new URL('https://tboy1337.github.io/games.js'))).toBe(true);
+    expect(isScriptRequest(new URL('https://tboy1337.github.io/lib/music-studio-audio.mjs'))).toBe(true);
+    expect(isScriptRequest(new URL('https://tboy1337.github.io/games.css'))).toBe(false);
   });
 });
 
