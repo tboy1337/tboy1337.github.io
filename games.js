@@ -2879,32 +2879,32 @@ onDomReady(() => {
         }
 
         activeLoopLayers.add(layerIndex);
-    
-      // Use layer-specific tempo instead of global tempo
-      const layerTempo = layerTempos[layerIndex] || 120;
 
-      const playLoop = () => {
-        if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
+        // Use layer-specific tempo instead of global tempo
+        const layerTempo = layerTempos[layerIndex] || 120;
 
-        clearLayerLoopTimeouts(layerIndex);
+        const playLoop = () => {
+          if (!activeLoopLayers.has(layerIndex)) return; // Stop if layer was disabled
 
-        notes.forEach(({ note, time }) => {
-          const adjustedTime = window.GameUtils.scaleNoteTime(time, layerTempo);
-          const timeoutId = setTimeout(() => {
-            if (activeLoopLayers.has(layerIndex)) {
-              void playNoteByName(note, { countTowardStats: false });
-              highlightPianoKey(note);
+          clearLayerLoopTimeouts(layerIndex);
+
+          notes.forEach(({ note, time }) => {
+            const adjustedTime = window.GameUtils.scaleNoteTime(time, layerTempo);
+            const timeoutId = setTimeout(() => {
+              if (activeLoopLayers.has(layerIndex)) {
+                void playNoteByName(note, { countTowardStats: false });
+                highlightPianoKey(note);
+              }
+            }, adjustedTime);
+            if (!window.layerLoopTimeouts) {
+              window.layerLoopTimeouts = new Map();
             }
-          }, adjustedTime);
-          if (!window.layerLoopTimeouts) {
-            window.layerLoopTimeouts = new Map();
-          }
-          const layerTimeouts = window.layerLoopTimeouts.get(layerIndex) || [];
-          layerTimeouts.push(timeoutId);
-          window.layerLoopTimeouts.set(layerIndex, layerTimeouts);
-        });
-      };
-    
+            const layerTimeouts = window.layerLoopTimeouts.get(layerIndex) || [];
+            layerTimeouts.push(timeoutId);
+            window.layerLoopTimeouts.set(layerIndex, layerTimeouts);
+          });
+        };
+
         // Start immediately
         playLoop();
 

@@ -10,7 +10,8 @@
     "lint": "npm run lint:js && npm run lint:css",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.sw.json",
     "validate:html": "html-validate index.html",
-    "validate": "npm run validate:html",
+    "validate:w3c": "node scripts/validate-w3c.mjs",
+    "validate": "npm run validate:html && npm run validate:w3c",
     "test:unit": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:coverage": "node scripts/merge-coverage.mjs",
@@ -21,6 +22,7 @@
     "@playwright/test": "^1.61.0",
     "@types/node": "^26.0.0",
     "@vitest/coverage-istanbul": "^4.1.9",
+    "esbuild": "^0.28.0",
     "eslint": "^10.5.0",
     "html-validate": "^11.5.3",
     "istanbul-lib-coverage": "^3.2.2",
@@ -33,6 +35,7 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vite-plugin-istanbul": "^9.0.1",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "w3c-css-validator": "^1.4.1"
   }
 }

@@ -43,6 +43,7 @@ export default [
         HTMLSelectElement: 'readonly',
         HTMLCanvasElement: 'readonly',
         Element: 'readonly',
+        Node: 'readonly',
         Event: 'readonly',
         KeyboardEvent: 'readonly',
         MouseEvent: 'readonly',
@@ -63,12 +64,6 @@ export default [
       'quotes': ['error', 'single', { avoidEscape: true }],
       'indent': ['error', 2, { SwitchCase: 1 }],
       'no-undef': 'error'
-    }
-  },
-  {
-    files: ['site-sw-register.js'],
-    languageOptions: {
-      sourceType: 'script'
     }
   },
   {

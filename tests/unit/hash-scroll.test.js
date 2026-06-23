@@ -95,4 +95,53 @@ describe('hash-scroll', () => {
     restoreHashScroll();
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'instant', block: 'start' });
   });
+
+  it('retries when the hash target is not yet in the DOM', async () => {
+    vi.useFakeTimers();
+    const rafCallbacks = [];
+    vi.stubGlobal('requestAnimationFrame', (callback) => {
+      rafCallbacks.push(callback);
+      return rafCallbacks.length;
+    });
+
+    document.body.innerHTML = '<main></main>';
+    window.history.replaceState({}, '', '/#contact-form');
+    rememberHashForRestore();
+
+    const scrollIntoView = vi.fn();
+    restoreHashScroll();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(sessionStorageMock.getItem(PENDING_HASH_KEY)).toBe('#contact-form');
+
+    const section = document.createElement('section');
+    section.id = 'contact-form';
+    section.textContent = 'Contact';
+    section.scrollIntoView = scrollIntoView;
+    document.body.appendChild(section);
+
+    await vi.advanceTimersByTimeAsync(100);
+    rafCallbacks.forEach((callback) => callback(0));
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'instant', block: 'start' });
+    expect(sessionStorageMock.getItem(PENDING_HASH_KEY)).toBeNull();
+
+    vi.useRealTimers();
+  });
+
+  it('resets scroll state when requestHashScroll is called', () => {
+    const target = document.getElementById('fun-games');
+    const scrollIntoView = vi.fn();
+    if (target) {
+      target.scrollIntoView = scrollIntoView;
+    }
+
+    window.history.replaceState({}, '', '/#fun-games');
+    rememberHashForRestore();
+    restoreHashScroll();
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+
+    requestHashScroll();
+    restoreHashScroll();
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+  });
 });

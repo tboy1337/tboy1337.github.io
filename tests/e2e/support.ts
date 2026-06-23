@@ -96,7 +96,9 @@ export async function gotoHome(page: Page, options?: { loadGames?: boolean }) {
   }
   await page.waitForFunction(() => typeof window.loadGamesBundle === 'function');
   await page.evaluate(async () => {
-    await window.loadGamesBundle();
+    const load = window.loadGamesBundle;
+    if (!load) throw new Error('loadGamesBundle not available');
+    await load();
   });
   await expect.poll(async () => {
     const ready = await page.evaluate(

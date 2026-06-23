@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://www.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://formspree.io https://translate.googleapis.com https://translate-pa.googleapis.com https://translate.google.com; img-src 'self' data: https: http://translate.google.com; object-src 'none'; base-uri 'self'; form-action https://formspree.io; frame-src 'self' https://translate.google.com https://translate.googleapis.com">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://formspree.io https://translate.googleapis.com https://translate-pa.googleapis.com https://translate.google.com; img-src 'self' data: https: http://translate.google.com; object-src 'none'; base-uri 'self'; form-action https://formspree.io; frame-src 'self' https://translate.google.com https://translate.googleapis.com">
     <meta name="description" content="Portfolio of tboy1337 - Software developer and innovator. Explore my projects including networking tools, multimedia utilities, system administration scripts, and more.">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="canonical" href="https://tboy1337.github.io/">
     <title>tboy1337 | Developer &amp; Innovator</title>
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tboy1337.github.io/">
@@ -17,20 +17,20 @@
     <meta property="og:title" content="tboy1337 | Developer &amp; Innovator">
     <meta property="og:description" content="Portfolio of tboy1337 - Software developer and innovator. Explore my projects including networking tools, multimedia utilities, system administration scripts, and more.">
     <meta property="og:image" content="https://tboy1337.github.io/android-chrome-512x512.png">
-    
+
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://tboy1337.github.io/">
     <meta name="twitter:title" content="tboy1337 | Developer &amp; Innovator">
     <meta name="twitter:description" content="Portfolio of tboy1337 - Software developer and innovator. Explore my projects including networking tools, multimedia utilities, system administration scripts, and more.">
     <meta name="twitter:image" content="https://tboy1337.github.io/android-chrome-512x512.png">
-    
+
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
-    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="icon" href="/favicon.ico">
     <meta name="theme-color" content="#0f0c29">
 
     <script type="application/ld+json">
@@ -42,11 +42,11 @@
       "sameAs": ["https://github.com/tboy1337"]
     }
     </script>
-    
+
     <!-- Preconnect to external domains for better performance -->
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://translate.google.com">
-    
+
     <link rel="preload" href="tailwind.css" as="style">
     <link rel="stylesheet" href="tailwind.css">
     <!-- Font Awesome for icons -->
@@ -62,7 +62,7 @@
             background: #0f0c29;
             position: relative;
         }
-        
+
         body::before {
             content: '';
             position: fixed;
@@ -73,7 +73,7 @@
             background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             z-index: -2;
         }
-        
+
         body::after {
             content: '';
             position: fixed;
@@ -81,7 +81,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
+            background:
                 radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.05) 0%, transparent 50%);
@@ -126,20 +126,20 @@
         .glow {
             text-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
-        
+
         /* Ensure proper stacking and smooth transitions */
         main, header, footer {
             position: relative;
             z-index: 1;
         }
-        
+
         /* Enhanced glass morphism effect for cards */
         .bg-black\/40 {
             background: rgba(0, 0, 0, 0.25) !important;
             backdrop-filter: blur(10px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
-        
+
         /* Smooth scroll behavior */
         html {
             scroll-behavior: smooth;
@@ -150,18 +150,18 @@
                 scroll-behavior: auto;
             }
         }
-        
+
         /* Offset hash scroll targets below the top edge */
         #main-content,
         #fun-games,
         #contact-form {
             scroll-margin-top: 1.5rem;
         }
-        
+
         /* Improve mobile background appearance */
         @media (max-width: 768px) {
             body::after {
-                background: 
+                background:
                     radial-gradient(circle at 50% 20%, rgba(120, 119, 198, 0.08) 0%, transparent 60%),
                     radial-gradient(circle at 20% 80%, rgba(255, 119, 198, 0.06) 0%, transparent 60%);
             }
@@ -173,7 +173,7 @@
     <header class="bg-black/50 py-8 text-center backdrop-blur-sm">
         <div class="flex justify-end px-4 mb-2">
             <!-- Translation dropdown positioned at top right -->
-            <div id="google_translate_element" class="text-gray-300" role="region" aria-label="Language translation"></div>
+            <section id="google_translate_element" class="text-gray-300" aria-label="Language translation"></section>
         </div>
         <h1 class="text-5xl font-bold text-white mb-2 glow">tboy1337</h1>
         <p class="text-xl text-gray-300">Developer • Innovator • Problem Solver</p>
@@ -190,7 +190,7 @@
     <main id="main-content" class="flex-grow container mx-auto px-4 py-8">
         <section class="grid md:grid-cols-2 gap-8">
             <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
-                <h2 class="text-2xl font-semibold mb-4">👋 About Me</h2>
+                <h2 class="text-2xl font-semibold mb-4"><span aria-hidden="true">👋 </span>About Me</h2>
                 <p class="text-gray-300">Passionate developer with a diverse portfolio of projects spanning multiple technologies and programming languages. Always exploring new ideas and building innovative solutions across various domains.</p>
                 <div class="mt-4 flex space-x-4">
                     <a href="https://github.com/tboy1337" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer">GitHub Profile</a>
@@ -199,7 +199,7 @@
             </div>
 
             <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
-                <h2 class="text-2xl font-semibold mb-4">🛠️ Tech Stack</h2>
+                <h2 class="text-2xl font-semibold mb-4"><span aria-hidden="true">🛠️ </span>Tech Stack</h2>
                 <div class="flex flex-wrap gap-2">
                     <span class="bg-blue-500 text-white px-3 py-1 rounded-full">Python</span>
                     <span class="bg-yellow-500 text-white px-3 py-1 rounded-full">JavaScript</span>
@@ -215,9 +215,9 @@
 
         <section class="mt-12">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold">🚀 Featured Projects</h2>
+                <h2 class="text-3xl font-bold"><span aria-hidden="true">🚀 </span>Featured Projects</h2>
                 <a href="https://github.com/tboy1337?tab=repositories" class="text-indigo-400 hover:text-indigo-300 transition-colors" target="_blank" rel="noopener noreferrer">
-                    View All <i class="fas fa-arrow-right ml-1"></i>
+                    View All <i class="fas fa-arrow-right ml-1" aria-hidden="true"></i>
                 </a>
             </div>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -288,7 +288,7 @@
                     </div>
                     <a href="https://github.com/tboy1337/Commercial-Restricted-License" class="inline-block bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Commercial Restricted License on GitHub">View Project</a>
                 </div>
-                
+
                 <!-- Other Projects -->
                 <!-- Network & Proxy Tools -->
                 <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
@@ -400,13 +400,13 @@
         </section>
 
         <section class="mt-12" id="contact-form">
-            <h2 class="text-3xl font-bold text-center mb-6">📬 Contact Me</h2>
+            <h2 class="text-3xl font-bold text-center mb-6"><span aria-hidden="true">📬 </span>Contact Me</h2>
             <div class="max-w-2xl mx-auto">
                 <div class="bg-black/40 p-8 rounded-lg backdrop-blur-sm border border-white/10">
                     <div class="mb-6 text-center">
                         <p class="text-gray-300">Have a project idea or want to collaborate? I'd love to hear from you!</p>
                     </div>
-                    
+
                     <form class="space-y-6">
                         <div class="absolute -left-[9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
                             <label for="contact-gotcha">Leave this field empty</label>
@@ -416,10 +416,10 @@
                             <label for="contact-name" class="block text-sm font-medium text-gray-300 mb-2">
                                 <i class="fas fa-user mr-2" aria-hidden="true"></i>Your Name
                             </label>
-                            <input 
-                                type="text" 
-                                id="contact-name" 
-                                name="name" 
+                            <input
+                                type="text"
+                                id="contact-name"
+                                name="name"
                                 required
                                 autocomplete="name"
                                 aria-describedby="name-error"
@@ -433,10 +433,10 @@
                             <label for="contact-email" class="block text-sm font-medium text-gray-300 mb-2">
                                 <i class="fas fa-envelope mr-2" aria-hidden="true"></i>Your Email
                             </label>
-                            <input 
-                                type="email" 
-                                id="contact-email" 
-                                name="email" 
+                            <input
+                                type="email"
+                                id="contact-email"
+                                name="email"
                                 required
                                 autocomplete="email"
                                 aria-describedby="email-error"
@@ -450,10 +450,10 @@
                             <label for="contact-subject" class="block text-sm font-medium text-gray-300 mb-2">
                                 <i class="fas fa-tag mr-2" aria-hidden="true"></i>Subject
                             </label>
-                            <input 
-                                type="text" 
-                                id="contact-subject" 
-                                name="subject" 
+                            <input
+                                type="text"
+                                id="contact-subject"
+                                name="subject"
                                 required
                                 autocomplete="off"
                                 aria-describedby="subject-error"
@@ -467,9 +467,9 @@
                             <label for="contact-message" class="block text-sm font-medium text-gray-300 mb-2">
                                 <i class="fas fa-comment mr-2" aria-hidden="true"></i>Message
                             </label>
-                            <textarea 
-                                id="contact-message" 
-                                name="message" 
+                            <textarea
+                                id="contact-message"
+                                name="message"
                                 required
                                 rows="6"
                                 autocomplete="off"
@@ -481,8 +481,8 @@
                         </div>
 
                         <div class="flex justify-center">
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 id="submit-btn"
                                 class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                                 aria-label="Submit contact form"
@@ -508,7 +508,7 @@
         </section>
 
         <section class="mt-12" id="fun-games">
-            <h2 class="text-3xl font-bold text-center mb-6">🎮 Fun &amp; Games</h2>
+            <h2 class="text-3xl font-bold text-center mb-6"><span aria-hidden="true">🎮 </span>Fun &amp; Games</h2>
             <!-- Game Menu Navigation -->
             <nav class="game-menu backdrop-blur-sm border border-white/10 mb-6" aria-label="Game selection menu">
                 <ul class="flex flex-wrap justify-center">
@@ -629,7 +629,7 @@
         </section>
 
         <section class="mt-12">
-            <h2 class="text-3xl font-bold text-center mb-6">🏆 GitHub Achievements</h2>
+            <h2 class="text-3xl font-bold text-center mb-6"><span aria-hidden="true">🏆 </span>GitHub Achievements</h2>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
                 <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10 flex flex-col items-center">
                     <div class="w-16 h-16 mb-3 flex items-center justify-center">
@@ -672,7 +672,7 @@
 
     <footer class="bg-black/50 py-6 text-center backdrop-blur-sm mt-12">
         <div class="container mx-auto px-4">
-            <p class="text-gray-300">© 2026 tboy1337 | Powered by curiosity, fueled by coffee ☕</p>
+            <p class="text-gray-300">© 2026 tboy1337 | Powered by curiosity, fueled by coffee <span aria-hidden="true">☕</span></p>
             <p class="text-gray-500 mt-2 text-sm">Last updated: June 2026</p>
         </div>
     </footer>
@@ -683,4 +683,5 @@
     <script type="module" src="contact-form.js"></script>
 </body>
 </html>
+
 
