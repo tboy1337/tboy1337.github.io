@@ -77,4 +77,22 @@ describe('hash-scroll', () => {
     requestHashScroll();
     expect(scrollIntoView).toHaveBeenCalledTimes(2);
   });
+
+  it('waits for game sections to become visible before scrolling', () => {
+    document.body.innerHTML = '<main><section id="music-studio-section" hidden>Studio</section></main>';
+    const target = document.getElementById('music-studio-section');
+    const scrollIntoView = vi.fn();
+    if (target) {
+      target.scrollIntoView = scrollIntoView;
+    }
+
+    window.history.replaceState({}, '', '/#music-studio-section');
+    rememberHashForRestore();
+    restoreHashScroll();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+
+    target?.removeAttribute('hidden');
+    restoreHashScroll();
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'instant', block: 'start' });
+  });
 });

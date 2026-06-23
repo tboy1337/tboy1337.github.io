@@ -8,8 +8,9 @@ import {
   isScriptRequest,
   getStaleCacheNames
 } from './lib/sw-utils.mjs';
+import { RUNTIME_PRECACHE_ASSETS } from './lib/sw-precache.mjs';
 
-const CACHE_NAME = 'tboy1337-v1.3.7';
+const CACHE_NAME = 'tboy1337-v1.3.8';
 
 const STATIC_ASSETS = [
   '/',
@@ -35,6 +36,12 @@ const STATIC_ASSETS = [
   '/lib/snake-logic.mjs',
   '/lib/music-studio-audio.mjs'
 ];
+
+for (const asset of RUNTIME_PRECACHE_ASSETS) {
+  if (!STATIC_ASSETS.includes(asset)) {
+    console.error(`Service worker STATIC_ASSETS missing runtime precache entry: ${asset}`);
+  }
+}
 
 const IMAGE_ASSETS = [
   '/favicon.ico',

@@ -94,16 +94,14 @@ export async function gotoHome(page: Page, options?: { loadGames?: boolean }) {
   if (options?.loadGames === false) {
     return;
   }
+  await page.waitForFunction(() => typeof window.loadGamesBundle === 'function');
   await page.evaluate(async () => {
-    if (typeof window.loadGamesBundle === 'function') {
-      await window.loadGamesBundle();
-      return;
-    }
-    document.getElementById('fun-games')?.scrollIntoView();
+    await window.loadGamesBundle();
   });
   await expect.poll(async () => {
     const ready = await page.evaluate(
-      () => typeof window.GameUtils !== 'undefined' && typeof window.MusicStudioAudio !== 'undefined',
+      () => typeof window.switchPortfolioGame === 'function'
+        && typeof window.GameUtils !== 'undefined',
     );
     return ready ? 1 : 0;
   }, { timeout: 30000 }).toBe(1);

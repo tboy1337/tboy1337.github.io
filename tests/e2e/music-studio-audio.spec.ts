@@ -3,6 +3,18 @@ import { gotoHome, startMusicStudio } from './support';
 
 const C4_HZ = 261.63;
 
+async function waitForActiveVoicesReleased(page: import('@playwright/test').Page) {
+  await expect.poll(async () => {
+    return page.evaluate(() => window.getMusicStudioActiveVoiceCount?.() ?? -1);
+  }, { timeout: 5000 }).toBe(0);
+}
+
+async function waitForSpectralSample(page: import('@playwright/test').Page) {
+  await expect.poll(async () => {
+    return page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
+  }, { timeout: 3000 }).toBeGreaterThan(0);
+}
+
 test.describe('Music Studio audio stability', () => {
   test.beforeEach(async ({ page }) => {
     await gotoHome(page);
@@ -21,7 +33,7 @@ test.describe('Music Studio audio stability', () => {
       await page.keyboard.press('d');
     }
 
-    await page.waitForTimeout(1200);
+    await waitForActiveVoicesReleased(page);
 
     await page.keyboard.press('a');
     const afterSpam = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
@@ -38,7 +50,7 @@ test.describe('Music Studio audio stability', () => {
       await page.keyboard.press('d');
     }
 
-    await page.waitForTimeout(1200);
+    await waitForActiveVoicesReleased(page);
     const activeVoices = await page.evaluate(() => window.getMusicStudioActiveVoiceCount?.() ?? -1);
     expect(activeVoices).toBe(0);
   });
@@ -54,10 +66,10 @@ test.describe('Music Studio audio stability', () => {
   test('ignores held-key repeat events when playing notes', async ({ page }) => {
     await startMusicStudio(page);
     await page.keyboard.down('a');
-    await page.waitForTimeout(250);
+    await expect.poll(async () => {
+      return Number(await page.locator('#music-studio-notes').textContent());
+    }, { timeout: 3000 }).toBe(1);
     await page.keyboard.up('a');
-    const notesPlayed = Number(await page.locator('#music-studio-notes').textContent());
-    expect(notesPlayed).toBe(1);
   });
 
   test('plays notes after changing instrument without clicking the page', async ({ page }) => {
@@ -83,7 +95,7 @@ test.describe('Music Studio audio stability', () => {
       await page.keyboard.press('d');
     }
 
-    await page.waitForTimeout(1200);
+    await waitForActiveVoicesReleased(page);
 
     await page.keyboard.press('w');
     const afterSpam = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
@@ -136,16 +148,15 @@ test.describe('Music Studio audio stability', () => {
     for (const effectId of ['reverb-toggle', 'delay-toggle', 'chorus-toggle', 'filter-toggle']) {
       await page.locator(`#${effectId}`).click();
     }
-    await page.waitForTimeout(200);
 
     await page.locator('#distortion-amount').fill('5');
     await page.keyboard.press('a');
-    await page.waitForTimeout(150);
+    await waitForSpectralSample(page);
     const lowEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
 
     await page.locator('#distortion-amount').fill('100');
     await page.keyboard.press('a');
-    await page.waitForTimeout(150);
+    await waitForSpectralSample(page);
     const highEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
 
     expect(highEnergy).not.toBe(lowEnergy);
@@ -165,17 +176,15 @@ test.describe('Music Studio audio stability', () => {
     ]) {
       await page.locator(`#${effectId}`).click();
     }
-    await page.waitForTimeout(200);
 
     await page.keyboard.press('a');
-    await page.waitForTimeout(150);
+    await waitForSpectralSample(page);
     const dryEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
 
     await page.locator('#distortion-toggle').click();
     await page.locator('#distortion-amount').fill('100');
-    await page.waitForTimeout(200);
     await page.keyboard.press('a');
-    await page.waitForTimeout(150);
+    await waitForSpectralSample(page);
     const distortedEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
 
     expect(distortedEnergy).not.toBe(dryEnergy);
@@ -195,17 +204,15 @@ test.describe('Music Studio audio stability', () => {
     ]) {
       await page.locator(`#${effectId}`).click();
     }
-    await page.waitForTimeout(200);
 
     await page.keyboard.press('a');
-    await page.waitForTimeout(150);
+    await waitForSpectralSample(page);
     const dryEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
 
     await page.locator('#delay-toggle').click();
     await page.locator('#delay-amount').fill('100');
-    await page.waitForTimeout(200);
     await page.keyboard.press('a');
-    await page.waitForTimeout(250);
+    await waitForSpectralSample(page);
     const delayedEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
 
     expect(delayedEnergy).not.toBe(dryEnergy);

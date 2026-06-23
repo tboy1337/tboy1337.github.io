@@ -1,6 +1,8 @@
+import { PENDING_HASH_KEY } from './lib/hash-scroll.mjs';
+
 function rememberHashBeforeReload() {
   if (window.location.hash) {
-    window.sessionStorage.setItem('tboy1337-pending-hash', window.location.hash);
+    window.sessionStorage.setItem(PENDING_HASH_KEY, window.location.hash);
   }
 }
 

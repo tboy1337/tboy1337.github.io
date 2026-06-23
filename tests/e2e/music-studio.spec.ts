@@ -80,8 +80,13 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#music-studio-notes')).toHaveText('3');
 
     await page.locator('#play-btn').click();
-    await page.waitForTimeout(1500);
-    await expect(page.locator('#music-studio-notes')).toHaveText('3');
+    await expect.poll(async () => {
+      const label = await page.locator('#play-btn').textContent();
+      return label?.includes('Stop') ? 1 : 0;
+    }, { timeout: 5000 }).toBe(1);
+    await expect.poll(async () => {
+      return page.locator('#music-studio-notes').textContent();
+    }, { timeout: 5000 }).toBe('3');
   });
 
   test('does not inflate the note counter during layer loop', async ({ page }) => {
@@ -94,8 +99,10 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.locator('#music-studio-notes')).toHaveText('2');
 
     await page.getByRole('button', { name: 'Loop Current' }).click();
-    await page.waitForTimeout(2000);
-    await expect(page.locator('#music-studio-notes')).toHaveText('2');
+    await expect(page.getByRole('button', { name: 'Stop Current' })).toBeVisible();
+    await expect.poll(async () => {
+      return page.locator('#music-studio-notes').textContent();
+    }, { timeout: 5000 }).toBe('2');
     await page.getByRole('button', { name: 'Stop Current' }).click();
   });
 
@@ -116,6 +123,55 @@ test.describe('Advanced Music Studio', () => {
     await expect(page.getByRole('button', { name: 'Stop Current' })).toBeVisible();
     await page.getByRole('button', { name: 'Stop Current' }).click();
     await expect(page.getByRole('button', { name: 'Loop Current' })).toBeVisible();
+  });
+
+  test('loop all starts remaining layers without stopping a single-layer loop', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.getByRole('button', { name: 'Record layer' }).click();
+    await page.keyboard.press('a');
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
+    await page.getByRole('button', { name: 'Loop Current' }).click();
+    await expect(page.getByRole('button', { name: 'Stop Current' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Record layer' }).click();
+    await page.keyboard.press('d');
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
+
+    await page.getByRole('button', { name: 'Loop All' }).click();
+    await expect(page.getByRole('button', { name: 'Stop All' })).toBeVisible();
+
+    await expect.poll(async () => {
+      return page.evaluate(() => document.querySelectorAll('.layer-status.playing').length);
+    }, { timeout: 5000 }).toBeGreaterThanOrEqual(2);
+
+    await page.locator('.layer-indicator').first().click();
+    await expect(page.getByRole('button', { name: 'Stop Current' })).toBeVisible();
+  });
+
+  test('loading a composition stops active loops', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.getByRole('button', { name: 'Record layer' }).click();
+    await page.keyboard.press('a');
+    await page.getByRole('button', { name: 'Stop Recording' }).click();
+    await saveComposition(page, 'Loop Stop Test');
+
+    await page.getByRole('button', { name: 'Loop Current' }).click();
+    await expect(page.getByRole('button', { name: 'Stop Current' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Reset Advanced Music Studio' }).click();
+    await startMusicStudio(page);
+    await loadComposition(page, /Loop Stop Test/);
+
+    await expect(page.getByRole('button', { name: 'Loop Current' })).toBeVisible();
+    const loopState = await page.evaluate(() => ({
+      intervalCount: window.layerIntervals ? window.layerIntervals.size : 0,
+      timeoutMapEmpty: !window.layerLoopTimeouts || window.layerLoopTimeouts.size === 0
+    }));
+    expect(loopState.intervalCount).toBe(0);
+    expect(loopState.timeoutMapEmpty).toBe(true);
   });
 
   test('stops loop and clears active layer state', async ({ page }) => {
@@ -151,7 +207,10 @@ test.describe('Advanced Music Studio', () => {
     });
 
     const firstCount = await countTimeouts();
-    await page.waitForTimeout(2000);
+    await expect.poll(async () => {
+      const secondCount = await countTimeouts();
+      return secondCount <= 1 ? 1 : 0;
+    }, { timeout: 5000 }).toBe(1);
     const secondCount = await countTimeouts();
 
     expect(firstCount).toBeLessThanOrEqual(1);

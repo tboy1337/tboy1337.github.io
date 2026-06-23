@@ -1328,6 +1328,11 @@ onDomReady(() => {
     let lastTouchTime = 0;
     /** @type {ReturnType<typeof setTimeout>[]} */
     let playbackTimeouts = [];
+    let layerLoopStartTokenCounter = 0;
+    /** @type {Map<number, number>} */
+    const layerLoopStartTokens = new Map();
+    /** @type {Map<number, Promise<boolean>>} */
+    const layerLoopStartInFlight = new Map();
 
     const pianoKeyConfig = {
       whiteKeys: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'],
@@ -2360,10 +2365,10 @@ onDomReady(() => {
         playBtn.addEventListener('click', playRecording);
       }
       if (loopBtn) {
-        loopBtn.addEventListener('click', toggleLoop);
+        loopBtn.addEventListener('click', () => { void toggleLoop(); });
       }
       if (loopAllBtn) {
-        loopAllBtn.addEventListener('click', toggleLoopAll);
+        loopAllBtn.addEventListener('click', () => { void toggleLoopAll(); });
       }
       if (clearBtn) {
         clearBtn.addEventListener('click', clearCurrentLayer);
@@ -2410,7 +2415,7 @@ onDomReady(() => {
 
           if (notesToPlay.length > 0) {
             setTimeout(() => {
-              startLayerLoop(currentLayerIndex, notesToPlay);
+              void startLayerLoop(currentLayerIndex, notesToPlay);
             }, 200);
           }
         };
@@ -2756,45 +2761,60 @@ onDomReady(() => {
     }
   
     // Multi-layer loop management
-    function toggleLoop() {
+    /** @param {number} layerIndex */
+    function invalidatePendingLayerLoopStart(layerIndex) {
+      layerLoopStartTokens.set(layerIndex, ++layerLoopStartTokenCounter);
+    }
+
+    /** @param {number} layerIndex @param {number} startToken */
+    function isLayerLoopStartStale(layerIndex, startToken) {
+      return layerLoopStartTokens.get(layerIndex) !== startToken;
+    }
+
+    async function toggleLoop() {
       const loopBtn = queryRequired('loop-btn');
-    
-    
-      if (isLooping) {
-      // Stop current layer loop
+
+      if (isLooping || activeLoopLayers.has(currentLayerIndex)) {
+        invalidatePendingLayerLoopStart(currentLayerIndex);
         stopLayerLoop(currentLayerIndex);
         isLooping = false;
         setBtnLabel(loopBtn, '🔄 Loop Current');
         loopBtn.classList.remove('active');
-      } else {
-      // Start current layer loop
-        const activeLayer = loopLayers[currentLayerIndex];
-        const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
-          (activeLayer ? activeLayer.notes : []);
+        return;
+      }
 
-        if (notesToPlay.length === 0) {
-          return;
-        }
+      const activeLayer = loopLayers[currentLayerIndex];
+      const notesToPlay = recordedNotes.length > 0 ? recordedNotes :
+        (activeLayer ? activeLayer.notes : []);
 
-        startLayerLoop(currentLayerIndex, notesToPlay);
+      if (notesToPlay.length === 0) {
+        return;
+      }
+
+      const started = await startLayerLoop(currentLayerIndex, notesToPlay);
+      if (started) {
         isLooping = true;
         setBtnLabel(loopBtn, '⏹️ Stop Current');
         loopBtn.classList.add('active');
       }
     }
-  
-    function toggleLoopAll() {
+
+    async function toggleLoopAll() {
       const loopAllBtn = queryRequired('loop-all-btn');
-    
-      if (activeLoopLayers.size > 0) {
-      // Stop all loops
+
+      if (loopAllBtn.classList.contains('active')) {
         stopAllLoops();
         setBtnLabel(loopAllBtn, '🔄 Loop All');
         loopAllBtn.classList.remove('active');
-      } else {
-      // Start all layer loops
-        if (loopLayers.length === 0) return;
-        startAllLoops();
+        return;
+      }
+
+      if (loopLayers.length === 0) {
+        return;
+      }
+
+      const startedAny = await startAllLoops();
+      if (startedAny || activeLoopLayers.size > 0) {
         setBtnLabel(loopAllBtn, '⏹️ Stop All');
         loopAllBtn.classList.add('active');
       }
@@ -2822,23 +2842,43 @@ onDomReady(() => {
       window.layerLoopTimeouts.clear();
     }
 
-    /** @param {number} layerIndex @param {Array<{ note: string; time: number }>} notes */
+    /**
+     * @param {number} layerIndex
+     * @param {Array<{ note: string; time: number }>} notes
+     * @returns {Promise<boolean>}
+     */
     async function startLayerLoop(layerIndex, notes) {
       if (activeLoopLayers.has(layerIndex)) {
         stopLayerLoop(layerIndex);
-        return;
+        return false;
       }
       if (!notes || notes.length === 0) {
-        return;
+        return false;
       }
 
-      reinitAudioIfClosed();
-      await ensureAudioResumed();
-      if (musicStudioEngine.audioContext?.state !== 'running') {
-        return;
+      const existingStart = layerLoopStartInFlight.get(layerIndex);
+      if (existingStart) {
+        return existingStart;
       }
-    
-      activeLoopLayers.add(layerIndex);
+
+      const startPromise = (async () => {
+        const startToken = ++layerLoopStartTokenCounter;
+        layerLoopStartTokens.set(layerIndex, startToken);
+
+        reinitAudioIfClosed();
+        await ensureAudioResumed();
+
+        if (isLayerLoopStartStale(layerIndex, startToken)) {
+          return false;
+        }
+        if (musicStudioEngine.audioContext?.state !== 'running') {
+          return false;
+        }
+        if (activeLoopLayers.has(layerIndex)) {
+          return false;
+        }
+
+        activeLoopLayers.add(layerIndex);
     
       // Use layer-specific tempo instead of global tempo
       const layerTempo = layerTempos[layerIndex] || 120;
@@ -2865,37 +2905,50 @@ onDomReady(() => {
         });
       };
     
-      // Start immediately
-      playLoop();
-    
-      // Set up interval for looping (tempo-adjusted)
-      const lastNote = notes[notes.length - 1];
-      if (!lastNote) {
-        return;
-      }
+        // Start immediately
+        playLoop();
 
-      const loopDuration = window.GameUtils.calculateLoopDuration(
-        layerTempo,
-        lastNote.time
-      );
-    
-      const intervalId = setInterval(() => {
-        if (activeLoopLayers.has(layerIndex)) {
-          playLoop();
-        } else {
-          clearInterval(intervalId);
+        // Set up interval for looping (tempo-adjusted)
+        const lastNote = notes[notes.length - 1];
+        if (!lastNote) {
+          activeLoopLayers.delete(layerIndex);
+          return false;
         }
-      }, loopDuration);
-    
-      // Store interval ID for this layer
-      if (!window.layerIntervals) window.layerIntervals = new Map();
-      window.layerIntervals.set(layerIndex, intervalId);
-    
-      updateLayerDisplay();
+
+        const loopDuration = window.GameUtils.calculateLoopDuration(
+          layerTempo,
+          lastNote.time
+        );
+
+        const intervalId = setInterval(() => {
+          if (activeLoopLayers.has(layerIndex)) {
+            playLoop();
+          } else {
+            clearInterval(intervalId);
+          }
+        }, loopDuration);
+
+        // Store interval ID for this layer
+        if (!window.layerIntervals) window.layerIntervals = new Map();
+        window.layerIntervals.set(layerIndex, intervalId);
+
+        updateLayerDisplay();
+        return true;
+      })();
+
+      layerLoopStartInFlight.set(layerIndex, startPromise);
+      try {
+        return await startPromise;
+      } finally {
+        if (layerLoopStartInFlight.get(layerIndex) === startPromise) {
+          layerLoopStartInFlight.delete(layerIndex);
+        }
+      }
     }
-  
+
     /** @param {number} layerIndex */
     function stopLayerLoop(layerIndex) {
+      invalidatePendingLayerLoopStart(layerIndex);
       activeLoopLayers.delete(layerIndex);
       clearLayerLoopTimeouts(layerIndex);
     
@@ -2916,12 +2969,15 @@ onDomReady(() => {
       updateLayerDisplay();
     }
   
-    function startAllLoops() {
-      loopLayers.forEach((layer, index) => {
-        if (layer.notes.length > 0) {
-          startLayerLoop(index, layer.notes);
+    async function startAllLoops() {
+      const startTasks = loopLayers.map((layer, index) => {
+        if (layer.notes.length === 0 || activeLoopLayers.has(index)) {
+          return Promise.resolve(activeLoopLayers.has(index));
         }
+        return startLayerLoop(index, layer.notes);
       });
+      const results = await Promise.all(startTasks);
+      return results.some(Boolean);
     }
 
     function hasRecordableContent() {
@@ -3372,6 +3428,9 @@ onDomReady(() => {
         showCompositionPanelError('This composition contains invalid data and cannot be loaded.');
         return;
       }
+
+      stopAllLoops();
+      clearPlaybackTimeouts();
 
       composition = /** @type {{ name: string; instrument: string; effects: typeof currentEffects; tempo: number }} */ (sanitized);
       const restored = window.GameUtils.restoreCompositionState(composition);

@@ -30,7 +30,12 @@ test.describe('Typing Speed Test', () => {
 
   test('timer stops when switching away', async ({ page }) => {
     await startTypingGame(page);
-    await page.waitForTimeout(500);
+    await expect.poll(async () => {
+      const running = await page.evaluate(
+        () => window.typingGameActive === true && window.typingTimerInterval !== null,
+      );
+      return running ? 1 : 0;
+    }, { timeout: 5000 }).toBe(1);
     await page.getByRole('button', { name: 'Play Memory Card Game' }).click();
     const typingState = await page.evaluate(() => ({
       active: window.typingGameActive,

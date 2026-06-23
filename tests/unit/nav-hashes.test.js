@@ -38,6 +38,7 @@ describe('nav-hashes', () => {
     expect(isGameNavigationHash('#fun-games')).toBe(true);
     expect(isGameNavigationHash('#music-studio-section')).toBe(true);
     expect(isGameNavigationHash('#contact-form')).toBe(false);
+    expect(isGameNavigationHash('#fun-gamesfoo')).toBe(false);
     expect(isGameNavigationHash('')).toBe(false);
   });
 

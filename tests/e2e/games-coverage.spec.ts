@@ -14,10 +14,10 @@ test.describe('Games coverage expansion', () => {
       if (key) {
         await page.keyboard.press(key);
       }
-      await page.waitForTimeout(40);
     }
-    const score = Number(await page.locator('#snake-score').textContent());
-    expect(score).toBeGreaterThanOrEqual(0);
+    await expect.poll(async () => {
+      return Number(await page.locator('#snake-score').textContent());
+    }, { timeout: 5000 }).toBeGreaterThanOrEqual(0);
   });
 
   test('snake reset after movement restores welcome state', async ({ page }) => {
@@ -50,7 +50,7 @@ test.describe('Games coverage expansion', () => {
     await page.getByRole('button', { name: 'Stop Recording' }).click();
 
     await page.getByRole('button', { name: 'Loop All' }).click();
-    await page.waitForTimeout(200);
+    await expect(page.getByRole('button', { name: 'Stop All' })).toBeVisible();
     await page.getByRole('button', { name: 'Stop All' }).click();
 
     page.once('dialog', async () => { /* legacy guard */ });
@@ -153,9 +153,8 @@ test.describe('Games coverage expansion', () => {
     });
     await cards.nth(firstIndex).click();
     await cards.nth(secondIndex).click();
-    await page.waitForTimeout(1100);
-    await expect(page.locator('#score')).toHaveText('0');
-    await expect(cards.nth(firstIndex)).not.toHaveClass(/flipped/);
+    await expect(cards.nth(firstIndex)).not.toHaveClass(/flipped/, { timeout: 5000 });
     await expect(cards.nth(secondIndex)).not.toHaveClass(/flipped/);
+    await expect(page.locator('#score')).toHaveText('0');
   });
 });
