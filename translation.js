@@ -57,6 +57,7 @@ window.googleTranslateElementInit = function googleTranslateElementInit() {
     }, 'google_translate_element');
 
     markTranslateReady(document.getElementById('google_translate_element'));
+    cleanupTranslateBranding();
     setTimeout(cleanupGoogleElements, 100);
   } catch (error) {
     console.error('Error during Google Translate initialization:', error);
@@ -93,11 +94,33 @@ function initGoogleTranslate() {
   }
 }
 
+function cleanupTranslateBranding() {
+  const root = document.getElementById('google_translate_element');
+  if (!root) {
+    return;
+  }
+
+  root.querySelectorAll('a[href*="translate.google.com"]').forEach((anchor) => {
+    const poweredBy = anchor.closest('span') ?? anchor;
+    poweredBy.remove();
+  });
+
+  root.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple').forEach((gadget) => {
+    Array.from(gadget.childNodes).forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE && /\S/.test(node.textContent ?? '')) {
+        node.remove();
+      }
+    });
+  });
+}
+
 function cleanupGoogleElements() {
   const bannerFrame = document.querySelector('.goog-te-banner-frame');
   if (bannerFrame) {
     bannerFrame.remove();
   }
+
+  cleanupTranslateBranding();
 
   document.body.style.top = '0';
   document.body.classList.remove('translated-rtl');
@@ -158,15 +181,25 @@ function addTranslateStyles() {
       backdrop-filter: blur(12px) !important;
       -webkit-backdrop-filter: blur(12px) !important;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      cursor: pointer !important;
+      cursor: default !important;
       display: inline-flex !important;
       flex-direction: row !important;
       align-items: center !important;
-      justify-content: center !important;
-      gap: 6px !important;
+      justify-content: flex-start !important;
+      gap: 8px !important;
       white-space: nowrap !important;
       vertical-align: middle !important;
       position: relative !important;
+      overflow: hidden !important;
+      max-width: min(100%, 220px) !important;
+    }
+
+    #google_translate_element .goog-te-gadget > div,
+    #google_translate_element .goog-te-gadget-simple > div {
+      display: inline-flex !important;
+      align-items: center !important;
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
     }
 
     #google_translate_element .goog-te-gadget::before,
@@ -193,15 +226,11 @@ function addTranslateStyles() {
 
     #google_translate_element .goog-te-gadget span.goog-te-menu2,
     #google_translate_element .goog-te-gadget .goog-te-menu-value span:first-child,
-    #google_translate_element .goog-te-gadget-simple span:not(:has(select)) {
-      font-size: 0 !important;
-      line-height: 0 !important;
-      width: 0 !important;
-      height: 0 !important;
-      overflow: hidden !important;
-      position: absolute !important;
-      clip: rect(0, 0, 0, 0) !important;
-      white-space: nowrap !important;
+    #google_translate_element .goog-te-gadget-simple:has(select.goog-te-combo) span:not(:has(select)),
+    #google_translate_element .goog-te-gadget > span,
+    #google_translate_element .goog-te-gadget a[href*="translate.google.com"],
+    #google_translate_element .goog-te-gadget-simple a[href*="translate.google.com"] {
+      display: none !important;
     }
 
     #google_translate_element select.goog-te-combo {
@@ -214,13 +243,15 @@ function addTranslateStyles() {
       outline: none !important;
       cursor: pointer !important;
       margin: 0 !important;
-      padding: 0 4px 0 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
       min-width: 0 !important;
-      max-width: 120px !important;
+      max-width: none !important;
       pointer-events: auto !important;
       opacity: 1 !important;
       appearance: auto !important;
       -webkit-appearance: menulist !important;
+      flex: 1 1 auto !important;
     }
 
     #google_translate_element img,
@@ -283,13 +314,14 @@ function addTranslateStyles() {
     }
 
     @media (max-width: 768px) {
+      #google_translate_element .goog-te-gadget,
       #google_translate_element .goog-te-gadget-simple {
         font-size: 13px !important;
         padding: 8px 10px !important;
+        max-width: min(100%, 180px) !important;
       }
 
       #google_translate_element select.goog-te-combo {
-        max-width: 90px !important;
         font-size: 13px !important;
       }
 
