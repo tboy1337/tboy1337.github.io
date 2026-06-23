@@ -182,6 +182,8 @@ The website includes comprehensive translation features:
 - **Dynamic Content**: Real-time translation of all page content
 - **Preserved Styling**: Translations maintain the site's visual design
 
+**CSP note:** GitHub Pages cannot set HTTP security headers, so translation relies on a meta `Content-Security-Policy` in `index.html`. Google Translate requires `frame-src` for `translate.google.com`, `script-src` entries for `translate.google.com`, `translate.googleapis.com`, `translate-pa.googleapis.com`, and `www.gstatic.com`, plus `'unsafe-inline'` in `script-src` so Google's srcdoc iframe scripts can run. Those requirements are centralized in `lib/translate-csp.mjs` and enforced by `tests/unit/translate-csp.test.js`. Allowing `'unsafe-inline'` weakens script CSP slightly but is the practical tradeoff for keeping the deprecated Google widget working without brittle per-script hashes.
+
 ## 📧 Contact Form
 
 Fully functional contact system with:

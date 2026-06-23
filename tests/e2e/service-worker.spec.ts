@@ -35,11 +35,41 @@ test.describe('Service worker', () => {
 
   test('translation bootstrap does not throw on load', async ({ page }) => {
     const errors: string[] = [];
+    const warnings: string[] = [];
+    const cspViolations: string[] = [];
+
     page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => {
+      const text = message.text();
+      if (message.type() === 'warning' && /Google Translate/i.test(text)) {
+        warnings.push(text);
+      }
+      if (/Content Security Policy|Refused to (frame|load|connect|execute)/i.test(text)) {
+        cspViolations.push(text);
+      }
+    });
+
     await page.reload();
-    await page.waitForTimeout(2000);
+    await expect.poll(async () => {
+      return page.evaluate(() => {
+        const root = document.getElementById('google_translate_element');
+        const select = document.querySelector('select.goog-te-combo');
+        if (!root?.classList.contains('customized')) {
+          return 0;
+        }
+        if (select instanceof HTMLSelectElement && !select.disabled) {
+          return 1;
+        }
+        return window.googleTranslateInitialized ? 1 : 0;
+      });
+    }, { timeout: 25000 }).toBe(1);
+
+    await expect(page.locator('select.goog-te-combo')).toBeEnabled({ timeout: 5000 });
+
     const translationErrors = errors.filter((message) => message.includes('Google Translate'));
     expect(translationErrors).toHaveLength(0);
+    expect(warnings).toHaveLength(0);
+    expect(cspViolations).toHaveLength(0);
   });
 
   test('hash navigation to fun-games survives initial load', async ({ page }) => {

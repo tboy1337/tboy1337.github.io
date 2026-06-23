@@ -13,6 +13,7 @@ describe('shouldSkipFetch', () => {
 
   it('skips external CDN and translate URLs', () => {
     expect(shouldSkipFetch('GET', 'https://translate.google.com/translate.js')).toBe(true);
+    expect(shouldSkipFetch('GET', 'https://translate-pa.googleapis.com/v1/supportedLanguages')).toBe(true);
     expect(shouldSkipFetch('GET', 'https://cdn.tailwindcss.com/')).toBe(true);
     expect(shouldSkipFetch('GET', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css')).toBe(true);
   });

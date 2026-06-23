@@ -19,7 +19,6 @@ declare global {
     cleanupMusicStudio?: () => void;
     googleTranslateInitialized?: boolean;
     googleTranslateElementInit?: () => void;
-    googleTranslateMutationObserver?: MutationObserver | null;
     getMusicStudioActiveVoiceCount?: () => number;
     getMusicStudioLastFrequency?: () => number;
     getMusicStudioDestinationConnections?: () => number;
