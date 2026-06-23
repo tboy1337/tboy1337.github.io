@@ -1,4 +1,5 @@
-import { test, expect, type Page } from './test';
+import { test, expect } from './test';
+import type { ConsoleMessage, Page } from '@playwright/test';
 import { gotoHome } from './support';
 
 const CSP_VIOLATION_PATTERN = /Content Security Policy|Refused to (frame|load|connect|execute)/i;
@@ -27,7 +28,7 @@ function attachConsoleCollector(page: Page): ConsoleCollector {
     pageErrors: []
   };
 
-  page.on('console', (message) => {
+  page.on('console', (message: ConsoleMessage) => {
     const text = message.text();
     if (message.type() === 'warning' && TRANSLATE_WARNING_PATTERN.test(text)) {
       collector.translateWarnings.push(text);
@@ -37,7 +38,7 @@ function attachConsoleCollector(page: Page): ConsoleCollector {
     }
   });
 
-  page.on('pageerror', (error) => {
+  page.on('pageerror', (error: Error) => {
     collector.pageErrors.push(error.message);
   });
 

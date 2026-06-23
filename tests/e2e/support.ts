@@ -101,7 +101,12 @@ export async function gotoHome(page: Page, options?: { loadGames?: boolean }) {
     }
     document.getElementById('fun-games')?.scrollIntoView();
   });
-  await page.waitForFunction(() => typeof window.GameUtils !== 'undefined' && typeof window.MusicStudioAudio !== 'undefined');
+  await expect.poll(async () => {
+    const ready = await page.evaluate(
+      () => typeof window.GameUtils !== 'undefined' && typeof window.MusicStudioAudio !== 'undefined',
+    );
+    return ready ? 1 : 0;
+  }, { timeout: 30000 }).toBe(1);
 }
 
 export async function startMemoryGame(page: Page) {

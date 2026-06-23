@@ -16,6 +16,8 @@ declare global {
     SnakeLogic: typeof SnakeLogicModule;
     MusicStudioAudio: typeof MusicStudioAudioModule;
     loadGamesBundle?: () => Promise<void>;
+    getGameForHash?: (hash: string) => 'memory' | 'snake' | 'typing' | 'music-studio' | null;
+    switchPortfolioGame?: (gameName: 'memory' | 'snake' | 'typing' | 'music-studio') => void;
     cleanupMusicStudio?: () => void;
     googleTranslateInitialized?: boolean;
     googleTranslateElementInit?: () => void;

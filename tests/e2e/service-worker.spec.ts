@@ -101,6 +101,43 @@ test.describe('Service worker', () => {
     await expect(page.locator('#fun-games')).toBeVisible();
   });
 
+  test('hash navigation to music studio activates the music studio game', async ({ page }) => {
+    await page.goto('/#music-studio-section');
+    await page.waitForFunction(
+      () => typeof window.switchPortfolioGame === 'function' && typeof window.GameUtils !== 'undefined'
+    );
+    await expect.poll(async () => {
+      return page.evaluate(() => {
+        const section = document.getElementById('music-studio-section');
+        const menuItem = document.querySelector('.game-menu-item[data-game="music-studio"]');
+        return section && !section.classList.contains('hidden') && menuItem?.classList.contains('active')
+          ? 1
+          : 0;
+      });
+    }, { timeout: 15000 }).toBe(1);
+    await expect(page.locator('#music-studio-section')).toBeVisible();
+  });
+
+  test('loads and activates games when the hash changes after initial load', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => typeof window.getGameForHash === 'function');
+    await page.evaluate(() => {
+      window.location.hash = '#music-studio-section';
+    });
+    await page.waitForFunction(
+      () => typeof window.switchPortfolioGame === 'function' && typeof window.GameUtils !== 'undefined'
+    );
+    await expect.poll(async () => {
+      return page.evaluate(() => {
+        const section = document.getElementById('music-studio-section');
+        const menuItem = document.querySelector('.game-menu-item[data-game="music-studio"]');
+        return section && !section.classList.contains('hidden') && menuItem?.classList.contains('active')
+          ? 1
+          : 0;
+      });
+    }, { timeout: 15000 }).toBe(1);
+  });
+
   test('precaches achievement images for offline use', async ({ page }) => {
     await expect.poll(async () => {
       return page.evaluate(async (cacheName) => {

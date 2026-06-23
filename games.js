@@ -178,6 +178,21 @@ onDomReady(() => {
         }
       }
     }
+
+    function trySwitchGameForHash() {
+      if (typeof window.getGameForHash !== 'function') {
+        return;
+      }
+
+      const gameName = window.getGameForHash(window.location.hash);
+      if (gameName) {
+        switchGame(gameName);
+      }
+    }
+
+    window.switchPortfolioGame = switchGame;
+    window.addEventListener('hashchange', trySwitchGameForHash);
+    trySwitchGameForHash();
   
     // Add click event listeners to menu items
     menuItems.forEach(item => {
@@ -1737,7 +1752,7 @@ onDomReady(() => {
         return;
       }
 
-      playNoteByName(noteName);
+      void playNoteByName(noteName);
       highlightKey(mappingKey, noteName);
 
       if (isRecording) {
@@ -1858,7 +1873,7 @@ onDomReady(() => {
 
     /** @param {string} noteName */
     function activatePianoNote(noteName) {
-      playNoteByName(noteName);
+      void playNoteByName(noteName);
       highlightPianoKey(noteName);
       if (isRecording) {
         recordNote(noteName);
@@ -2689,7 +2704,7 @@ onDomReady(() => {
       }
     }
   
-    function playRecording() {
+    async function playRecording() {
       if (recordedNotes.length === 0) return;
 
       const playBtn = queryRequired('play-btn');
@@ -2699,6 +2714,12 @@ onDomReady(() => {
         if (playBtn) {
           playBtn.disabled = recordedNotes.length === 0;
         }
+        return;
+      }
+
+      reinitAudioIfClosed();
+      await ensureAudioResumed();
+      if (musicStudioEngine.audioContext?.state !== 'running') {
         return;
       }
 
@@ -2715,7 +2736,7 @@ onDomReady(() => {
         const adjustedTime = time * tempoScale;
         const timeoutId = setTimeout(() => {
           if (!isPlayingPlayback) return;
-          playNoteByName(note, { countTowardStats: false });
+          void playNoteByName(note, { countTowardStats: false });
           highlightPianoKey(note);
         }, adjustedTime);
         playbackTimeouts.push(timeoutId);
@@ -2802,12 +2823,18 @@ onDomReady(() => {
     }
 
     /** @param {number} layerIndex @param {Array<{ note: string; time: number }>} notes */
-    function startLayerLoop(layerIndex, notes) {
+    async function startLayerLoop(layerIndex, notes) {
       if (activeLoopLayers.has(layerIndex)) {
         stopLayerLoop(layerIndex);
         return;
       }
       if (!notes || notes.length === 0) {
+        return;
+      }
+
+      reinitAudioIfClosed();
+      await ensureAudioResumed();
+      if (musicStudioEngine.audioContext?.state !== 'running') {
         return;
       }
     
@@ -2825,7 +2852,7 @@ onDomReady(() => {
           const adjustedTime = window.GameUtils.scaleNoteTime(time, layerTempo);
           const timeoutId = setTimeout(() => {
             if (activeLoopLayers.has(layerIndex)) {
-              playNoteByName(note, { countTowardStats: false });
+              void playNoteByName(note, { countTowardStats: false });
               highlightPianoKey(note);
             }
           }, adjustedTime);

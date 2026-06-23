@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
   ALLOWED_NAV_HASHES,
   GAME_HASH_PREFIXES,
+  getGameForHash,
   getHashTarget,
-  isAllowedNavHash
+  isAllowedNavHash,
+  isGameNavigationHash
 } from '../../lib/nav-hashes.mjs';
 
 describe('nav-hashes', () => {
@@ -23,6 +25,20 @@ describe('nav-hashes', () => {
   it('returns null for disallowed hashes', () => {
     expect(getHashTarget('#not-real')).toBeNull();
     expect(getHashTarget('')).toBeNull();
+  });
+
+  it('maps game section hashes to game menu ids', () => {
+    expect(getGameForHash('#music-studio-section')).toBe('music-studio');
+    expect(getGameForHash('#snake-section')).toBe('snake');
+    expect(getGameForHash('#fun-games')).toBeNull();
+    expect(getGameForHash('#contact-form')).toBeNull();
+  });
+
+  it('detects hashes that should eagerly load the games bundle', () => {
+    expect(isGameNavigationHash('#fun-games')).toBe(true);
+    expect(isGameNavigationHash('#music-studio-section')).toBe(true);
+    expect(isGameNavigationHash('#contact-form')).toBe(false);
+    expect(isGameNavigationHash('')).toBe(false);
   });
 
   it('returns matching elements for allowed hashes', () => {
