@@ -254,6 +254,18 @@ function addTranslateStyles() {
       flex: 1 1 auto !important;
     }
 
+    #google_translate_element select.goog-te-combo option {
+      color: #1a1a2e !important;
+      background-color: #ffffff !important;
+    }
+
+    #google_translate_element select.goog-te-combo option:checked,
+    #google_translate_element select.goog-te-combo option:hover,
+    #google_translate_element select.goog-te-combo option:focus {
+      color: #1a1a2e !important;
+      background-color: #e8e4f8 !important;
+    }
+
     #google_translate_element img,
     #google_translate_element .goog-te-gadget img {
       display: none !important;
