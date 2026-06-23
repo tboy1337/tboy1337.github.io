@@ -8,6 +8,9 @@ import {
   getNoteDurationMs,
   applyVoiceEnvelope,
   buildSharedEffectChain,
+  applyEffectSettings,
+  applyEffectDisableBypass,
+  effectsRequireStructuralRebuild,
   createMusicStudioAudioEngine,
   createInstrumentOscillator
 } from '../../lib/music-studio-audio.mjs';
@@ -192,6 +195,75 @@ describe('MusicStudioAudio.buildSharedEffectChain', () => {
   });
 });
 
+describe('MusicStudioAudio.effectsRequireStructuralRebuild', () => {
+  it('returns false when only numeric effect parameters change', () => {
+    const previous = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    const next = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    next.reverb.wetness = 0.9;
+    next.distortion.amount = 80;
+    next.filter.frequency = 400;
+    expect(effectsRequireStructuralRebuild(previous, next)).toBe(false);
+  });
+
+  it('returns true when an effect is enabled or disabled', () => {
+    const previous = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    const next = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    next.reverb.enabled = false;
+    expect(effectsRequireStructuralRebuild(previous, next)).toBe(true);
+  });
+
+  it('returns true when the filter type changes', () => {
+    const previous = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    const next = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    next.filter.type = 'highpass';
+    expect(effectsRequireStructuralRebuild(previous, next)).toBe(true);
+  });
+});
+
+describe('MusicStudioAudio.applyEffectSettings', () => {
+  it('updates live node parameters without rebuilding the chain', () => {
+    const context = createMockAudioContext();
+    const chain = buildSharedEffectChain(/** @type {AudioContext} */ (context), DEFAULT_EFFECTS);
+    const effects = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    effects.filter.frequency = 400;
+    effects.distortion.amount = 80;
+    effects.distortion.wetness = 0.9;
+    effects.delay.wetness = 0.8;
+    effects.reverb.wetness = 0.7;
+    effects.chorus.wetness = 0.6;
+    effects.chorus.rate = 2.5;
+
+    applyEffectSettings(chain.handles, effects);
+
+    expect(chain.handles.filter?.node.frequency.value).toBe(400);
+    expect(chain.handles.distortion?.wetGain.gain.value).toBe(0.9);
+    expect(chain.handles.distortion?.dryGain.gain.value).toBeCloseTo(0.1, 5);
+    expect(chain.handles.delay?.wetGain.gain.value).toBe(0.8);
+    expect(chain.handles.reverb?.reverbGain.gain.value).toBe(0.7);
+    expect(chain.handles.chorus?.chorusGain.gain.value).toBe(0.6);
+    expect(chain.handles.chorus?.lfo.frequency.value).toBe(2.5);
+  });
+});
+
+describe('MusicStudioAudio.applyEffectDisableBypass', () => {
+  it('bypasses wet effects immediately when they are turned off', () => {
+    const context = createMockAudioContext();
+    const chain = buildSharedEffectChain(/** @type {AudioContext} */ (context), DEFAULT_EFFECTS);
+    const previous = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    const next = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    next.reverb.enabled = false;
+    next.distortion.enabled = false;
+    next.filter.enabled = false;
+
+    applyEffectDisableBypass(chain.handles, previous, next);
+
+    expect(chain.handles.reverb?.reverbGain.gain.value).toBe(0);
+    expect(chain.handles.reverb?.dryGain.gain.value).toBe(1);
+    expect(chain.handles.distortion?.wetGain.gain.value).toBe(0);
+    expect(chain.handles.filter?.node.frequency.value).toBe(20000);
+  });
+});
+
 describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -273,6 +345,43 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
     engine.setEffects(nextEffects);
     vi.advanceTimersByTime(120);
     expect(context.createdNodes.length).toBeGreaterThan(initialNodeCount);
+    engine.dispose();
+    vi.useRealTimers();
+  });
+
+  it('applies wetness-only changes in place without creating new nodes', () => {
+    const context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({ createContext: () => context });
+    engine.init();
+    const nodeCountAfterInit = context.createdNodes.length;
+
+    const tweaked = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    tweaked.reverb.wetness = 0.95;
+    tweaked.delay.wetness = 0.85;
+    engine.setEffects(tweaked);
+
+    expect(context.createdNodes.length).toBe(nodeCountAfterInit);
+    expect(engine.getEffects().reverb.wetness).toBe(0.95);
+    expect(engine.getEffects().delay.wetness).toBe(0.85);
+    engine.dispose();
+  });
+
+  it('does not reset the structural rebuild deadline on repeated setEffects calls', () => {
+    vi.useFakeTimers();
+    const context = createMockAudioContext();
+    const engine = createMusicStudioAudioEngine({
+      createContext: () => context,
+      minNoteIntervalMs: 0
+    });
+    engine.init();
+    engine.playNote('C4');
+
+    const tweaked = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    tweaked.reverb.enabled = false;
+    engine.setEffects(tweaked);
+    engine.setEffects(tweaked);
+    vi.advanceTimersByTime(120);
+    expect(engine.playNote('E4')).toBe(true);
     engine.dispose();
     vi.useRealTimers();
   });
@@ -426,7 +535,7 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
     engine.dispose();
   });
 
-  it('forces effect rebuild after the max wait even with active voices', () => {
+  it('rebuilds the effect chain during active voices without waiting for release', () => {
     vi.useFakeTimers();
     const context = createMockAudioContext();
     const engine = createMusicStudioAudioEngine({
@@ -434,35 +543,15 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
       minNoteIntervalMs: 0
     });
     engine.init();
-    engine.playNote('C4');
-
-    const tweaked = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
-    tweaked.reverb.enabled = false;
-    engine.setEffects(tweaked);
-    vi.advanceTimersByTime(3200);
-    expect(engine.playNote('E4')).toBe(true);
-    engine.dispose();
-    vi.useRealTimers();
-  });
-
-  it('defers effect rebuilds while voices are still active', () => {
-    vi.useFakeTimers();
-    const context = createMockAudioContext();
-    const engine = createMusicStudioAudioEngine({
-      createContext: () => context,
-      minNoteIntervalMs: 0
-    });
-    engine.init();
+    const nodeCountBefore = context.createdNodes.length;
     engine.playNote('C4');
 
     const tweaked = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
     tweaked.reverb.enabled = false;
     engine.setEffects(tweaked);
     vi.advanceTimersByTime(120);
+    expect(context.createdNodes.length).toBeGreaterThan(nodeCountBefore);
     expect(engine.getActiveVoiceCount()).toBe(1);
-
-    vi.advanceTimersByTime(getNoteDurationMs('synth') + 200);
-    expect(engine.getActiveVoiceCount()).toBe(0);
     expect(engine.playNote('E4')).toBe(true);
     engine.dispose();
     vi.useRealTimers();

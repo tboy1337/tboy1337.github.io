@@ -1457,6 +1457,7 @@ onDomReady(() => {
           <!-- Effects Panel -->
           <div class="effects-panel">
             <div class="effects-title">🎛️ Effects</div>
+            <span class="control-hint">Effects apply live while you play — pitch stays the same, sound character changes</span>
             <div class="effects-grid">
               <div class="effect-control">
                 <input type="checkbox" id="reverb-toggle" class="effect-toggle" checked>
@@ -1604,8 +1605,6 @@ onDomReady(() => {
 
     /** @type {Promise<void> | null} */
     let audioResumePromise = null;
-    /** @type {ReturnType<typeof setTimeout> | null} */
-    let effectSyncTimer = null;
 
     function ensureAudioResumed() {
       const context = musicStudioEngine.audioContext;
@@ -1637,23 +1636,6 @@ onDomReady(() => {
 
     function syncEngineEffects() {
       musicStudioEngine.setEffects(currentEffects);
-    }
-
-    function scheduleSyncEngineEffects() {
-      if (effectSyncTimer) {
-        clearTimeout(effectSyncTimer);
-      }
-      effectSyncTimer = setTimeout(() => {
-        effectSyncTimer = null;
-        syncEngineEffects();
-      }, 100);
-    }
-
-    function clearScheduledEffectSync() {
-      if (effectSyncTimer) {
-        clearTimeout(effectSyncTimer);
-        effectSyncTimer = null;
-      }
     }
 
     function showAudioUnavailableBanner() {
@@ -2130,6 +2112,7 @@ onDomReady(() => {
           }
           currentEffects[effect].enabled = target.checked;
           slider.disabled = !target.checked;
+          void ensureAudioResumed();
           syncEngineEffects();
           focusMusicStudioSurface();
         });
@@ -2149,11 +2132,12 @@ onDomReady(() => {
             currentEffects[effect].wetness = value;
           }
           target.setAttribute('aria-valuenow', target.value);
-          scheduleSyncEngineEffects();
+          void ensureAudioResumed();
+          syncEngineEffects();
         });
 
         slider.addEventListener('change', () => {
-          clearScheduledEffectSync();
+          void ensureAudioResumed();
           syncEngineEffects();
           focusMusicStudioSurface();
         });
@@ -2238,7 +2222,6 @@ onDomReady(() => {
       }
 
       audioResumePromise = null;
-      clearScheduledEffectSync();
       clearPlaybackTimeouts();
 
       if (isGameActive) {
@@ -2274,6 +2257,22 @@ onDomReady(() => {
     window.getMusicStudioActiveVoiceCount = () => musicStudioEngine.getActiveVoiceCount();
     window.getMusicStudioLastFrequency = () => musicStudioEngine.getLastPlayedFrequency();
     window.getMusicStudioDestinationConnections = () => musicStudioEngine.destinationConnectionCount;
+    window.getMusicStudioEffects = () => musicStudioEngine.getEffects();
+    window.getMusicStudioSpectralEnergy = () => {
+      const analyser = musicStudioEngine.getAnalyser();
+      const context = musicStudioEngine.audioContext;
+      if (!analyser || !context) {
+        return 0;
+      }
+      const bins = new Uint8Array(analyser.frequencyBinCount);
+      analyser.getByteFrequencyData(bins);
+      const minBin = Math.floor((1000 * analyser.fftSize) / context.sampleRate);
+      let sum = 0;
+      for (let i = minBin; i < bins.length; i += 1) {
+        sum += bins[i] ?? 0;
+      }
+      return sum;
+    };
 
     // Reset the music maker
     function resetMusicStudio() {

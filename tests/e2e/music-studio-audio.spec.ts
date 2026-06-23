@@ -100,4 +100,40 @@ test.describe('Music Studio audio stability', () => {
     expect(frequency).toBeCloseTo(329.63, 1);
     await expect(page.locator('#music-studio-notes')).toHaveText('1');
   });
+
+  test('applies distortion slider changes to the engine immediately', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.locator('#distortion-amount').fill('15');
+    const lowDistortion = await page.evaluate(() => window.getMusicStudioEffects?.().distortion.amount ?? -1);
+    expect(lowDistortion).toBe(15);
+
+    await page.locator('#distortion-amount').fill('95');
+    const highDistortion = await page.evaluate(() => window.getMusicStudioEffects?.().distortion ?? null);
+    expect(highDistortion?.amount).toBe(95);
+    expect(highDistortion?.wetness).toBeCloseTo(0.95, 2);
+  });
+
+  test('changes timbre when distortion mix is increased', async ({ page }) => {
+    await startMusicStudio(page);
+
+    for (const effectId of ['reverb-toggle', 'delay-toggle', 'chorus-toggle', 'filter-toggle']) {
+      await page.locator(`#${effectId}`).click();
+    }
+    await page.waitForTimeout(200);
+
+    await page.locator('#distortion-amount').fill('5');
+    await page.keyboard.press('a');
+    await page.waitForTimeout(150);
+    const lowEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
+
+    await page.locator('#distortion-amount').fill('100');
+    await page.keyboard.press('a');
+    await page.waitForTimeout(150);
+    const highEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
+
+    expect(highEnergy).not.toBe(lowEnergy);
+    const frequency = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
+    expect(frequency).toBeCloseTo(C4_HZ, 1);
+  });
 });

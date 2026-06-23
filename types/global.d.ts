@@ -23,6 +23,8 @@ declare global {
     getMusicStudioActiveVoiceCount?: () => number;
     getMusicStudioLastFrequency?: () => number;
     getMusicStudioDestinationConnections?: () => number;
+    getMusicStudioEffects?: () => MusicStudioAudioModule.EffectSettings;
+    getMusicStudioSpectralEnergy?: () => number;
     cleanupTypingGame?: () => void;
     cleanupMemoryGame?: () => void;
     cleanupSnakeGame?: () => void;
