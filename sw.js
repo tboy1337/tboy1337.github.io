@@ -9,7 +9,7 @@ import {
   getStaleCacheNames
 } from './lib/sw-utils.mjs';
 
-const CACHE_NAME = 'tboy1337-v1.3.2';
+const CACHE_NAME = 'tboy1337-v1.3.3';
 
 const STATIC_ASSETS = [
   '/',
@@ -26,6 +26,7 @@ const STATIC_ASSETS = [
   '/lib/bootstrap-site-utils.mjs',
   '/lib/lazy-games-loader.mjs',
   '/lib/on-dom-ready.mjs',
+  '/lib/nav-hashes.mjs',
   '/lib/sw-utils.mjs',
   '/lib/typing-stats.mjs',
   '/lib/memory-game-utils.mjs',
@@ -58,11 +59,16 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then(async (cache) => {
       await Promise.all(
         PRECACHE_ASSETS.map(async (asset) => {
-          const response = await fetch(asset);
-          if (!response.ok) {
-            throw new Error(`Failed to precache ${asset}: ${response.status}`);
+          try {
+            const response = await fetch(asset);
+            if (!response.ok) {
+              console.warn(`Failed to precache ${asset}: ${response.status}`);
+              return;
+            }
+            await cache.put(asset, response);
+          } catch (error) {
+            console.warn(`Failed to precache ${asset}:`, error);
           }
-          await cache.put(asset, response);
         })
       );
     })

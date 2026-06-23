@@ -27,4 +27,13 @@ test.describe('Game menu', () => {
     await expect(page.getByRole('button', { name: 'Play Typing Speed Test' })).toHaveAttribute('aria-controls', 'typing-section');
     await expect(page.getByRole('button', { name: 'Play Advanced Music Studio' })).toHaveAttribute('aria-controls', 'music-studio-section');
   });
+
+  test('hides inactive game sections from assistive technologies', async ({ page }) => {
+    await expect(page.locator('#memory-section')).toHaveAttribute('aria-hidden', 'false');
+    await expect(page.locator('#snake-section')).toHaveAttribute('aria-hidden', 'true');
+
+    await page.getByRole('button', { name: 'Play Snake Game' }).click();
+    await expect(page.locator('#memory-section')).toHaveAttribute('aria-hidden', 'true');
+    await expect(page.locator('#snake-section')).toHaveAttribute('aria-hidden', 'false');
+  });
 });

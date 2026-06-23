@@ -31,5 +31,14 @@ test.describe('Portfolio page', () => {
     await expect(page.getByRole('textbox', { name: 'Subject' })).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Message' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Submit contact form' })).toBeVisible();
+    await expect(page.locator('#contact-name')).toHaveAttribute('aria-describedby', 'name-error');
+    await expect(page.locator('#form-status')).toHaveAttribute('role', 'status');
+    await expect(page.locator('input[name="_gotcha"]')).toHaveCount(1);
+  });
+
+  test('exposes a content security policy meta tag', async ({ page }) => {
+    const csp = page.locator('meta[http-equiv="Content-Security-Policy"]');
+    await expect(csp).toHaveAttribute('content', /default-src 'self'/);
+    await expect(csp).toHaveAttribute('content', /formspree\.io/);
   });
 });

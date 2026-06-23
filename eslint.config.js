@@ -35,6 +35,7 @@ export default [
         confirm: 'readonly',
         alert: 'readonly',
         localStorage: 'readonly',
+        sessionStorage: 'readonly',
         HTMLElement: 'readonly',
         HTMLFormElement: 'readonly',
         HTMLButtonElement: 'readonly',

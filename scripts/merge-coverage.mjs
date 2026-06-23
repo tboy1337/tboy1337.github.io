@@ -88,51 +88,54 @@ function assertGroupThresholds(map, predicate, threshold, label, metrics) {
 }
 
 function main() {
-  const map = createCoverageMap({});
+  const mergedMap = createCoverageMap({});
+  const unitMap = createCoverageMap({});
   const unitCoveragePath = path.resolve('coverage/coverage-final.json');
   const e2eChunks = readCoverageFiles(COVERAGE_DIR);
 
   if (fs.existsSync(unitCoveragePath)) {
     try {
-      map.merge(JSON.parse(fs.readFileSync(unitCoveragePath, 'utf8')));
+      const unitCoverage = JSON.parse(fs.readFileSync(unitCoveragePath, 'utf8'));
+      unitMap.merge(JSON.parse(JSON.stringify(unitCoverage)));
+      mergedMap.merge(unitCoverage);
     } catch (error) {
       console.warn(`Failed to parse unit coverage file ${unitCoveragePath}:`, error);
     }
   }
 
   for (const chunk of e2eChunks) {
-    map.merge(chunk);
+    mergedMap.merge(chunk);
   }
 
-  for (const file of map.files()) {
+  for (const file of mergedMap.files()) {
     if (file.endsWith('translation.js')) {
-      map.removeFileCoverage(file);
+      mergedMap.removeFileCoverage(file);
     }
   }
 
-  if (map.files().length === 0) {
+  if (mergedMap.files().length === 0) {
     throw new Error('No coverage data found. Run unit and e2e tests first.');
   }
 
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   const context = createContext({
     dir: OUTPUT_DIR,
-    coverageMap: map
+    coverageMap: mergedMap
   });
 
   reports.create('text', {}).execute(context);
-  reports.create('html', {}).execute(context);
-  reports.create('json', {}).execute(context);
 
   console.log('\nMerged coverage summary:');
-  printSummary(map);
+  printSummary(mergedMap);
   const allMetrics = ['lines', 'statements', 'functions', 'branches'];
-  const coreMetrics = ['lines', 'statements', 'functions'];
-  assertGroupThresholds(map, (file) => file.includes('/lib/'), 90, 'lib', allMetrics);
-  assertGroupThresholds(map, (file) => file.endsWith('games.js'), 89, 'games.js', ['lines']);
-  assertGroupThresholds(map, (file) => file.endsWith('games.js'), 87, 'games.js', ['statements', 'functions']);
-  assertGroupThresholds(map, () => true, 90, 'project', ['lines', 'functions']);
-  assertGroupThresholds(map, () => true, 88, 'project', ['statements']);
+  assertGroupThresholds(unitMap, (file) => file.includes('/lib/'), 90, 'lib', allMetrics);
+  assertGroupThresholds(mergedMap, (file) => file.endsWith('games.js'), 89, 'games.js', ['lines']);
+  assertGroupThresholds(mergedMap, (file) => file.endsWith('games.js'), 87, 'games.js', ['statements', 'functions']);
+  assertGroupThresholds(mergedMap, () => true, 90, 'project', ['lines', 'functions']);
+  assertGroupThresholds(mergedMap, () => true, 88, 'project', ['statements']);
+
+  reports.create('html', {}).execute(context);
+  reports.create('json', {}).execute(context);
 }
 
 main();

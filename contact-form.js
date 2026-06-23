@@ -1,5 +1,8 @@
 import * as ContactValidation from './lib/contact-validation.mjs';
 
+const SUBMIT_COOLDOWN_MS = 30000;
+const SUBMIT_COOLDOWN_KEY = 'tboy1337-contact-last-submit';
+
 /**
  * @param {HTMLFormElement} form
  * @param {HTMLButtonElement} submitBtn
@@ -43,6 +46,7 @@ function initContactForm(form, submitBtn, submitText, formStatus, successMessage
     errorElement.classList.remove('hidden');
     inputElement.classList.add('border-red-500');
     inputElement.classList.remove('border-white/20');
+    inputElement.setAttribute('aria-invalid', 'true');
   }
 
   /** @param {string} fieldId */
@@ -57,6 +61,7 @@ function initContactForm(form, submitBtn, submitText, formStatus, successMessage
     errorElement.classList.add('hidden');
     inputElement.classList.remove('border-red-500');
     inputElement.classList.add('border-white/20');
+    inputElement.removeAttribute('aria-invalid');
   }
 
   function clearAllErrors() {
@@ -105,6 +110,17 @@ function initContactForm(form, submitBtn, submitText, formStatus, successMessage
     hideFormStatus();
 
     const formData = new FormData(form);
+    const gotcha = formData.get('_gotcha');
+    if (typeof gotcha === 'string' && gotcha.trim() !== '') {
+      return;
+    }
+
+    const lastSubmit = Number(sessionStorage.getItem(SUBMIT_COOLDOWN_KEY) || '0');
+    if (Date.now() - lastSubmit < SUBMIT_COOLDOWN_MS) {
+      showFormStatus('error', 'Please wait before sending another message.');
+      return;
+    }
+
     const data = {
       name: formData.get('name'),
       email: formData.get('email'),
@@ -150,6 +166,7 @@ function initContactForm(form, submitBtn, submitText, formStatus, successMessage
       });
 
       if (response.ok) {
+        sessionStorage.setItem(SUBMIT_COOLDOWN_KEY, String(Date.now()));
         showFormStatus('success');
         form.reset();
 
@@ -158,7 +175,8 @@ function initContactForm(form, submitBtn, submitText, formStatus, successMessage
         }, 5000);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        showFormStatus('error', errorData.message || 'Failed to send message. Please try again.');
+        console.error('Form submission failed:', errorData);
+        showFormStatus('error', 'Failed to send message. Please try again.');
       }
     } catch (error) {
       console.error('Form submission error:', error);

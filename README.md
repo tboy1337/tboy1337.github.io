@@ -93,15 +93,27 @@ The portfolio showcases the following key projects:
 ```
 tboy1337.github.io/
 ├── index.html              # Main portfolio webpage
-├── tailwind.css            # Built Tailwind CSS (run npm run build:css)
+├── tailwind.css            # Built Tailwind CSS (run npm run build)
 ├── src/tailwind.css        # Tailwind source file
-├── games.css               # Styling for interactive games
+├── src/games.css           # Game styles source file
+├── games.css               # Built game styles (run npm run build)
 ├── games.js                # Game logic and functionality
 ├── translation.js          # Google Translate integration
 ├── site-sw-register.js     # Service worker registration
 ├── contact-form.js         # Contact form handler
 ├── sw.js                   # Service worker for offline functionality
-├── lib/                    # Shared ES modules (game logic, SW utils, lazy loader)
+├── lib/                    # Shared ES modules
+│   ├── bootstrap-site-utils.mjs
+│   ├── contact-validation.mjs
+│   ├── game-utils.mjs
+│   ├── lazy-games-loader.mjs
+│   ├── memory-game-utils.mjs
+│   ├── music-studio-audio.mjs
+│   ├── nav-hashes.mjs
+│   ├── on-dom-ready.mjs
+│   ├── snake-logic.mjs
+│   ├── sw-utils.mjs
+│   └── typing-stats.mjs
 ├── tests/                  # Vitest unit tests and Playwright e2e tests
 ├── scripts/                # Coverage merge and tooling scripts
 ├── site.webmanifest        # Progressive web app manifest
@@ -160,12 +172,12 @@ The website is automatically deployed through GitHub Pages:
 - **URL**: [https://tboy1337.github.io](https://tboy1337.github.io)
 - **Updates**: Automatic deployment on every push to main branch
 - **CDN**: Global content delivery via GitHub's infrastructure
-- **Security headers**: GitHub Pages does not support custom HTTP headers (CSP, HSTS); use a reverse proxy such as Cloudflare if needed
+- **Security headers**: GitHub Pages does not support custom HTTP headers (CSP, HSTS). The site uses a best-effort meta Content-Security-Policy; full header-based CSP/HSTS requires a reverse proxy such as Cloudflare.
 
 ## 🗣️ Multi-language Support
 
 The website includes comprehensive translation features:
-- **Google Translate Integration**: Dropdown selector in the header
+- **Google Translate Integration**: Dropdown selector in the header (third-party script; page content is sent to Google for translation)
 - **Supported Languages**: 100+ languages via Google Translate
 - **Dynamic Content**: Real-time translation of all page content
 - **Preserved Styling**: Translations maintain the site's visual design
@@ -192,7 +204,7 @@ Visual showcase of GitHub accomplishments including:
 - **Service Worker**: Offline caching and improved loading times
 - **Built CSS**: Tailwind utilities compiled to a static `tailwind.css` file (no runtime CDN)
 - **Lazy Loading**: Games and utilities load when the games section is near the viewport
-- **Optimized Assets**: Minified CSS, compressed images, and deferred scripts
+- **Optimized Assets**: Minified CSS (`tailwind.css`, `games.css`), compressed images, and deferred scripts
 
 ## 🔧 Development
 
@@ -200,26 +212,32 @@ Install dependencies and run quality checks:
 
 ```bash
 npm install
-npm run build:css
+npm run build
 npm run check
 ```
 
-To run locally:
-1. Clone the repository
-2. Open `index.html` in a web browser
-3. Or serve with a local HTTP server for full functionality
+### Pre-deploy checklist
 
-For development with live reload:
+Before pushing to `main` (which auto-deploys to GitHub Pages):
+
 ```bash
-# Using Python (if installed)
-python -m http.server 8000
-
-# Using Node.js (if installed)
-npx serve .
-
-# Using PHP (if installed)
-php -S localhost:8000
+npm run build && npm run check
 ```
+
+### Local development
+
+ES modules, the contact form, and the service worker require HTTP. Opening `index.html` via `file://` will not work.
+
+```bash
+# Recommended: Vite dev server (same port used by Playwright tests)
+npx vite --port 4173
+
+# Alternatives
+npx serve .
+python -m http.server 8000
+```
+
+Then open `http://localhost:4173` (or the port your server prints).
 
 ## 📄 License
 

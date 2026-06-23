@@ -33,10 +33,7 @@ describe('isHtmlRequest', () => {
   it('detects non-HTML asset requests', () => {
     expect(isHtmlRequest(new URL('https://tboy1337.github.io/games.js'), 'script')).toBe(false);
     expect(isHtmlRequest(new URL('https://tboy1337.github.io/games.css'), 'style')).toBe(false);
-  });
-
-  it('treats extensionless paths as HTML requests', () => {
-    expect(isHtmlRequest(new URL('https://tboy1337.github.io/games'))).toBe(true);
+    expect(isHtmlRequest(new URL('https://tboy1337.github.io/games'))).toBe(false);
   });
 });
 

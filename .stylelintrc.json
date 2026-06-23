@@ -7,7 +7,9 @@
     "playwright-report/**",
     "test-results/**",
     "tailwind.css",
-    "src/tailwind.css"
+    "games.css",
+    "src/tailwind.css",
+    "src/games.css"
   ],
   "rules": {
     "selector-class-pattern": null,

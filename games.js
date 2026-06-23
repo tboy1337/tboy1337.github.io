@@ -145,6 +145,8 @@ onDomReady(() => {
       // Hide all game sections
       gameSections.forEach(section => {
         section.classList.add('hidden');
+        section.setAttribute('aria-hidden', 'true');
+        section.setAttribute('inert', '');
       });
 
       // Deactivate all menu items and update aria-pressed
@@ -160,6 +162,8 @@ onDomReady(() => {
       const gameSection = queryRequired(`${gameName}-section`);
       if (gameSection) {
         gameSection.classList.remove('hidden');
+        gameSection.setAttribute('aria-hidden', 'false');
+        gameSection.removeAttribute('inert');
       }
 
       const activeMenuItem = document.querySelector(`.game-menu-item[data-game="${gameName}"]`);
@@ -1773,7 +1777,6 @@ onDomReady(() => {
         void ensureAudioResumed();
         hideAudioUnavailableBanner();
         window.musicStudioAnalyser = musicStudioEngine.getAnalyser();
-        window.musicStudioAnalyser = musicStudioEngine.getAnalyser();
       } catch (error) {
         console.warn('Web Audio API not supported in this browser:', error);
         musicStudioEngine.dispose();
@@ -2867,13 +2870,27 @@ onDomReady(() => {
       return window.GameUtils.hasRecordableContent(loopLayers, recordedNotes);
     }
 
-    /** @returns {unknown[] | null} */
+    /** @returns {object[]} */
     function getSavedCompositionsFromStorage() {
       try {
         const saved = JSON.parse(localStorage.getItem('musicCompositions') || '[]');
-        return Array.isArray(saved) ? saved : [];
+        if (!Array.isArray(saved)) {
+          localStorage.removeItem('musicCompositions');
+          return [];
+        }
+
+        const { compositions, removedCount } = window.GameUtils.sanitizeCompositionList(saved);
+        if (removedCount > 0) {
+          localStorage.setItem('musicCompositions', JSON.stringify(compositions));
+          const statusElement = getHtmlElement('recording-status');
+          if (statusElement) {
+            statusElement.textContent = 'Removed corrupt saved compositions.';
+          }
+        }
+        return compositions;
       } catch {
-        return null;
+        localStorage.removeItem('musicCompositions');
+        return [];
       }
     }
 
@@ -3108,12 +3125,6 @@ onDomReady(() => {
       list.innerHTML = '';
       const saved = getSavedCompositionsFromStorage();
 
-      if (saved === null) {
-        emptyMessage.classList.add('hidden');
-        showCompositionPanelError('Failed to load compositions.');
-        return;
-      }
-
       if (saved.length === 0) {
         emptyMessage.classList.remove('hidden');
         const cancelLoadBtn = getHtmlElement('composition-cancel-load-btn');
@@ -3194,7 +3205,7 @@ onDomReady(() => {
     /** @param {number} index */
     function deleteCompositionAtIndex(index) {
       const saved = getSavedCompositionsFromStorage();
-      if (saved === null || index < 0 || index >= saved.length) {
+      if (index < 0 || index >= saved.length) {
         showCompositionPanelError('Failed to delete composition.');
         return;
       }
@@ -3285,7 +3296,7 @@ onDomReady(() => {
     /** @param {number} index */
     function loadCompositionAtIndex(index) {
       const saved = getSavedCompositionsFromStorage();
-      if (saved === null || index < 0 || index >= saved.length) {
+      if (index < 0 || index >= saved.length) {
         showCompositionPanelError('Failed to load compositions.');
         return;
       }
@@ -3298,6 +3309,13 @@ onDomReady(() => {
 
     /** @param {{ name: string; instrument: string; effects: typeof currentEffects; tempo: number }} composition */
     function applyLoadedComposition(composition) {
+      const sanitized = window.GameUtils.validateAndSanitizeComposition(composition);
+      if (!sanitized) {
+        showCompositionPanelError('This composition contains invalid data and cannot be loaded.');
+        return;
+      }
+
+      composition = /** @type {{ name: string; instrument: string; effects: typeof currentEffects; tempo: number }} */ (sanitized);
       const restored = window.GameUtils.restoreCompositionState(composition);
       loopLayers = /** @type {typeof loopLayers} */ (restored.loopLayers);
       layerTempos = restored.layerTempos;

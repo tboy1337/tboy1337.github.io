@@ -38,6 +38,8 @@
  * - Chinese (Traditional) (zh-TW)
  */
 
+import { getHashTarget } from './lib/nav-hashes.mjs';
+
 // Initialize the Google Translate widget
 function initGoogleTranslate() {
   try {
@@ -118,7 +120,7 @@ function restoreHashScroll() {
     return;
   }
 
-  const target = document.querySelector(hash);
+  const target = getHashTarget(hash);
   if (!target) {
     hashRestoreAttempts += 1;
     if (hashRestoreAttempts < MAX_HASH_RESTORE_ATTEMPTS) {

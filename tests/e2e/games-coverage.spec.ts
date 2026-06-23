@@ -93,7 +93,32 @@ test.describe('Games coverage expansion', () => {
     await startMusicStudio(page);
     await page.evaluate(() => localStorage.setItem('musicCompositions', '{bad json'));
     await page.getByRole('button', { name: 'Load composition' }).click();
-    await expect(page.locator('#composition-panel-error')).toContainText('Failed to load');
+    await expect(page.locator('#composition-empty-message')).toBeVisible();
+    await expect(page.locator('#composition-panel-error')).toBeHidden();
+    const storageValue = await page.evaluate(() => localStorage.getItem('musicCompositions'));
+    expect(storageValue).toBeNull();
+  });
+
+  test('music studio sanitizes invalid compositions in storage', async ({ page }) => {
+    await startMusicStudio(page);
+    await page.evaluate(() => {
+      localStorage.setItem('musicCompositions', JSON.stringify([
+        {
+          name: 'Sanitized',
+          instrument: 'drums',
+          tempo: 999,
+          effects: { distortion: { enabled: 'yes', amount: 500 } }
+        },
+        { name: '   ' },
+        null
+      ]));
+    });
+    await page.getByRole('button', { name: 'Load composition' }).click();
+    await expect(page.locator('#composition-list .composition-list-item')).toHaveCount(1);
+    await expect(page.locator('.composition-list-name')).toHaveText('Sanitized');
+    await page.locator('.composition-list-item-main').click();
+    await expect(page.locator('#instrument-select')).toHaveValue('synth');
+    await expect(page.locator('#tempo-display')).toHaveText('240 BPM');
   });
 
   test('music studio load handles composition without notes', async ({ page }) => {

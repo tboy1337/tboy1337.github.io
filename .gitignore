@@ -1,4 +1,5 @@
 node_modules/
+.vite/
 coverage/
 coverage-e2e/
 coverage-merged/
