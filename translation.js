@@ -5,59 +5,16 @@
  * language <select> stays interactive.
  */
 
-import { getHashTarget } from './lib/nav-hashes.mjs';
+import {
+  restoreHashScroll
+} from './lib/hash-scroll.mjs';
 
 const INCLUDED_LANGUAGES = 'ar,bg,cs,da,nl,en,fi,fr,de,el,he,hi,hu,id,it,ja,ko,no,pl,pt,ro,ru,sk,es,sv,th,tr,uk,vi,zh-CN,zh-TW';
-const PENDING_HASH_KEY = 'tboy1337-pending-hash';
 const INIT_TIMEOUT_MS = 10000;
 const READY_FALLBACK_MS = 5000;
 
-let hashScrollRestored = false;
-let hashRestoreAttempts = 0;
-const MAX_HASH_RESTORE_ATTEMPTS = 30;
-
 /** @type {ReturnType<typeof setInterval> | null} */
 let cleanupIntervalId = null;
-
-function getHashScrollBehavior() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    return 'auto';
-  }
-  return 'smooth';
-}
-
-function rememberHashForRestore() {
-  if (window.location.hash) {
-    window.sessionStorage.setItem(PENDING_HASH_KEY, window.location.hash);
-  }
-}
-
-function restoreHashScroll() {
-  if (hashScrollRestored) {
-    return;
-  }
-
-  const hash = window.sessionStorage.getItem(PENDING_HASH_KEY) || window.location.hash;
-  if (!hash) {
-    return;
-  }
-
-  const target = getHashTarget(hash);
-  if (!target) {
-    hashRestoreAttempts += 1;
-    if (hashRestoreAttempts < MAX_HASH_RESTORE_ATTEMPTS) {
-      setTimeout(restoreHashScroll, 100);
-    }
-    return;
-  }
-
-  hashScrollRestored = true;
-  window.sessionStorage.removeItem(PENDING_HASH_KEY);
-
-  window.requestAnimationFrame(() => {
-    target.scrollIntoView({ behavior: getHashScrollBehavior(), block: 'start' });
-  });
-}
 
 /** @param {HTMLElement | null} translateElement */
 function markTranslateReady(translateElement) {
@@ -345,8 +302,6 @@ function addTranslateStyles() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  rememberHashForRestore();
-  window.addEventListener('hashchange', rememberHashForRestore);
   initGoogleTranslate();
 
   setTimeout(cleanupGoogleElements, 1500);
@@ -369,10 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
       restoreHashScroll();
     }
   }, READY_FALLBACK_MS);
-
-  window.addEventListener('load', () => {
-    setTimeout(restoreHashScroll, 150);
-  });
 });
 
 window.addEventListener('beforeunload', () => {

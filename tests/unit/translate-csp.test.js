@@ -46,5 +46,6 @@ describe('translate-csp requirements', () => {
     expect(cspContent).toContain('https://translate-pa.googleapis.com');
     expect(cspContent).toContain('https://www.gstatic.com');
     expect(cspContent).toContain('https://translate.google.com');
+    expect(cspContent).toContain('http://translate.google.com');
   });
 });

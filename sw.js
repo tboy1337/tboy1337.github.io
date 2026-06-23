@@ -9,7 +9,7 @@ import {
   getStaleCacheNames
 } from './lib/sw-utils.mjs';
 
-const CACHE_NAME = 'tboy1337-v1.3.5';
+const CACHE_NAME = 'tboy1337-v1.3.6';
 
 const STATIC_ASSETS = [
   '/',
@@ -25,8 +25,9 @@ const STATIC_ASSETS = [
   '/lib/game-utils.mjs',
   '/lib/bootstrap-site-utils.mjs',
   '/lib/lazy-games-loader.mjs',
-  '/lib/on-dom-ready.mjs',
+  '/lib/hash-scroll.mjs',
   '/lib/nav-hashes.mjs',
+  '/lib/on-dom-ready.mjs',
   '/lib/sw-utils.mjs',
   '/lib/typing-stats.mjs',
   '/lib/memory-game-utils.mjs',

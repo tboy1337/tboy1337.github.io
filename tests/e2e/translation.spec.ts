@@ -5,6 +5,15 @@ const CSP_VIOLATION_PATTERN = /Content Security Policy|Refused to (frame|load|co
 const TRANSLATE_WARNING_PATTERN = /Google Translate/i;
 const HERO_TEXT = 'Developer • Innovator • Problem Solver';
 
+/** Google bot-detection redirects are outside our CSP and not actionable. */
+function isIgnorableTranslateCspViolation(message: string) {
+  return /www\.google\.com\/sorry/i.test(message);
+}
+
+function getActionableCspViolations(violations: string[]) {
+  return violations.filter((message) => !isIgnorableTranslateCspViolation(message));
+}
+
 type ConsoleCollector = {
   cspViolations: string[];
   translateWarnings: string[];
@@ -101,7 +110,7 @@ test.describe('Google Translate widget', () => {
     await waitForTranslateWidget(page);
     await expect(page.locator('#google_translate_element.customized')).toBeVisible();
     await expect(page.locator('select.goog-te-combo')).toBeEnabled();
-    expect(collector.cspViolations).toHaveLength(0);
+    expect(getActionableCspViolations(collector.cspViolations)).toHaveLength(0);
     expect(collector.translateWarnings).toHaveLength(0);
   });
 
@@ -110,7 +119,7 @@ test.describe('Google Translate widget', () => {
     await page.goto('/');
     await waitForTranslateWidget(page);
     await page.waitForTimeout(2000);
-    expect(collector.cspViolations).toHaveLength(0);
+    expect(getActionableCspViolations(collector.cspViolations)).toHaveLength(0);
     expect(collector.translateWarnings).toHaveLength(0);
     expect(collector.pageErrors.filter((message) => message.includes('Google Translate'))).toHaveLength(0);
   });
@@ -137,7 +146,7 @@ test.describe('Google Translate widget', () => {
     await waitForTranslateWidget(page);
     await selectTranslateLanguage(page, 'fr');
     await expect.poll(async () => isPageTranslated(page), { timeout: 20000 }).toBe(true);
-    expect(collector.cspViolations).toHaveLength(0);
+    expect(getActionableCspViolations(collector.cspViolations)).toHaveLength(0);
   });
 
   test('remains usable on mobile viewport', async ({ page }) => {

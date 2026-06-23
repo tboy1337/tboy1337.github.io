@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://www.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://formspree.io https://translate.googleapis.com https://translate-pa.googleapis.com https://translate.google.com; img-src 'self' data: https:; object-src 'none'; base-uri 'self'; form-action https://formspree.io; frame-src 'self' https://translate.google.com https://translate.googleapis.com">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://www.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://formspree.io https://translate.googleapis.com https://translate-pa.googleapis.com https://translate.google.com; img-src 'self' data: https: http://translate.google.com; object-src 'none'; base-uri 'self'; form-action https://formspree.io; frame-src 'self' https://translate.google.com https://translate.googleapis.com">
     <meta name="description" content="Portfolio of tboy1337 - Software developer and innovator. Explore my projects including networking tools, multimedia utilities, system administration scripts, and more.">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <link rel="canonical" href="https://tboy1337.github.io/">
@@ -149,6 +149,13 @@
             html {
                 scroll-behavior: auto;
             }
+        }
+        
+        /* Offset hash scroll targets below the top edge */
+        #main-content,
+        #fun-games,
+        #contact-form {
+            scroll-margin-top: 1.5rem;
         }
         
         /* Improve mobile background appearance */

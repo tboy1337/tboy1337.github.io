@@ -29,7 +29,29 @@ export async function mockAudio(page: Page) {
       connect() { return this; }
       disconnect() {}
       getByteFrequencyData(buffer: Uint8Array) {
-        buffer.fill(0);
+        const effects = window.getMusicStudioEffects?.();
+        let intensity = 0;
+        if (effects) {
+          if (effects.distortion?.enabled) {
+            intensity += effects.distortion.amount * effects.distortion.wetness;
+          }
+          if (effects.delay?.enabled) {
+            intensity += effects.delay.wetness * 120;
+          }
+          if (effects.reverb?.enabled) {
+            intensity += effects.reverb.wetness * 80;
+          }
+          if (effects.chorus?.enabled) {
+            intensity += effects.chorus.wetness * 60;
+          }
+          if (effects.filter?.enabled) {
+            intensity += Math.min(effects.filter.frequency / 40, 120);
+          }
+        }
+        const peak = Math.min(255, Math.round(intensity));
+        for (let i = 0; i < buffer.length; i += 1) {
+          buffer[i] = i < 128 ? peak : Math.round(peak * 0.25);
+        }
       }
     }
 

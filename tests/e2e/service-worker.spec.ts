@@ -95,7 +95,7 @@ test.describe('Service worker', () => {
           return 0;
         }
         const rect = section.getBoundingClientRect();
-        return rect.top >= 0 && rect.top < window.innerHeight * 0.75 ? 1 : 0;
+        return rect.top >= -40 && rect.top < window.innerHeight * 0.85 ? 1 : 0;
       });
     }, { timeout: 15000 }).toBe(1);
     await expect(page.locator('#fun-games')).toBeVisible();

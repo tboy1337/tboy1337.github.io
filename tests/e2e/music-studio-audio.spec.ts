@@ -114,6 +114,22 @@ test.describe('Music Studio audio stability', () => {
     expect(highDistortion?.wetness).toBeCloseTo(0.95, 2);
   });
 
+  test('maps delay slider to time and feedback as well as wetness', async ({ page }) => {
+    await startMusicStudio(page);
+
+    await page.locator('#delay-amount').fill('20');
+    const lightDelay = await page.evaluate(() => window.getMusicStudioEffects?.().delay ?? null);
+    expect(lightDelay?.wetness).toBeCloseTo(0.2, 2);
+    expect(lightDelay?.time).toBeCloseTo(0.2, 1);
+    expect(lightDelay?.feedback).toBeCloseTo(0.3, 1);
+
+    await page.locator('#delay-amount').fill('90');
+    const heavyDelay = await page.evaluate(() => window.getMusicStudioEffects?.().delay ?? null);
+    expect(heavyDelay?.wetness).toBeCloseTo(0.9, 2);
+    expect(heavyDelay?.time).toBeGreaterThan(0.6);
+    expect(heavyDelay?.feedback).toBeGreaterThan(0.7);
+  });
+
   test('changes timbre when distortion mix is increased', async ({ page }) => {
     await startMusicStudio(page);
 
@@ -135,5 +151,63 @@ test.describe('Music Studio audio stability', () => {
     expect(highEnergy).not.toBe(lowEnergy);
     const frequency = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
     expect(frequency).toBeCloseTo(C4_HZ, 1);
+  });
+
+  test('changes timbre when only distortion is enabled after disabling all effects', async ({ page }) => {
+    await startMusicStudio(page);
+
+    for (const effectId of [
+      'reverb-toggle',
+      'delay-toggle',
+      'chorus-toggle',
+      'distortion-toggle',
+      'filter-toggle'
+    ]) {
+      await page.locator(`#${effectId}`).click();
+    }
+    await page.waitForTimeout(200);
+
+    await page.keyboard.press('a');
+    await page.waitForTimeout(150);
+    const dryEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
+
+    await page.locator('#distortion-toggle').click();
+    await page.locator('#distortion-amount').fill('100');
+    await page.waitForTimeout(200);
+    await page.keyboard.press('a');
+    await page.waitForTimeout(150);
+    const distortedEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
+
+    expect(distortedEnergy).not.toBe(dryEnergy);
+    const frequency = await page.evaluate(() => window.getMusicStudioLastFrequency?.() ?? 0);
+    expect(frequency).toBeCloseTo(C4_HZ, 1);
+  });
+
+  test('changes timbre when delay is enabled at high wetness', async ({ page }) => {
+    await startMusicStudio(page);
+
+    for (const effectId of [
+      'reverb-toggle',
+      'delay-toggle',
+      'chorus-toggle',
+      'distortion-toggle',
+      'filter-toggle'
+    ]) {
+      await page.locator(`#${effectId}`).click();
+    }
+    await page.waitForTimeout(200);
+
+    await page.keyboard.press('a');
+    await page.waitForTimeout(150);
+    const dryEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
+
+    await page.locator('#delay-toggle').click();
+    await page.locator('#delay-amount').fill('100');
+    await page.waitForTimeout(200);
+    await page.keyboard.press('a');
+    await page.waitForTimeout(250);
+    const delayedEnergy = await page.evaluate(() => window.getMusicStudioSpectralEnergy?.() ?? 0);
+
+    expect(delayedEnergy).not.toBe(dryEnergy);
   });
 });

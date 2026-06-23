@@ -40,7 +40,7 @@ test.describe('Portfolio page', () => {
     const csp = page.locator('meta[http-equiv="Content-Security-Policy"]');
     await expect(csp).toHaveAttribute('content', /default-src 'self'/);
     await expect(csp).toHaveAttribute('content', /formspree\.io/);
-    await expect(csp).toHaveAttribute('content', /frame-src https:\/\/translate\.google\.com/);
+    await expect(csp).toHaveAttribute('content', /frame-src 'self' https:\/\/translate\.google\.com/);
     await expect(csp).toHaveAttribute('content', /'unsafe-inline'/);
     await expect(csp).toHaveAttribute('content', /translate-pa\.googleapis\.com/);
   });

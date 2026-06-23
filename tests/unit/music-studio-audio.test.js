@@ -157,7 +157,10 @@ describe('MusicStudioAudio.buildSharedEffectChain', () => {
     };
 
     const chain = buildSharedEffectChain(/** @type {AudioContext} */ (context), DEFAULT_EFFECTS);
+    expect(chain.input).toBeTruthy();
     expect(chain.output).toBeTruthy();
+    expect(chain.input).not.toBe(chain.output);
+    expect(chain.nodes[0]).toBe(chain.input);
     expect(chain.nodes.length).toBeGreaterThan(5);
     expect(chain.chorusLFO).toBeTruthy();
   });
@@ -171,6 +174,7 @@ describe('MusicStudioAudio.buildSharedEffectChain', () => {
     effects.reverb.enabled = false;
     effects.chorus.enabled = false;
     const chain = buildSharedEffectChain(/** @type {AudioContext} */ (context), effects);
+    expect(chain.input).toBeTruthy();
     expect(chain.output).toBeTruthy();
     expect(chain.chorusLFO).toBeNull();
   });
@@ -243,6 +247,17 @@ describe('MusicStudioAudio.applyEffectSettings', () => {
     expect(chain.handles.chorus?.chorusGain.gain.value).toBe(0.6);
     expect(chain.handles.chorus?.lfo.frequency.value).toBe(2.5);
   });
+
+  it('clamps filter frequency to the audible range', () => {
+    const context = createMockAudioContext();
+    const chain = buildSharedEffectChain(/** @type {AudioContext} */ (context), DEFAULT_EFFECTS);
+    const effects = JSON.parse(JSON.stringify(DEFAULT_EFFECTS));
+    effects.filter.frequency = 0;
+
+    applyEffectSettings(chain.handles, effects);
+
+    expect(chain.handles.filter?.node.frequency.value).toBe(20);
+  });
 });
 
 describe('MusicStudioAudio.applyEffectDisableBypass', () => {
@@ -293,6 +308,32 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
 
     engine.dispose();
     expect(engine.getActiveVoiceCount()).toBe(0);
+  });
+
+  it('routes voiceBus through the effect chain head, not the tail', () => {
+    /** @type {Array<{ from: object; to: object }>} */
+    const connections = [];
+    const context = createConnectionTrackingAudioContext(connections);
+
+    const engine = createMusicStudioAudioEngine({
+      createContext: () => context,
+      minNoteIntervalMs: 0
+    });
+    engine.init();
+
+    const { head, tail } = engine.getEffectChainEndpoints();
+    expect(head).toBeTruthy();
+    expect(tail).toBeTruthy();
+    expect(head).not.toBe(tail);
+
+    const voiceBusConnections = connections.filter((link) => link.from === context.voiceBus);
+    expect(voiceBusConnections).toHaveLength(1);
+    expect(voiceBusConnections[0]?.to).toBe(head);
+
+    const tailConnections = connections.filter((link) => link.from === tail);
+    expect(tailConnections.some((link) => link.to === context.masterGain)).toBe(true);
+
+    engine.dispose();
   });
 
   it('caps polyphony and releases voices after their duration', () => {
@@ -618,6 +659,35 @@ describe('MusicStudioAudio.createMusicStudioAudioEngine', () => {
 /**
  * @param {(node: object) => void} [onDestinationConnect]
  */
+function createConnectionTrackingAudioContext(connections) {
+  let gainIndex = 0;
+  const base = createMockAudioContext();
+  const context = {
+    ...base,
+    voiceBus: null,
+    masterGain: null,
+    createGain() {
+      const gain = {
+        gain: createAudioParam(),
+        connect(node) {
+          connections.push({ from: gain, to: node });
+          return node;
+        },
+        disconnect() {}
+      };
+      if (gainIndex === 0) {
+        context.voiceBus = gain;
+      } else if (gainIndex === 1) {
+        context.masterGain = gain;
+      }
+      gainIndex += 1;
+      context.createdNodes.push(gain);
+      return gain;
+    }
+  };
+  return context;
+}
+
 function createMockAudioContext(onDestinationConnect) {
   /** @type {OscillatorNode[]} */
   const createdOscillators = [];

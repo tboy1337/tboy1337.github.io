@@ -1997,9 +1997,7 @@ onDomReady(() => {
     
       // Start tempo feedback
       addTempoFeedback();
-    
-      // Log initial state for debugging
-    
+
       startButton.disabled = true;
       resetButton.disabled = false;
     }
@@ -2080,6 +2078,48 @@ onDomReady(() => {
       slider.setAttribute('aria-valuenow', slider.value);
     }
 
+    /**
+     * Map a 0–100 UI slider to the engine effect fields it controls.
+     *
+     * @param {EffectName} effect
+     * @param {number} rawValue
+     */
+    function applyEffectSliderValue(effect, rawValue) {
+      const value = Number(rawValue);
+      const normalized = value / 100;
+
+      if (effect === 'distortion') {
+        currentEffects.distortion.amount = value;
+        currentEffects.distortion.wetness = normalized;
+        return;
+      }
+
+      if (effect === 'filter') {
+        currentEffects.filter.frequency = Math.max(20, value * 50);
+        return;
+      }
+
+      if (effect === 'delay') {
+        currentEffects.delay.wetness = normalized;
+        currentEffects.delay.time = 0.05 + normalized * 0.75;
+        currentEffects.delay.feedback = Math.min(0.9, 0.15 + normalized * 0.75);
+        return;
+      }
+
+      if (effect === 'reverb') {
+        currentEffects.reverb.wetness = normalized;
+        currentEffects.reverb.roomSize = 0.1 + normalized * 0.8;
+        currentEffects.reverb.damping = Math.max(0, 1 - normalized * 0.7);
+        return;
+      }
+
+      if (effect === 'chorus') {
+        currentEffects.chorus.wetness = normalized;
+        currentEffects.chorus.depth = 0.1 + normalized * 0.4;
+        currentEffects.chorus.rate = 0.5 + normalized * 3;
+      }
+    }
+
     // Initialize effect states after DOM is ready
     function initializeEffectStates() {
       /** @type {EffectName[]} */
@@ -2122,15 +2162,7 @@ onDomReady(() => {
           if (!target) {
             return;
           }
-          const value = Number(target.value) / 100;
-          if (effect === 'distortion') {
-            currentEffects[effect].amount = parseInt(target.value, 10);
-            currentEffects[effect].wetness = value;
-          } else if (effect === 'filter') {
-            currentEffects[effect].frequency = parseInt(target.value, 10) * 50;
-          } else {
-            currentEffects[effect].wetness = value;
-          }
+          applyEffectSliderValue(effect, parseInt(target.value, 10));
           target.setAttribute('aria-valuenow', target.value);
           void ensureAudioResumed();
           syncEngineEffects();
