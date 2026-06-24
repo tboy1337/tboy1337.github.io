@@ -1477,7 +1477,7 @@ onDomReady(() => {
           <!-- Effects Panel -->
           <div class="effects-panel">
             <div class="effects-title">🎛️ Effects</div>
-            <span class="control-hint">Effects apply live while you play — pitch stays the same, sound character changes</span>
+            <span class="control-hint">Effects apply live while you play</span>
             <div class="effects-grid">
               <div class="effect-control">
                 <input type="checkbox" id="reverb-toggle" class="effect-toggle" checked>
