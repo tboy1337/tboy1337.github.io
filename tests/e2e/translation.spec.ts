@@ -53,17 +53,17 @@ async function waitForTranslateWidget(page: Page) {
       if (!root?.classList.contains('customized')) {
         return 0;
       }
-      if (select instanceof HTMLSelectElement && !select.disabled) {
-        return 1;
+      if (!(select instanceof HTMLSelectElement) || select.disabled) {
+        return 0;
       }
-      const gadget = root.querySelector('.goog-te-gadget, .goog-te-gadget-simple');
-      return gadget && window.googleTranslateInitialized ? 1 : 0;
+      return select.options.length > 1 ? 1 : 0;
     });
   }, { timeout: 25000 }).toBe(1);
 
   try {
     await pollReady();
   } catch {
+    // Google Translate CDN can flake after many navigations in the full e2e suite.
     await page.reload();
     await pollReady();
   }
@@ -113,6 +113,17 @@ test.describe('Google Translate widget', () => {
     await expect(page.locator('select.goog-te-combo')).toBeEnabled();
     expect(getActionableCspViolations(collector.cspViolations)).toHaveLength(0);
     expect(collector.translateWarnings).toHaveLength(0);
+  });
+
+  test('opens the language select when the gadget is clicked on first load', async ({ page }) => {
+    await page.goto('/');
+    await waitForTranslateWidget(page);
+
+    const gadget = page.locator('#google_translate_element .goog-te-gadget, #google_translate_element .goog-te-gadget-simple');
+    await expect(gadget).toBeVisible();
+    await gadget.click();
+
+    await expect(page.locator('select.goog-te-combo')).toBeFocused();
   });
 
   test('does not emit CSP violations or translate warnings after settle', async ({ page }) => {

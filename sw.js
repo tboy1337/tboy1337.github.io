@@ -10,7 +10,7 @@ import {
 } from './lib/sw-utils.mjs';
 import { RUNTIME_PRECACHE_ASSETS } from './lib/sw-precache.mjs';
 
-const CACHE_NAME = 'tboy1337-v1.4.1';
+const CACHE_NAME = 'tboy1337-v1.4.2';
 
 const STATIC_ASSETS = [
   '/',
@@ -29,6 +29,7 @@ const STATIC_ASSETS = [
   '/lib/hash-scroll.mjs',
   '/lib/nav-hashes.mjs',
   '/lib/on-dom-ready.mjs',
+  '/lib/translate-widget.mjs',
   '/lib/sw-utils.mjs',
   '/lib/typing-stats.mjs',
   '/lib/memory-game-utils.mjs',

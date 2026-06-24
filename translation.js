@@ -8,10 +8,17 @@
 import {
   restoreHashScroll
 } from './lib/hash-scroll.mjs';
+import { onDomReady } from './lib/on-dom-ready.mjs';
+import {
+  attachTranslateClickFallback,
+  cleanupTranslateBranding,
+  isTranslateSelectReady,
+  READY_POLL_MAX_MS,
+  waitForTranslateSelectReady
+} from './lib/translate-widget.mjs';
 
 const INCLUDED_LANGUAGES = 'ar,bg,cs,da,nl,en,fi,fr,de,el,he,hi,hu,id,it,ja,ko,no,pl,pt,ro,ru,sk,es,sv,th,tr,uk,vi,zh-CN,zh-TW';
 const INIT_TIMEOUT_MS = 10000;
-const READY_FALLBACK_MS = 5000;
 
 /** @type {ReturnType<typeof setInterval> | null} */
 let cleanupIntervalId = null;
@@ -44,6 +51,28 @@ function showTranslateError() {
   markTranslateReady(translateElement);
 }
 
+function handleTranslateWidgetReady(/** @type {ParentNode} */ root) {
+  const translateElement = root instanceof HTMLElement
+    ? root
+    : document.getElementById('google_translate_element');
+  if (!translateElement) {
+    return;
+  }
+  markTranslateReady(translateElement);
+  attachTranslateClickFallback(translateElement);
+}
+
+function handleTranslateWidgetTimeout() {
+  const translateElement = document.getElementById('google_translate_element');
+  if (isTranslateSelectReady() && translateElement) {
+    handleTranslateWidgetReady(translateElement);
+    return;
+  }
+
+  console.warn('Google Translate language select did not become ready in time.');
+  showTranslateError();
+}
+
 // Register before element.js loads — Google calls this callback by name.
 window.googleTranslateElementInit = function googleTranslateElementInit() {
   try {
@@ -56,9 +85,9 @@ window.googleTranslateElementInit = function googleTranslateElementInit() {
       includedLanguages: INCLUDED_LANGUAGES
     }, 'google_translate_element');
 
-    markTranslateReady(document.getElementById('google_translate_element'));
     cleanupTranslateBranding();
     setTimeout(cleanupGoogleElements, 100);
+    waitForTranslateSelectReady(handleTranslateWidgetReady, handleTranslateWidgetTimeout);
   } catch (error) {
     console.error('Error during Google Translate initialization:', error);
     showTranslateError();
@@ -92,26 +121,6 @@ function initGoogleTranslate() {
     console.error('Error initializing Google Translate:', error);
     showTranslateError();
   }
-}
-
-function cleanupTranslateBranding() {
-  const root = document.getElementById('google_translate_element');
-  if (!root) {
-    return;
-  }
-
-  root.querySelectorAll('a[href*="translate.google.com"]').forEach((anchor) => {
-    const poweredBy = anchor.closest('span') ?? anchor;
-    poweredBy.remove();
-  });
-
-  root.querySelectorAll('.goog-te-gadget, .goog-te-gadget-simple').forEach((gadget) => {
-    Array.from(gadget.childNodes).forEach((node) => {
-      if (node.nodeType === Node.TEXT_NODE && /\S/.test(node.textContent ?? '')) {
-        node.remove();
-      }
-    });
-  });
 }
 
 function cleanupGoogleElements() {
@@ -190,7 +199,7 @@ function addTranslateStyles() {
       white-space: nowrap !important;
       vertical-align: middle !important;
       position: relative !important;
-      overflow: hidden !important;
+      overflow: visible !important;
       max-width: min(100%, 220px) !important;
     }
 
@@ -227,7 +236,7 @@ function addTranslateStyles() {
     #google_translate_element .goog-te-gadget span.goog-te-menu2,
     #google_translate_element .goog-te-gadget .goog-te-menu-value span:first-child,
     #google_translate_element .goog-te-gadget-simple:has(select.goog-te-combo) span:not(:has(select)),
-    #google_translate_element .goog-te-gadget > span,
+    #google_translate_element .goog-te-gadget > span:not(:has(select)),
     #google_translate_element .goog-te-gadget a[href*="translate.google.com"],
     #google_translate_element .goog-te-gadget-simple a[href*="translate.google.com"] {
       display: none !important;
@@ -345,7 +354,7 @@ function addTranslateStyles() {
   document.head.appendChild(styleElement);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+onDomReady(() => {
   initGoogleTranslate();
 
   setTimeout(cleanupGoogleElements, 1500);
@@ -362,12 +371,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(() => {
     const translateElement = document.getElementById('google_translate_element');
-    if (translateElement && !translateElement.classList.contains('customized')) {
-      markTranslateReady(translateElement);
-    } else {
+    if (!translateElement?.classList.contains('customized')) {
       restoreHashScroll();
     }
-  }, READY_FALLBACK_MS);
+  }, READY_POLL_MAX_MS);
 });
 
 window.addEventListener('beforeunload', () => {
