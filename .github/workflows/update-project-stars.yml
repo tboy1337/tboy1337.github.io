@@ -1,0 +1,49 @@
+name: Update project stars
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update project star counts and ordering
+        run: npm run update:projects
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate regenerated HTML
+        run: npm run validate:html
+
+      - name: Commit and push changes
+        run: |
+          if git diff --quiet -- data/projects.json index.html; then
+            echo "No project ordering changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/projects.json index.html
+          git commit -m "$(cat <<'EOF'
+          chore: update project star counts and order
+          EOF
+          )"
+          git push

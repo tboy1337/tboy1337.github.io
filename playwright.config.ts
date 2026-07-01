@@ -15,7 +15,15 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'translation',
+      testMatch: /translation\.spec\.ts/,
+      retries: 2,
+      use: { ...devices['Desktop Chrome'] }
+    },
+    {
       name: 'chromium',
+      testMatch: /.*\.spec\.ts/,
+      testIgnore: /translation\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] }
     }
   ],

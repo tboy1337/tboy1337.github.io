@@ -1,0 +1,408 @@
+{
+  "lastUpdated": "2026-07-01T10:18:21.829Z",
+  "projects": [
+    {
+      "id": "windows-rescue",
+      "title": "WindowsRescue",
+      "description": "This repository provides a collection of batch scripts to repair, maintain, optimize and update Windows systems.",
+      "tags": [
+        {
+          "label": "Batch",
+          "color": "purple-600"
+        },
+        {
+          "label": "System",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "WindowsRescue",
+        "url": "https://github.com/tboy1337/WindowsRescue"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-purple-500 to-pink-600",
+        "hoverGradient": "hover:from-purple-600 hover:to-pink-700"
+      },
+      "stars": 25
+    },
+    {
+      "id": "git-manager-windows",
+      "title": "Git Manager Windows",
+      "description": "Batch scripts to automate the downloading, installation, uninstallation and updating of Git on Windows systems.",
+      "tags": [
+        {
+          "label": "Batch",
+          "color": "purple-600"
+        },
+        {
+          "label": "System",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "Git-Manager-Windows",
+        "url": "https://github.com/tboy1337/Git-Manager-Windows"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-purple-500 to-pink-600",
+        "hoverGradient": "hover:from-purple-600 hover:to-pink-700"
+      },
+      "stars": 6
+    },
+    {
+      "id": "mediarelay",
+      "title": "MediaRelay",
+      "description": "A video streaming server that allows you to securely share your personal video library over the internet with robust security, monitoring, and performance features.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Streaming",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "MediaRelay",
+        "url": "https://github.com/tboy1337/MediaRelay"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-purple-500 to-pink-600",
+        "hoverGradient": "hover:from-purple-600 hover:to-pink-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "subtitletools",
+      "title": "SubtitleTools",
+      "description": "A tool for subtitle processing workflows, including extraction, conversion and optimization.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Multimedia",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "SubtitleTools",
+        "url": "https://github.com/tboy1337/SubtitleTools"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-green-500 to-teal-600",
+        "hoverGradient": "hover:from-green-600 hover:to-teal-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "blinter",
+      "title": "Blinter",
+      "description": "Blinter is a linter for Windows batch files. It provides comprehensive static analysis to identify syntax errors, security vulnerabilities, performance issues and style problems.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Linting",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "Blinter",
+        "url": "https://github.com/tboy1337/Blinter"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-blue-500 to-indigo-600",
+        "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
+      },
+      "stars": 47
+    },
+    {
+      "id": "commercial-restricted-license",
+      "title": "Commercial Restricted License",
+      "description": "The Commercial Restricted License (CRL) is a software license designed to bridge the gap between fully open and fully proprietary software.",
+      "tags": [
+        {
+          "label": "Legal",
+          "color": "gray-600"
+        },
+        {
+          "label": "Documentation",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "Commercial-Restricted-License",
+        "url": "https://github.com/tboy1337/Commercial-Restricted-License"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-gray-500 to-gray-600",
+        "hoverGradient": "hover:from-gray-600 hover:to-gray-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "multisocks",
+      "title": "MultiSocks",
+      "description": "A SOCKS proxy that aggregates multiple remote SOCKS proxies, increasing your bandwidth by distributing traffic across them.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Networking",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "multisocks",
+        "url": "https://github.com/tboy1337/multisocks"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-blue-500 to-indigo-600",
+        "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "dispatch-py",
+      "title": "Dispatch-py",
+      "description": "A SOCKS proxy that balances traffic between network interfaces, optimizing network performance.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Networking",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "dispatch-py",
+        "url": "https://github.com/tboy1337/dispatch-py"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-blue-500 to-indigo-600",
+        "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "scrapeer-py",
+      "title": "Scrapeer-py",
+      "description": "A tiny Python library that lets you scrape HTTP(S) and UDP trackers for torrent information.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Networking",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "scrapeer-py",
+        "url": "https://github.com/tboy1337/scrapeer-py"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-blue-500 to-indigo-600",
+        "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "dav2mkv",
+      "title": "DAV2MKV",
+      "description": "A versatile tool for converting DAV video files to MKV or MP4 while maintaining perfect quality.",
+      "tags": [
+        {
+          "label": "Multi",
+          "color": "orange-600"
+        },
+        {
+          "label": "Multimedia",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "dav2mkv",
+        "url": "https://github.com/tboy1337/dav2mkv"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-green-500 to-teal-600",
+        "hoverGradient": "hover:from-green-600 hover:to-teal-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "freesms",
+      "title": "FreeSMS",
+      "description": "A cross-platform Python application with PySide GUI that allows sending free SMS messages to mobile phones worldwide.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Communication",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "FreeSMS",
+        "url": "https://github.com/tboy1337/FreeSMS"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-green-500 to-teal-600",
+        "hoverGradient": "hover:from-green-600 hover:to-teal-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "tgcrypto2",
+      "title": "TgCrypto2",
+      "description": "Fork of tgcrypto with working wheels for Python 3.9-3.13 for Windows, Mac and Linux.",
+      "tags": [
+        {
+          "label": "C",
+          "color": "blue-600"
+        },
+        {
+          "label": "Crypto",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "tgcrypto2",
+        "url": "https://github.com/tboy1337/tgcrypto2"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-green-500 to-teal-600",
+        "hoverGradient": "hover:from-green-600 hover:to-teal-700"
+      },
+      "stars": 2
+    },
+    {
+      "id": "profitpioneer",
+      "title": "ProfitPioneer",
+      "description": "A comprehensive e-commerce analytics dashboard built with Streamlit that provides business intelligence insights for online retail businesses.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Analytics",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "ProfitPioneer",
+        "url": "https://github.com/tboy1337/ProfitPioneer"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-green-500 to-teal-600",
+        "hoverGradient": "hover:from-green-600 hover:to-teal-700"
+      },
+      "stars": 1
+    },
+    {
+      "id": "clockclock24-py",
+      "title": "ClockClock24-py",
+      "description": "Python port of the ClockClock project - a creative clock display made of analog clocks.",
+      "tags": [
+        {
+          "label": "Python",
+          "color": "blue-600"
+        },
+        {
+          "label": "Fun",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "ClockClock24-py",
+        "url": "https://github.com/tboy1337/ClockClock24-py"
+      },
+      "button": {
+        "text": "View Project",
+        "gradient": "from-purple-500 to-pink-600",
+        "hoverGradient": "hover:from-purple-600 hover:to-pink-700"
+      },
+      "stars": 0
+    },
+    {
+      "id": "cryptocurrency-wallet-generators",
+      "title": "Cryptocurrency Wallet Generators",
+      "description": "A collection of open-source tools for generating wallets for various cryptocurrencies including Bitcoin, Ethereum, Solana, and more.",
+      "tags": [
+        {
+          "label": "JavaScript",
+          "color": "yellow-600"
+        },
+        {
+          "label": "Crypto",
+          "color": "gray-700"
+        }
+      ],
+      "github": {
+        "type": "organization",
+        "url": "https://github.com/Cryptocurrency-Wallet-Generators"
+      },
+      "button": {
+        "text": "View Organization",
+        "gradient": "from-yellow-500 to-orange-600",
+        "hoverGradient": "hover:from-yellow-600 hover:to-orange-700"
+      },
+      "stars": null
+    }
+  ]
+}

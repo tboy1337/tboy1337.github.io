@@ -23,6 +23,20 @@ test.describe('Portfolio page', () => {
     await expect(page.getByRole('heading', { name: 'Blinter' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Starstruck' })).toBeVisible();
     await expect(page.getByText(/Last updated: \w+ \d{4}/)).toBeVisible();
+    await expect(page.locator('.project-card')).toHaveCount(15);
+  });
+
+  test('shows GitHub star counts only for starred projects', async ({ page }) => {
+    const starBadges = page.locator('.project-card [role="img"][aria-label$="GitHub stars"]');
+    const badgeCount = await starBadges.count();
+
+    expect(badgeCount).toBeGreaterThan(0);
+
+    for (let index = 0; index < badgeCount; index += 1) {
+      const label = await starBadges.nth(index).getAttribute('aria-label');
+      const stars = Number(label?.match(/^(\d+)/)?.[1] ?? '0');
+      expect(stars).toBeGreaterThan(0);
+    }
   });
 
   test('contact form fields are present with accessibility labels', async ({ page }) => {

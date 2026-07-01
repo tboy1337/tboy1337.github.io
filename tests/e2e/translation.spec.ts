@@ -58,14 +58,26 @@ async function waitForTranslateWidget(page: Page) {
       }
       return select.options.length > 1 ? 1 : 0;
     });
-  }, { timeout: 25000 }).toBe(1);
+  }, { timeout: 30000 }).toBe(1);
 
-  try {
-    await pollReady();
-  } catch {
-    // Google Translate CDN can flake after many navigations in the full e2e suite.
-    await page.reload();
-    await pollReady();
+  const maxAttempts = 3;
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await pollReady();
+      lastError = undefined;
+      break;
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxAttempts) {
+        await page.reload({ waitUntil: 'domcontentloaded' });
+      }
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
   }
 
   const hasSelect = await page.locator('select.goog-te-combo').count();
@@ -83,7 +95,7 @@ async function waitForTranslateLanguages(page: Page) {
       }
       return select.options.length > 1 ? 1 : 0;
     });
-  }, { timeout: 25000 }).toBe(1);
+  }, { timeout: 30000 }).toBe(1);
 }
 
 async function selectTranslateLanguage(page: Page, languageCode: string) {

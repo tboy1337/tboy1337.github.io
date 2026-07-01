@@ -5,7 +5,8 @@
   "scripts": {
     "build:css": "tailwindcss -i ./src/tailwind.css -o ./tailwind.css --minify && node scripts/minify-games-css.mjs",
     "build": "npm run build:css",
-    "lint:js": "eslint games.js translation.js sw.js site-sw-register.js contact-form.js lib/**/*.mjs tests/**/*.js",
+    "update:projects": "node scripts/update-projects.mjs",
+    "lint:js": "eslint games.js translation.js sw.js site-sw-register.js contact-form.js lib/**/*.mjs scripts/**/*.mjs tests/**/*.js",
     "lint:css": "stylelint \"**/*.css\"",
     "lint": "npm run lint:js && npm run lint:css",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.sw.json",
