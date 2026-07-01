@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-01T10:18:21.829Z",
+  "lastUpdated": "2026-07-01T12:00:23.913Z",
   "projects": [
     {
       "id": "windows-rescue",
@@ -164,58 +164,58 @@
       "stars": 0
     },
     {
-      "id": "multisocks",
-      "title": "MultiSocks",
-      "description": "A SOCKS proxy that aggregates multiple remote SOCKS proxies, increasing your bandwidth by distributing traffic across them.",
+      "id": "run-bitcoin-tests",
+      "title": "Bitcoin Core Tests Runner",
+      "description": "Docker-based solution to run Bitcoin Core C++ unit tests and Python functional tests with flexible configuration.",
       "tags": [
         {
           "label": "Python",
           "color": "blue-600"
         },
         {
-          "label": "Networking",
+          "label": "Bitcoin",
           "color": "gray-700"
         }
       ],
       "github": {
         "type": "repository",
         "owner": "tboy1337",
-        "repo": "multisocks",
-        "url": "https://github.com/tboy1337/multisocks"
+        "repo": "run-bitcoin-tests",
+        "url": "https://github.com/tboy1337/run-bitcoin-tests"
       },
       "button": {
         "text": "View Project",
         "gradient": "from-blue-500 to-indigo-600",
         "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
       },
-      "stars": 0
+      "stars": 6
     },
     {
-      "id": "dispatch-py",
-      "title": "Dispatch-py",
-      "description": "A SOCKS proxy that balances traffic between network interfaces, optimizing network performance.",
+      "id": "pyrefactor",
+      "title": "PyRefactor",
+      "description": "A Python refactoring and optimization linter that uses AST analysis to identify performance issues, complexity problems, and code improvements.",
       "tags": [
         {
           "label": "Python",
           "color": "blue-600"
         },
         {
-          "label": "Networking",
+          "label": "Linting",
           "color": "gray-700"
         }
       ],
       "github": {
         "type": "repository",
         "owner": "tboy1337",
-        "repo": "dispatch-py",
-        "url": "https://github.com/tboy1337/dispatch-py"
+        "repo": "PyRefactor",
+        "url": "https://github.com/tboy1337/PyRefactor"
       },
       "button": {
         "text": "View Project",
         "gradient": "from-blue-500 to-indigo-600",
         "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
       },
-      "stars": 0
+      "stars": 2
     },
     {
       "id": "scrapeer-py",
@@ -353,31 +353,31 @@
       "stars": 1
     },
     {
-      "id": "clockclock24-py",
-      "title": "ClockClock24-py",
-      "description": "Python port of the ClockClock project - a creative clock display made of analog clocks.",
+      "id": "pr2md",
+      "title": "PR2MD",
+      "description": "Command-line tool that extracts GitHub Pull Request and Issue data and converts it into comprehensive, well-formatted Markdown documents.",
       "tags": [
         {
           "label": "Python",
           "color": "blue-600"
         },
         {
-          "label": "Fun",
+          "label": "CLI",
           "color": "gray-700"
         }
       ],
       "github": {
         "type": "repository",
         "owner": "tboy1337",
-        "repo": "ClockClock24-py",
-        "url": "https://github.com/tboy1337/ClockClock24-py"
+        "repo": "PR2MD",
+        "url": "https://github.com/tboy1337/PR2MD"
       },
       "button": {
         "text": "View Project",
         "gradient": "from-purple-500 to-pink-600",
         "hoverGradient": "hover:from-purple-600 hover:to-pink-700"
       },
-      "stars": 0
+      "stars": 2
     },
     {
       "id": "cryptocurrency-wallet-generators",

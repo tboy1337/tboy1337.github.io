@@ -55,8 +55,6 @@ The site includes four fully-featured browser games:
 The portfolio showcases the following key projects:
 
 ### Networking & Proxy Tools
-- **[MultiSocks](https://github.com/tboy1337/multisocks)**: SOCKS proxy aggregator for bandwidth optimization
-- **[Dispatch-py](https://github.com/tboy1337/dispatch-py)**: Traffic balancing SOCKS proxy for network optimization
 - **[Scrapeer-py](https://github.com/tboy1337/scrapeer-py)**: Library for scraping HTTP(S) and UDP trackers for torrent information
 
 ### Multimedia & Content Tools
@@ -74,15 +72,15 @@ The portfolio showcases the following key projects:
 
 ### Development Tools
 - **[Blinter](https://github.com/tboy1337/Blinter)**: Blinter is a linter for Windows batch files. It provides comprehensive static analysis to identify syntax errors, security vulnerabilities, performance issues and style problems
+- **[PyRefactor](https://github.com/tboy1337/PyRefactor)**: AST-based Python refactoring and optimization linter
+- **[PR2MD](https://github.com/tboy1337/PR2MD)**: CLI tool to export GitHub PRs and issues to Markdown
 
 ### Analytics & Business
 - **[ProfitPioneer](https://github.com/tboy1337/ProfitPioneer)**: Comprehensive e-commerce analytics dashboard built with Streamlit for business intelligence insights
 
 
-### Fun Projects
-- **[ClockClock24-py](https://github.com/tboy1337/ClockClock24-py)**: Python port of the ClockClock project - creative clock display made of analog clocks
-
 ### Cryptocurrency Tools
+- **[Bitcoin Core Tests Runner](https://github.com/tboy1337/run-bitcoin-tests)**: Docker-based runner for Bitcoin Core C++ and Python functional tests
 - **[Cryptocurrency Wallet Generators Organization](https://github.com/Cryptocurrency-Wallet-Generators)**: Collection of open-source tools for generating wallets for various cryptocurrencies
 
 ### Legal & Documentation
