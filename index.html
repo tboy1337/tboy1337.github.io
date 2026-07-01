@@ -127,6 +127,13 @@
             text-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
+        .section-heading {
+            text-decoration: underline;
+            text-decoration-color: rgba(45, 212, 191, 0.75);
+            text-underline-offset: 0.2em;
+            text-decoration-thickness: 2px;
+        }
+
         /* Ensure proper stacking and smooth transitions */
         main, header, footer {
             position: relative;
@@ -193,7 +200,7 @@
     <main id="main-content" class="flex-grow container mx-auto px-4 py-8">
         <section class="grid md:grid-cols-2 gap-8">
             <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
-                <h2 class="text-2xl font-semibold mb-4"><span aria-hidden="true">👋 </span>About Me</h2>
+                <h2 class="text-2xl font-semibold mb-4 section-heading">About Me</h2>
                 <p class="text-gray-300">Passionate developer with a diverse portfolio of projects spanning multiple technologies and programming languages. Always exploring new ideas and building innovative solutions across various domains.</p>
                 <div class="mt-4 flex space-x-4">
                     <a href="https://github.com/tboy1337" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer">GitHub Profile</a>
@@ -202,7 +209,7 @@
             </div>
 
             <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
-                <h2 class="text-2xl font-semibold mb-4"><span aria-hidden="true">🛠️ </span>Tech Stack</h2>
+                <h2 class="text-2xl font-semibold mb-4 section-heading">Tech Stack</h2>
                 <div class="flex flex-wrap gap-2">
                     <span class="bg-blue-500 text-white px-3 py-1 rounded-full">Python</span>
                     <span class="bg-yellow-500 text-white px-3 py-1 rounded-full">JavaScript</span>
@@ -218,7 +225,7 @@
 
         <section class="mt-12">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold"><span aria-hidden="true">🚀 </span>Featured Projects</h2>
+                <h2 class="text-3xl font-bold section-heading">Featured Projects</h2>
                 <a href="https://github.com/tboy1337?tab=repositories" class="text-indigo-400 hover:text-indigo-300 transition-colors" target="_blank" rel="noopener noreferrer">
                     View All <i class="fas fa-arrow-right ml-1" aria-hidden="true"></i>
                 </a>
@@ -410,11 +417,11 @@
         </section>
 
         <section class="mt-12" id="contact-form">
-            <h2 class="text-3xl font-bold text-center mb-6"><span aria-hidden="true">📬 </span>Contact Me</h2>
+            <h2 class="text-3xl font-bold text-center mb-6 section-heading">Contact Me</h2>
             <div class="max-w-2xl mx-auto">
                 <div class="bg-black/40 p-8 rounded-lg backdrop-blur-sm border border-white/10">
                     <div class="mb-6 text-center">
-                        <p class="text-gray-300">Have a project idea or want to collaborate? I'd love to hear from you!</p>
+                        <p class="text-gray-300">Have a project idea, job offer or want to collaborate? I'd love to hear from you!</p>
                     </div>
 
                     <form class="space-y-6">
@@ -518,7 +525,7 @@
         </section>
 
         <section class="mt-12" id="fun-games">
-            <h2 class="text-3xl font-bold text-center mb-6"><span aria-hidden="true">🎮 </span>Fun &amp; Games</h2>
+            <h2 class="text-3xl font-bold text-center mb-6 section-heading">Fun &amp; Games</h2>
             <!-- Game Menu Navigation -->
             <nav class="game-menu backdrop-blur-sm border border-white/10 mb-6" aria-label="Game selection menu">
                 <ul class="flex flex-wrap justify-center">
@@ -639,7 +646,7 @@
         </section>
 
         <section class="mt-12">
-            <h2 class="text-3xl font-bold text-center mb-6"><span aria-hidden="true">🏆 </span>GitHub Achievements</h2>
+            <h2 class="text-3xl font-bold text-center mb-6 section-heading">GitHub Achievements</h2>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
                 <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10 flex flex-col items-center">
                     <div class="w-16 h-16 mb-3 flex items-center justify-center">
