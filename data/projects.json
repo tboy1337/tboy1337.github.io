@@ -247,11 +247,11 @@
     {
       "id": "dav2mkv",
       "title": "DAV2MKV",
-      "description": "A versatile tool for converting DAV video files to MKV or MP4 while maintaining perfect quality.",
+      "description": "A command-line tool for converting DAV video files to MKV or MP4 while maintaining perfect quality.",
       "tags": [
         {
-          "label": "Multi",
-          "color": "orange-600"
+          "label": "Python",
+          "color": "blue-600"
         },
         {
           "label": "Multimedia",
