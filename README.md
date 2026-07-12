@@ -165,10 +165,11 @@ The website is fully responsive and includes:
 
 ## 🌐 Deployment
 
-The website is automatically deployed through GitHub Pages:
-- **Source**: Main branch of this repository
+The website is deployed through GitHub Pages via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml):
+- **Source**: GitHub Actions workflow on the `main` branch
 - **URL**: [https://tboy1337.github.io](https://tboy1337.github.io)
-- **Updates**: Automatic deployment on every push to main branch
+- **Updates**: Automatic deployment on every push to `main` (builds CSS, prepares `_site/`, then deploys)
+- **Manual redeploy**: Actions -> **Deploy GitHub Pages** -> **Run workflow**
 - **CDN**: Global content delivery via GitHub's infrastructure
 - **Security headers**: GitHub Pages does not support custom HTTP headers (CSP, HSTS). The site uses a best-effort meta Content-Security-Policy; full header-based CSP/HSTS requires a reverse proxy such as Cloudflare.
 
@@ -218,11 +219,13 @@ npm run check
 
 ### Pre-deploy checklist
 
-Before pushing to `main` (which auto-deploys to GitHub Pages):
+Before pushing to `main` (which triggers the GitHub Actions deploy workflow):
 
 ```bash
 npm run build && npm run check
 ```
+
+CI also runs `npm run build` during deployment, but local checks catch issues before they reach `main`.
 
 ### Local development
 
