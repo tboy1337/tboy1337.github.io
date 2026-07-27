@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-20T09:20:54.813Z",
+  "lastUpdated": "2026-07-27T09:57:27.663Z",
   "projects": [
     {
       "id": "windows-rescue",
@@ -107,7 +107,7 @@
         "gradient": "from-green-500 to-teal-600",
         "hoverGradient": "hover:from-green-600 hover:to-teal-700"
       },
-      "stars": 0
+      "stars": 1
     },
     {
       "id": "blinter",
