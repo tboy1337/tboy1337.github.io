@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-27T09:57:27.663Z",
+  "lastUpdated": "2026-08-03T09:52:14.313Z",
   "projects": [
     {
       "id": "windows-rescue",
@@ -377,7 +377,7 @@
         "gradient": "from-purple-500 to-pink-600",
         "hoverGradient": "hover:from-purple-600 hover:to-pink-700"
       },
-      "stars": 2
+      "stars": 1
     },
     {
       "id": "cryptocurrency-wallet-generators",
