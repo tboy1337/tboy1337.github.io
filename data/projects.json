@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-03T09:52:14.313Z",
+  "lastUpdated": "2026-08-10T07:47:19.045Z",
   "projects": [
     {
       "id": "windows-rescue",
@@ -134,7 +134,7 @@
         "gradient": "from-blue-500 to-indigo-600",
         "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
       },
-      "stars": 47
+      "stars": 48
     },
     {
       "id": "commercial-restricted-license",
@@ -350,7 +350,7 @@
         "gradient": "from-green-500 to-teal-600",
         "hoverGradient": "hover:from-green-600 hover:to-teal-700"
       },
-      "stars": 1
+      "stars": 0
     },
     {
       "id": "pr2md",
