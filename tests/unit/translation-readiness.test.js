@@ -2,9 +2,19 @@
 /* global Option */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  applyTranslateLanguageLabels,
+  attachTranslateLanguageLabels,
+  getLanguageEndonym,
+  INCLUDED_LANGUAGES,
+  LANGUAGE_ENDONYMS,
+  TRANSLATE_PLACEHOLDER_LABEL
+} from '../../lib/translate-languages.mjs';
+import {
+  attachTranslateChromeHider,
   attachTranslateClickFallback,
   cleanupTranslateBranding,
   getTranslateSelect,
+  hideTranslateChrome,
   isTranslateSelectReady,
   isTranslateSelectVisible,
   openTranslateSelect,
@@ -164,6 +174,75 @@ describe('translate-widget branding cleanup', () => {
 
     expect(gadget.textContent).toBe('');
     root.remove();
+  });
+});
+
+describe('translate-widget banner chrome', () => {
+  afterEach(() => {
+    document.querySelectorAll('.goog-te-banner-frame, .skiptranslate').forEach((node) => {
+      if (node.id !== 'google_translate_element') {
+        node.remove();
+      }
+    });
+    document.body.style.removeProperty('top');
+  });
+
+  it('hides the banner iframe and resets body offset', () => {
+    const banner = document.createElement('iframe');
+    banner.className = 'goog-te-banner-frame skiptranslate';
+    document.body.append(banner);
+    document.body.style.top = '40px';
+
+    expect(hideTranslateChrome()).toBeGreaterThan(0);
+    expect(document.querySelector('.goog-te-banner-frame')).toBe(banner);
+    expect(banner.style.getPropertyValue('display')).toBe('none');
+    expect(banner.getAttribute('aria-hidden')).toBe('true');
+    expect(document.body.style.getPropertyValue('top')).toBe('0px');
+  });
+
+  it('hides a skiptranslate banner that is a direct child of body', () => {
+    const banner = document.createElement('div');
+    banner.className = 'skiptranslate';
+    const iframe = document.createElement('iframe');
+    iframe.className = 'skiptranslate';
+    banner.append(iframe);
+    document.body.append(banner);
+
+    hideTranslateChrome();
+
+    const bodyBanner = document.body.querySelector(':scope > .skiptranslate');
+    expect(bodyBanner).toBe(banner);
+    expect(banner.style.getPropertyValue('display')).toBe('none');
+  });
+
+  it('does not remove the language gadget inside the widget root', () => {
+    const root = createTranslateRoot();
+    const gadget = document.createElement('div');
+    gadget.className = 'skiptranslate goog-te-gadget';
+    const select = document.createElement('select');
+    select.className = 'goog-te-combo';
+    select.append(new Option('English', 'en'), new Option('Spanish', 'es'));
+    gadget.append(select);
+    root.append(gadget);
+
+    hideTranslateChrome();
+
+    expect(root.querySelector('.goog-te-gadget')).toBe(gadget);
+    expect(getTranslateSelect(root)).toBe(select);
+    root.remove();
+  });
+
+  it('hides banner chrome that Google injects after attach', async () => {
+    expect(attachTranslateChromeHider()).toBe(true);
+    expect(attachTranslateChromeHider()).toBe(true);
+
+    const banner = document.createElement('iframe');
+    banner.className = 'goog-te-banner-frame';
+    document.body.append(banner);
+
+    await vi.waitFor(() => {
+      expect(banner.style.getPropertyValue('display')).toBe('none');
+    });
   });
 });
 
@@ -330,5 +409,161 @@ describe('translate-widget readiness polling', () => {
 
     expect(onReady).not.toHaveBeenCalled();
     expect(onTimeout).toHaveBeenCalledWith(document);
+  });
+});
+
+describe('translate language labels', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(console, 'debug').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('derives includedLanguages from the endonym map in insertion order', () => {
+    expect(INCLUDED_LANGUAGES).toBe(Object.keys(LANGUAGE_ENDONYMS).join(','));
+    expect(INCLUDED_LANGUAGES).toContain('en');
+    expect(INCLUDED_LANGUAGES).toContain('vi');
+    expect(INCLUDED_LANGUAGES).toContain('zh-CN');
+    expect(INCLUDED_LANGUAGES).toContain('zh-TW');
+  });
+
+  it('returns native names for known codes, including underscore and case variants', () => {
+    expect(getLanguageEndonym('en')).toBe('English');
+    expect(getLanguageEndonym('es')).toBe('Español');
+    expect(getLanguageEndonym('vi')).toBe('Tiếng Việt');
+    expect(getLanguageEndonym('zh-CN')).toBe('中文（简体）');
+    expect(getLanguageEndonym('zh_TW')).toBe('中文（繁體）');
+    expect(getLanguageEndonym('ZH-cn')).toBe('中文（简体）');
+  });
+
+  it('returns undefined for empty or unknown codes', () => {
+    expect(getLanguageEndonym('')).toBeUndefined();
+    expect(getLanguageEndonym('xx')).toBeUndefined();
+  });
+
+  it('returns 0 and warns when the select is missing', () => {
+    expect(applyTranslateLanguageLabels(null)).toBe(0);
+    expect(applyTranslateLanguageLabels(/** @type {HTMLSelectElement} */ ({}))).toBe(0);
+    expect(console.warn).toHaveBeenCalled();
+  });
+
+  it('maps every included language code to a non-empty native name', () => {
+    const select = document.createElement('select');
+    for (const code of Object.keys(LANGUAGE_ENDONYMS)) {
+      select.append(new Option(code, code));
+    }
+
+    applyTranslateLanguageLabels(select);
+
+    for (const option of select.options) {
+      expect(option.textContent).toBe(LANGUAGE_ENDONYMS[option.value]);
+      expect(option.textContent?.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('rewrites option labels to endonyms and marks the select as untranslated', () => {
+    const root = createTranslateRoot();
+    const select = document.createElement('select');
+    select.className = 'goog-te-combo';
+    select.append(
+      new Option('Chọn ngôn ngữ', ''),
+      new Option('Tiếng Anh', 'en'),
+      new Option('Tây Ban Nha', 'es'),
+      new Option('Tiếng Việt', 'vi')
+    );
+    root.append(select);
+
+    const updated = applyTranslateLanguageLabels(select);
+
+    expect(updated).toBe(3);
+    expect(select.options[0]?.textContent).toBe(TRANSLATE_PLACEHOLDER_LABEL);
+    expect(select.options[1]?.textContent).toBe('English');
+    expect(select.options[2]?.textContent).toBe('Español');
+    expect(select.options[3]?.textContent).toBe('Tiếng Việt');
+    expect(select.classList.contains('notranslate')).toBe(true);
+    expect(select.getAttribute('translate')).toBe('no');
+    expect(select.options[1]?.classList.contains('notranslate')).toBe(true);
+    expect(select.options[1]?.getAttribute('translate')).toBe('no');
+    expect(applyTranslateLanguageLabels(select)).toBe(0);
+    root.remove();
+  });
+
+  it('leaves unknown language codes unchanged and warns', () => {
+    const root = createTranslateRoot();
+    const select = document.createElement('select');
+    select.className = 'goog-te-combo';
+    select.append(new Option('English', 'en'), new Option('Klingon', 'xx'));
+    root.append(select);
+
+    applyTranslateLanguageLabels(select);
+
+    expect(select.querySelector('option[value="xx"]')?.textContent).toBe('Klingon');
+    expect(console.warn).toHaveBeenCalled();
+    root.remove();
+  });
+
+  it('returns false when the translate root is missing', () => {
+    expect(attachTranslateLanguageLabels(null)).toBe(false);
+    expect(console.warn).toHaveBeenCalled();
+  });
+
+  it('returns false when the language select is missing', () => {
+    const root = createTranslateRoot();
+    expect(attachTranslateLanguageLabels(root)).toBe(false);
+    expect(console.warn).toHaveBeenCalled();
+    root.remove();
+  });
+
+  it('labels the select when the root is a document fragment', () => {
+    const fragment = document.createDocumentFragment();
+    const select = document.createElement('select');
+    select.className = 'goog-te-combo';
+    select.append(new Option('Tiếng Anh', 'en'), new Option('Tây Ban Nha', 'es'));
+    fragment.append(select);
+
+    expect(attachTranslateLanguageLabels(fragment)).toBe(true);
+    expect(select.querySelector('option[value="en"]')?.textContent).toBe('English');
+  });
+
+  it('uses the page translate root when no root is passed', () => {
+    const root = createTranslateRoot();
+    const select = document.createElement('select');
+    select.className = 'goog-te-combo';
+    select.append(new Option('Tiếng Anh', 'en'), new Option('Tây Ban Nha', 'es'));
+    root.append(select);
+
+    expect(attachTranslateLanguageLabels()).toBe(true);
+    expect(select.querySelector('option[value="en"]')?.textContent).toBe('English');
+    expect(root.classList.contains('notranslate')).toBe(true);
+    expect(root.getAttribute('translate')).toBe('no');
+    root.remove();
+  });
+
+  it('re-applies native labels when Google mutates option text', async () => {
+    const root = createTranslateRoot();
+    const select = document.createElement('select');
+    select.className = 'goog-te-combo';
+    select.append(new Option('Tiếng Anh', 'en'), new Option('Tây Ban Nha', 'es'));
+    root.append(select);
+
+    expect(attachTranslateLanguageLabels(root)).toBe(true);
+    expect(attachTranslateLanguageLabels(root)).toBe(true);
+    expect(select.querySelector('option[value="en"]')?.textContent).toBe('English');
+
+    const englishOption = select.querySelector('option[value="en"]');
+    if (!englishOption) {
+      throw new Error('Expected an English option');
+    }
+    englishOption.textContent = 'Tiếng Anh';
+
+    await vi.waitFor(() => {
+      expect(englishOption.textContent).toBe('English');
+    });
+
+    root.remove();
   });
 });

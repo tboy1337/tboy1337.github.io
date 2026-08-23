@@ -9,7 +9,7 @@ const swSource = fs.readFileSync(
   'utf8'
 );
 const cacheNameMatch = swSource.match(/const CACHE_NAME = '([^']+)'/);
-const expectedCacheName = cacheNameMatch?.[1] ?? 'tboy1337-v1.2.0';
+const expectedCacheName = cacheNameMatch?.[1] ?? 'tboy1337-v1.6.0';
 
 test.beforeEach(async ({ page }) => {
   await mockAudio(page);

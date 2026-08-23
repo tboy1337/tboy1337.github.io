@@ -161,6 +161,19 @@ test.describe('Google Translate widget', () => {
       const heroText = await page.locator('p.text-xl.text-gray-300').first().textContent();
       return translated && heroText !== baselineHero ? 1 : 0;
     }, { timeout: 20000 }).toBe(1);
+
+    await expect.poll(async () => page.evaluate(() => {
+      const visibleChrome = [...document.querySelectorAll('iframe.goog-te-banner-frame, body > .skiptranslate')]
+        .filter((element) => element.closest('#google_translate_element') === null)
+        .filter((element) => {
+          const style = window.getComputedStyle(element);
+          const box = element.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden' && box.height > 1;
+        });
+      const bodyTop = Number.parseInt(window.getComputedStyle(document.body).top, 10) || 0;
+      const select = document.querySelector('select.goog-te-combo');
+      return visibleChrome.length === 0 && bodyTop === 0 && select instanceof HTMLSelectElement ? 1 : 0;
+    }), { timeout: 10000 }).toBe(1);
   });
 
   test('works with the service worker registered', async ({ page }) => {
@@ -181,6 +194,64 @@ test.describe('Google Translate widget', () => {
     await expect(page.locator('select.goog-te-combo')).toBeEnabled();
     await selectTranslateLanguage(page, 'de');
     await expect.poll(async () => isPageTranslated(page), { timeout: 20000 }).toBe(true);
+  });
+
+  test.describe('native language labels', () => {
+    test.use({ locale: 'vi-VN' });
+
+    test('keeps endonyms when the browser locale is Vietnamese', async ({ page }) => {
+      await page.goto('/');
+      await waitForTranslateWidget(page);
+
+      const labels = await page.evaluate(() => {
+        const select = document.querySelector('select.goog-te-combo');
+        const root = document.getElementById('google_translate_element');
+        if (!(select instanceof HTMLSelectElement)) {
+          return null;
+        }
+
+        const labelFor = (value: string) => {
+          const option = Array.from(select.options).find((item) => item.value === value);
+          return option?.textContent ?? null;
+        };
+
+        return {
+          texts: Array.from(select.options).map((option) => option.textContent ?? ''),
+          es: labelFor('es'),
+          vi: labelFor('vi'),
+          ja: labelFor('ja'),
+          notranslate: select.classList.contains('notranslate'),
+          translateAttr: select.getAttribute('translate'),
+          rootNoTranslate: root?.classList.contains('notranslate') === true
+        };
+      });
+
+      expect(labels).not.toBeNull();
+      expect(labels?.es).toBe('Español');
+      expect(labels?.vi).toBe('Tiếng Việt');
+      expect(labels?.ja).toBe('日本語');
+      expect(labels?.texts).toContain('Español');
+      expect(labels?.texts).toContain('Tiếng Việt');
+      expect(labels?.texts).not.toContain('Tiếng Anh');
+      expect(labels?.texts).not.toContain('Tiếng Tây Ban Nha');
+      expect(labels?.notranslate).toBe(true);
+      expect(labels?.translateAttr).toBe('no');
+      expect(labels?.rootNoTranslate).toBe(true);
+
+      await selectTranslateLanguage(page, 'es');
+
+      await expect.poll(async () => {
+        return page.evaluate(() => {
+          const select = document.querySelector('select.goog-te-combo');
+          if (!(select instanceof HTMLSelectElement)) {
+            return 0;
+          }
+          const spanish = Array.from(select.options).find((item) => item.value === 'es');
+          const vietnamese = Array.from(select.options).find((item) => item.value === 'vi');
+          return spanish?.textContent === 'Español' && vietnamese?.textContent === 'Tiếng Việt' ? 1 : 0;
+        });
+      }, { timeout: 20000 }).toBe(1);
+    });
   });
 
   test('exposes a keyboard-focusable language select', async ({ page }) => {
