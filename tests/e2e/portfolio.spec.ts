@@ -21,6 +21,12 @@ test.describe('Portfolio page', () => {
   test('shows portfolio projects and Starstruck achievement', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'MediaRelay' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Blinter' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'batch-spec' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'cursor-goal' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'View batch-spec on GitHub' })).toHaveAttribute('href', 'https://github.com/tboy1337/batch-spec');
+    await expect(page.getByRole('link', { name: 'View cursor-goal on GitHub' })).toHaveAttribute('href', 'https://github.com/tboy1337/cursor-goal');
+    await expect(page.getByRole('heading', { name: 'Commercial Restricted License' })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Cryptocurrency Wallet Generators' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Starstruck' })).toBeVisible();
     await expect(page.getByText(/Last updated: \w+ \d{4}/)).toBeVisible();
     await expect(page.locator('.project-card')).toHaveCount(15);

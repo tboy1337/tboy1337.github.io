@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-24T04:08:00.000Z",
+  "lastUpdated": "2026-08-26T07:36:12.897Z",
   "projects": [
     {
       "id": "windows-rescue",
@@ -107,7 +107,7 @@
         "gradient": "from-green-500 to-teal-600",
         "hoverGradient": "hover:from-green-600 hover:to-teal-700"
       },
-      "stars": 1
+      "stars": 2
     },
     {
       "id": "blinter",
@@ -137,31 +137,35 @@
       "stars": 48
     },
     {
-      "id": "commercial-restricted-license",
-      "title": "Commercial Restricted License",
-      "description": "The Commercial Restricted License (CRL) is a software license designed to bridge the gap between fully open and fully proprietary software.",
+      "id": "batch-spec",
+      "title": "batch-spec",
+      "description": "Single source of truth for Windows batch/cmd.exe language structure used by Blinter and other conforming tools.",
       "tags": [
         {
-          "label": "Legal",
-          "color": "gray-600"
+          "label": "Python",
+          "color": "blue-600"
         },
         {
-          "label": "Documentation",
-          "color": "gray-700"
+          "label": "Batch",
+          "color": "purple-600"
+        },
+        {
+          "label": "ANTLR",
+          "color": "orange-600"
         }
       ],
       "github": {
         "type": "repository",
         "owner": "tboy1337",
-        "repo": "Commercial-Restricted-License",
-        "url": "https://github.com/tboy1337/Commercial-Restricted-License"
+        "repo": "batch-spec",
+        "url": "https://github.com/tboy1337/batch-spec"
       },
       "button": {
         "text": "View Project",
-        "gradient": "from-gray-500 to-gray-600",
-        "hoverGradient": "hover:from-gray-600 hover:to-gray-700"
+        "gradient": "from-blue-500 to-indigo-600",
+        "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
       },
-      "stars": 0
+      "stars": 1
     },
     {
       "id": "run-bitcoin-tests",
@@ -380,29 +384,31 @@
       "stars": 1
     },
     {
-      "id": "cryptocurrency-wallet-generators",
-      "title": "Cryptocurrency Wallet Generators",
-      "description": "A collection of open-source tools for generating wallets for various cryptocurrencies including Bitcoin, Ethereum, Solana, and more.",
+      "id": "cursor-goal",
+      "title": "cursor-goal",
+      "description": "Cursor IDE port of OpenAI Codex /goal: persist an objective, work across turns, and stop only when the condition is actually true.",
       "tags": [
         {
-          "label": "JavaScript",
-          "color": "yellow-600"
+          "label": "Python",
+          "color": "blue-600"
         },
         {
-          "label": "Crypto",
+          "label": "IDE",
           "color": "gray-700"
         }
       ],
       "github": {
-        "type": "organization",
-        "url": "https://github.com/Cryptocurrency-Wallet-Generators"
+        "type": "repository",
+        "owner": "tboy1337",
+        "repo": "cursor-goal",
+        "url": "https://github.com/tboy1337/cursor-goal"
       },
       "button": {
-        "text": "View Organization",
-        "gradient": "from-yellow-500 to-orange-600",
-        "hoverGradient": "hover:from-yellow-600 hover:to-orange-700"
+        "text": "View Project",
+        "gradient": "from-purple-500 to-pink-600",
+        "hoverGradient": "hover:from-purple-600 hover:to-pink-700"
       },
-      "stars": null
+      "stars": 1
     }
   ]
 }

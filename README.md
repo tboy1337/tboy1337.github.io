@@ -72,6 +72,8 @@ The portfolio showcases the following key projects:
 
 ### Development Tools
 - **[Blinter](https://github.com/tboy1337/Blinter)**: Blinter is a linter for Windows batch files. It provides comprehensive static analysis to identify syntax errors, security vulnerabilities, performance issues and style problems
+- **[batch-spec](https://github.com/tboy1337/batch-spec)**: Single source of truth for Windows batch/cmd.exe language structure used by Blinter and other conforming tools
+- **[cursor-goal](https://github.com/tboy1337/cursor-goal)**: Cursor IDE port of OpenAI Codex /goal: persist an objective, work across turns, and stop only when the condition is actually true
 - **[PyRefactor](https://github.com/tboy1337/PyRefactor)**: AST-based Python refactoring and optimization linter
 - **[PR2MD](https://github.com/tboy1337/PR2MD)**: CLI tool to export GitHub PRs and issues to Markdown
 
@@ -81,10 +83,6 @@ The portfolio showcases the following key projects:
 
 ### Cryptocurrency Tools
 - **[Bitcoin Core Tests Runner](https://github.com/tboy1337/run-bitcoin-tests)**: Docker-based runner for Bitcoin Core C++ and Python functional tests
-- **[Cryptocurrency Wallet Generators Organization](https://github.com/Cryptocurrency-Wallet-Generators)**: Collection of open-source tools for generating wallets for various cryptocurrencies
-
-### Legal & Documentation
-- **[Commercial Restricted License](https://github.com/tboy1337/Commercial-Restricted-License)**: Software license designed to bridge the gap between fully open and fully proprietary software
 
 ## 📁 Project Structure
 
