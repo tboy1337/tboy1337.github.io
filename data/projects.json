@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-05T14:01:00.282Z",
+  "lastUpdated": "2026-10-12T14:50:21.827Z",
   "projects": [
     {
       "id": "windows-rescue",
@@ -134,7 +134,7 @@
         "gradient": "from-blue-500 to-indigo-600",
         "hoverGradient": "hover:from-blue-600 hover:to-indigo-700"
       },
-      "stars": 51
+      "stars": 53
     },
     {
       "id": "batch-spec",
