@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-19T12:34:55.673Z",
+  "lastUpdated": "2026-10-26T12:30:52.672Z",
   "projects": [
     {
       "id": "windows-rescue",
@@ -26,7 +26,7 @@
         "gradient": "from-purple-500 to-pink-600",
         "hoverGradient": "hover:from-purple-600 hover:to-pink-700"
       },
-      "stars": 28
+      "stars": 29
     },
     {
       "id": "git-manager-windows",
