@@ -177,7 +177,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <header class="bg-black/50 py-8 text-center backdrop-blur-sm">
+    <header class="bg-black/50 py-8 text-center backdrop-blur-xs">
         <div class="flex justify-end px-4 mb-2">
             <!-- Translation dropdown positioned at top right -->
             <section id="google_translate_element" class="text-gray-300 notranslate" translate="no" aria-label="Language translation"></section>
@@ -197,18 +197,18 @@
         </div>
     </header>
 
-    <main id="main-content" class="flex-grow container mx-auto px-4 py-8">
+    <main id="main-content" class="grow container mx-auto px-4 py-8">
         <section class="grid md:grid-cols-2 gap-8">
-            <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+            <div class="bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                 <h2 class="text-2xl font-semibold mb-4 section-heading">About Me</h2>
                 <p class="text-gray-300">Python-focused developer building linters, CLI tools, automation, and backend services. Most of my open-source work centers on static analysis and practical developer utilities, with Windows batch and shell scripting where the platform calls for it.</p>
                 <div class="mt-4 flex space-x-4">
-                    <a href="https://github.com/tboy1337" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer">GitHub Profile</a>
-                    <a href="#contact-form" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded transition-colors">Contact</a>
+                    <a href="https://github.com/tboy1337" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer">GitHub Profile</a>
+                    <a href="#contact-form" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-sm transition-colors">Contact</a>
                 </div>
             </div>
 
-            <div class="bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+            <div class="bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                 <h2 class="text-2xl font-semibold mb-4 section-heading">Tech Stack</h2>
                 <div class="flex flex-wrap gap-2">
                     <span class="bg-blue-500 text-white px-3 py-1 rounded-full">Python</span>
@@ -233,7 +233,7 @@
             </div>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- projects:start -->
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -245,9 +245,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">Blinter is a linter for Windows batch files. It provides comprehensive static analysis to identify syntax errors, security vulnerabilities, performance issues and style problems.</p>
                     </div>
-                    <a href="https://github.com/BatchLang/Blinter" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Blinter on GitHub">View Project</a>
+                    <a href="https://github.com/BatchLang/Blinter" class="inline-block bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Blinter on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-purple-600">Batch</span>
@@ -259,9 +259,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">This repository provides a collection of batch scripts to repair, maintain, optimize and update Windows systems.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/WindowsRescue" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View WindowsRescue on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/WindowsRescue" class="inline-block bg-linear-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View WindowsRescue on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -273,9 +273,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">Docker-based solution to run Bitcoin Core C++ unit tests and Python functional tests with flexible configuration.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/run-bitcoin-tests" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Bitcoin Core Tests Runner on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/run-bitcoin-tests" class="inline-block bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Bitcoin Core Tests Runner on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-purple-600">Batch</span>
@@ -287,9 +287,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">Batch scripts to automate the downloading, installation, uninstallation and updating of Git on Windows systems.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/Git-Manager-Windows" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Git Manager Windows on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/Git-Manager-Windows" class="inline-block bg-linear-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Git Manager Windows on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -301,9 +301,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">A tool for subtitle processing workflows, including extraction, conversion and optimization.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/SubtitleTools" class="inline-block bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View SubtitleTools on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/SubtitleTools" class="inline-block bg-linear-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View SubtitleTools on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -315,9 +315,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">A Python refactoring and optimization linter that uses AST analysis to identify performance issues, complexity problems, and code improvements.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/PyRefactor" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View PyRefactor on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/PyRefactor" class="inline-block bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View PyRefactor on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">C</span>
@@ -329,9 +329,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">Fork of tgcrypto with working wheels for Python 3.9-3.13 for Windows, Mac and Linux.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/tgcrypto2" class="inline-block bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View TgCrypto2 on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/tgcrypto2" class="inline-block bg-linear-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View TgCrypto2 on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -344,9 +344,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">Single source of truth for Windows batch/cmd.exe language structure used by Blinter and other conforming tools.</p>
                     </div>
-                    <a href="https://github.com/BatchLang/batch-spec" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View batch-spec on GitHub">View Project</a>
+                    <a href="https://github.com/BatchLang/batch-spec" class="inline-block bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View batch-spec on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -358,9 +358,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">Cursor IDE port of OpenAI Codex /goal: persist an objective, work across turns, and stop only when the condition is actually true.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/cursor-goal" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View cursor-goal on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/cursor-goal" class="inline-block bg-linear-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View cursor-goal on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -372,9 +372,9 @@
                         </div>
                         <p class="mb-4 text-gray-300">Command-line tool that extracts GitHub Pull Request and Issue data and converts it into comprehensive, well-formatted Markdown documents.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/PR2MD" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View PR2MD on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/PR2MD" class="inline-block bg-linear-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View PR2MD on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -383,9 +383,9 @@
                         <h3 class="text-xl font-semibold mb-2">DAV2MKV</h3>
                         <p class="mb-4 text-gray-300">A command-line tool for converting DAV video files to MKV or MP4 while maintaining perfect quality.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/dav2mkv" class="inline-block bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View DAV2MKV on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/dav2mkv" class="inline-block bg-linear-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View DAV2MKV on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -394,9 +394,9 @@
                         <h3 class="text-xl font-semibold mb-2">FreeSMS</h3>
                         <p class="mb-4 text-gray-300">A cross-platform Python application with PySide GUI that allows sending free SMS messages to mobile phones worldwide.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/FreeSMS" class="inline-block bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View FreeSMS on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/FreeSMS" class="inline-block bg-linear-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View FreeSMS on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -405,9 +405,9 @@
                         <h3 class="text-xl font-semibold mb-2">MediaRelay</h3>
                         <p class="mb-4 text-gray-300">A video streaming server that allows you to securely share your personal video library over the internet with robust security, monitoring, and performance features.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/MediaRelay" class="inline-block bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View MediaRelay on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/MediaRelay" class="inline-block bg-linear-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View MediaRelay on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -416,9 +416,9 @@
                         <h3 class="text-xl font-semibold mb-2">ProfitPioneer</h3>
                         <p class="mb-4 text-gray-300">A comprehensive e-commerce analytics dashboard built with Streamlit that provides business intelligence insights for online retail businesses.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/ProfitPioneer" class="inline-block bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View ProfitPioneer on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/ProfitPioneer" class="inline-block bg-linear-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View ProfitPioneer on GitHub">View Project</a>
                 </div>
-                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="project-card bg-black/40 p-6 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="card-content">
                         <div class="mb-3">
                             <span class="tag bg-blue-600">Python</span>
@@ -427,7 +427,7 @@
                         <h3 class="text-xl font-semibold mb-2">Scrapeer-py</h3>
                         <p class="mb-4 text-gray-300">A tiny Python library that lets you scrape HTTP(S) and UDP trackers for torrent information.</p>
                     </div>
-                    <a href="https://github.com/tboy1337/scrapeer-py" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Scrapeer-py on GitHub">View Project</a>
+                    <a href="https://github.com/tboy1337/scrapeer-py" class="inline-block bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-sm transition-colors" target="_blank" rel="noopener noreferrer" aria-label="View Scrapeer-py on GitHub">View Project</a>
                 </div>
                 <!-- projects:end -->
             </div>
@@ -436,13 +436,13 @@
         <section class="mt-12" id="contact-form">
             <h2 class="text-3xl font-bold text-center mb-6 section-heading">Contact Me</h2>
             <div class="max-w-2xl mx-auto">
-                <div class="bg-black/40 p-8 rounded-lg backdrop-blur-sm border border-white/10">
+                <div class="bg-black/40 p-8 rounded-lg backdrop-blur-xs border border-white/10">
                     <div class="mb-6 text-center">
                         <p class="text-gray-300">Have a project idea, job offer or want to collaborate? I'd love to hear from you!</p>
                     </div>
 
                     <form class="space-y-6">
-                        <div class="absolute -left-[9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+                        <div class="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
                             <label for="contact-gotcha">Leave this field empty</label>
                             <input type="text" id="contact-gotcha" name="_gotcha" tabindex="-1" autocomplete="off">
                         </div>
@@ -518,7 +518,7 @@
                             <button
                                 type="submit"
                                 id="submit-btn"
-                                class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                class="bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/50"
                                 aria-label="Submit contact form"
                             >
                                 <i class="fas fa-paper-plane mr-2" aria-hidden="true"></i>
@@ -544,7 +544,7 @@
         <section class="mt-12" id="fun-games">
             <h2 class="text-3xl font-bold text-center mb-6 section-heading">Fun &amp; Games</h2>
             <!-- Game Menu Navigation -->
-            <nav class="game-menu backdrop-blur-sm border border-white/10 mb-6" aria-label="Game selection menu">
+            <nav class="game-menu backdrop-blur-xs border border-white/10 mb-6" aria-label="Game selection menu">
                 <ul class="flex flex-wrap justify-center">
                     <li class="game-menu-item active" data-game="memory">
                         <button type="button" class="px-4 py-2" aria-label="Play Memory Card Game" aria-controls="memory-section" aria-pressed="true">
@@ -570,7 +570,7 @@
             </nav>
 
             <!-- Memory Card Game Section -->
-            <div class="game-container backdrop-blur-sm border border-white/10 game-section" id="memory-section" aria-hidden="false">
+            <div class="game-container backdrop-blur-xs border border-white/10 game-section" id="memory-section" aria-hidden="false">
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
@@ -591,7 +591,7 @@
             </div>
 
             <!-- Snake Game Section -->
-            <div class="game-container backdrop-blur-sm border border-white/10 game-section hidden" id="snake-section" aria-hidden="true" inert>
+            <div class="game-container backdrop-blur-xs border border-white/10 game-section hidden" id="snake-section" aria-hidden="true" inert>
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
@@ -615,7 +615,7 @@
             </div>
 
             <!-- Typing Speed Test Section -->
-            <div class="game-container backdrop-blur-sm border border-white/10 game-section hidden" id="typing-section" aria-hidden="true" inert>
+            <div class="game-container backdrop-blur-xs border border-white/10 game-section hidden" id="typing-section" aria-hidden="true" inert>
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
@@ -640,7 +640,7 @@
             </div>
 
             <!-- Advanced Music Studio Section -->
-            <div class="game-container backdrop-blur-sm border border-white/10 game-section hidden" id="music-studio-section" aria-hidden="true" inert>
+            <div class="game-container backdrop-blur-xs border border-white/10 game-section hidden" id="music-studio-section" aria-hidden="true" inert>
                 <div class="game-header">
                     <div class="game-stats">
                         <div class="stat-box">
@@ -665,35 +665,35 @@
         <section class="mt-12">
             <h2 class="text-3xl font-bold text-center mb-6 section-heading">GitHub Achievements</h2>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10 flex flex-col items-center">
+                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-xs border border-white/10 flex flex-col items-center">
                     <div class="w-16 h-16 mb-3 flex items-center justify-center">
                         <img src="quickdraw-default.png" alt="Quickdraw Achievement" class="w-full h-full object-contain" loading="lazy" width="64" height="64">
                     </div>
                     <h3 class="text-lg text-center font-semibold">Quickdraw</h3>
                     <p class="text-center text-gray-300 text-sm mt-1">Gitty up!</p>
                 </div>
-                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10 flex flex-col items-center">
+                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-xs border border-white/10 flex flex-col items-center">
                     <div class="w-16 h-16 mb-3 flex items-center justify-center">
                         <img src="pull-shark-default.png" alt="Pull Shark Achievement" class="w-full h-full object-contain" loading="lazy" width="64" height="64">
                     </div>
                     <h3 class="text-lg text-center font-semibold">Pull Shark</h3>
                     <p class="text-center text-gray-300 text-sm mt-1">Opened pull requests that have been merged</p>
                 </div>
-                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10 flex flex-col items-center">
+                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-xs border border-white/10 flex flex-col items-center">
                     <div class="w-16 h-16 mb-3 flex items-center justify-center">
                         <img src="pair-extraordinaire-default.png" alt="Pair Extraordinaire Achievement" class="w-full h-full object-contain" loading="lazy" width="64" height="64">
                     </div>
                     <h3 class="text-lg text-center font-semibold">Pair Extraordinaire</h3>
                     <p class="text-center text-gray-300 text-sm mt-1">Coauthored commits on merged pull requests</p>
                 </div>
-                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10 flex flex-col items-center">
+                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-xs border border-white/10 flex flex-col items-center">
                     <div class="w-16 h-16 mb-3 flex items-center justify-center">
                         <img src="yolo-default.png" alt="YOLO Achievement" class="w-full h-full object-contain" loading="lazy" width="64" height="64">
                     </div>
                     <h3 class="text-lg text-center font-semibold">YOLO</h3>
                     <p class="text-center text-gray-300 text-sm mt-1">You want it? You merge it</p>
                 </div>
-                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-sm border border-white/10 flex flex-col items-center">
+                <div class="bg-black/40 p-5 rounded-lg backdrop-blur-xs border border-white/10 flex flex-col items-center">
                     <div class="w-16 h-16 mb-3 flex items-center justify-center">
                         <img src="starstruck-default.png" alt="Starstruck Achievement" class="w-full h-full object-contain" loading="lazy" width="64" height="64">
                     </div>
@@ -704,7 +704,7 @@
         </section>
     </main>
 
-    <footer class="bg-black/50 py-6 text-center backdrop-blur-sm mt-12">
+    <footer class="bg-black/50 py-6 text-center backdrop-blur-xs mt-12">
         <div class="container mx-auto px-4">
             <p class="text-gray-300">© 2026 tboy1337 | Powered by curiosity, fueled by coffee <span aria-hidden="true">☕</span></p>
             <p class="text-gray-500 mt-2 text-sm">Last updated: November 2026</p>

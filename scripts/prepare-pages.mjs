@@ -35,7 +35,6 @@ const EXCLUDED_FILES = new Set([
   'playwright.config.ts',
   'vite.config.ts',
   'eslint.config.js',
-  'tailwind.config.js',
   '.htmlvalidate.json',
   '.stylelintrc.json',
   'games-css-w3c.json',
