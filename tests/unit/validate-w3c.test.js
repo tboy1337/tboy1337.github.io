@@ -5,7 +5,8 @@ import {
   W3C_CSS_PROFILE,
   extractW3cMessages,
   filterW3cErrors,
-  formatCssValidationErrors
+  formatCssValidationErrors,
+  isIgnorableTailwindValidatorError
 } from '../../scripts/validate-w3c.mjs';
 
 describe('validate-w3c helpers', () => {
@@ -38,6 +39,14 @@ describe('validate-w3c helpers', () => {
     );
 
     expect(formatted).toBe('  games.css:12 Unknown property');
+  });
+
+  it('ignores Jigsaw errors for Tailwind CSS v4 syntax', () => {
+    expect(isIgnorableTailwindValidatorError('Property “margin-trim” doesn\'t exist')).toBe(true);
+    expect(isIgnorableTailwindValidatorError('Unrecognized at-rule “@property”')).toBe(true);
+    expect(isIgnorableTailwindValidatorError('“in” is not a “color” value')).toBe(true);
+    expect(isIgnorableTailwindValidatorError('Parse Error')).toBe(true);
+    expect(isIgnorableTailwindValidatorError('Property “display” doesn\'t exist')).toBe(false);
   });
 
   it('targets built CSS assets served in production', () => {
