@@ -166,7 +166,7 @@ The website is fully responsive and includes:
 The website is deployed through GitHub Pages via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml):
 - **Source**: GitHub Actions workflow on the `main` branch
 - **URL**: [https://tboy1337.github.io](https://tboy1337.github.io)
-- **Updates**: Automatic deployment on every push to `main` (builds CSS, prepares `_site/`, then deploys)
+- **Updates**: Automatic deployment on every push to `main` (builds CSS, prepares `_site/`, then deploys). The weekly star-count workflow pushes with the Actions token, which does not start that push trigger, so it calls this workflow after it commits.
 - **Manual redeploy**: Actions -> **Deploy GitHub Pages** -> **Run workflow**
 - **Dependency updates**: [Dependabot](.github/dependabot.yml) opens monthly pull requests for npm and GitHub Actions. Minor and patch updates are grouped; major updates stay separate.
 - **CDN**: Global content delivery via GitHub's infrastructure

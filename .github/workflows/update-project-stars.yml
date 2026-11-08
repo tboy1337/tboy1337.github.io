@@ -7,10 +7,16 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   update:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.push.outputs.sha }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -33,9 +39,11 @@ jobs:
         run: npm run validate:html
 
       - name: Commit and push changes
+        id: push
         run: |
           if git diff --quiet -- data/projects.json index.html; then
             echo "No project ordering changes to commit."
+            echo "sha=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -47,3 +55,17 @@ jobs:
           EOF
           )"
           git push
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  # A push authenticated with GITHUB_TOKEN does not trigger deploy-pages.yml.
+  deploy:
+    name: Deploy updated site
+    needs: update
+    if: ${{ needs.update.outputs.sha != '' && github.ref_name == 'main' }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}
