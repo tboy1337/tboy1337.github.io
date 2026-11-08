@@ -71,8 +71,8 @@ The portfolio showcases the following key projects:
 - **[TgCrypto2](https://github.com/tboy1337/tgcrypto2)**: Enhanced TgCrypto fork with working wheels for Python 3.9-3.13
 
 ### Development Tools
-- **[Blinter](https://github.com/tboy1337/Blinter)**: Blinter is a linter for Windows batch files. It provides comprehensive static analysis to identify syntax errors, security vulnerabilities, performance issues and style problems
-- **[batch-spec](https://github.com/tboy1337/batch-spec)**: Single source of truth for Windows batch/cmd.exe language structure used by Blinter and other conforming tools
+- **[Blinter](https://github.com/BatchLang/Blinter)**: Blinter is a linter for Windows batch files. It provides comprehensive static analysis to identify syntax errors, security vulnerabilities, performance issues and style problems
+- **[batch-spec](https://github.com/BatchLang/batch-spec)**: Single source of truth for Windows batch/cmd.exe language structure used by Blinter and other conforming tools
 - **[cursor-goal](https://github.com/tboy1337/cursor-goal)**: Cursor IDE port of OpenAI Codex /goal: persist an objective, work across turns, and stop only when the condition is actually true
 - **[PyRefactor](https://github.com/tboy1337/PyRefactor)**: AST-based Python refactoring and optimization linter
 - **[PR2MD](https://github.com/tboy1337/PR2MD)**: CLI tool to export GitHub PRs and issues to Markdown
@@ -168,6 +168,7 @@ The website is deployed through GitHub Pages via [`.github/workflows/deploy-page
 - **URL**: [https://tboy1337.github.io](https://tboy1337.github.io)
 - **Updates**: Automatic deployment on every push to `main` (builds CSS, prepares `_site/`, then deploys)
 - **Manual redeploy**: Actions -> **Deploy GitHub Pages** -> **Run workflow**
+- **Dependency updates**: [Dependabot](.github/dependabot.yml) opens monthly pull requests for npm and GitHub Actions. Minor and patch updates are grouped; major updates stay separate.
 - **CDN**: Global content delivery via GitHub's infrastructure
 - **Security headers**: GitHub Pages does not support custom HTTP headers (CSP, HSTS). The site uses a best-effort meta Content-Security-Policy; full header-based CSP/HSTS requires a reverse proxy such as Cloudflare.
 

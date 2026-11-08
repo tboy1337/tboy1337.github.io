@@ -125,9 +125,9 @@
       ],
       "github": {
         "type": "repository",
-        "owner": "tboy1337",
+        "owner": "BatchLang",
         "repo": "Blinter",
-        "url": "https://github.com/tboy1337/Blinter"
+        "url": "https://github.com/BatchLang/Blinter"
       },
       "button": {
         "text": "View Project",
@@ -156,9 +156,9 @@
       ],
       "github": {
         "type": "repository",
-        "owner": "tboy1337",
+        "owner": "BatchLang",
         "repo": "batch-spec",
-        "url": "https://github.com/tboy1337/batch-spec"
+        "url": "https://github.com/BatchLang/batch-spec"
       },
       "button": {
         "text": "View Project",

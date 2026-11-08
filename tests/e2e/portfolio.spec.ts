@@ -23,7 +23,7 @@ test.describe('Portfolio page', () => {
     await expect(page.getByRole('heading', { name: 'Blinter' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'batch-spec' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'cursor-goal' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'View batch-spec on GitHub' })).toHaveAttribute('href', 'https://github.com/tboy1337/batch-spec');
+    await expect(page.getByRole('link', { name: 'View batch-spec on GitHub' })).toHaveAttribute('href', 'https://github.com/BatchLang/batch-spec');
     await expect(page.getByRole('link', { name: 'View cursor-goal on GitHub' })).toHaveAttribute('href', 'https://github.com/tboy1337/cursor-goal');
     await expect(page.getByRole('heading', { name: 'Commercial Restricted License' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Cryptocurrency Wallet Generators' })).toHaveCount(0);

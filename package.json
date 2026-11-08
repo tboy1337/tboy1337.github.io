@@ -22,9 +22,9 @@
   "devDependencies": {
     "@playwright/test": "^1.61.0",
     "@types/node": "^26.0.0",
-    "@vitest/coverage-istanbul": "^4.1.9",
+    "@vitest/coverage-istanbul": "^4.1.12",
     "esbuild": "^0.28.0",
-    "eslint": "^10.5.0",
+    "eslint": "^10.14.0",
     "html-validate": "^11.5.3",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-report": "^3.0.1",
@@ -36,7 +36,11 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vite-plugin-istanbul": "^9.0.1",
-    "vitest": "^4.1.9",
+    "vitest": "^4.1.12",
     "w3c-css-validator": "^1.4.1"
+  },
+  "overrides": {
+    "glob": "^14.0.4",
+    "minimatch": "^11.0.5"
   }
 }
