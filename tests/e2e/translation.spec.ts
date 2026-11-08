@@ -135,7 +135,12 @@ test.describe('Google Translate widget', () => {
     await expect(gadget).toBeVisible();
     await gadget.click();
 
-    await expect(page.locator('select.goog-te-combo')).toBeFocused();
+    const select = page.locator('select.goog-te-combo');
+    await expect(select).toBeFocused();
+    // Chrome 156 leaves the native select popup open after showPicker(), and
+    // Playwright then fails while closing the context.
+    await page.keyboard.press('Escape');
+    await select.blur();
   });
 
   test('does not emit CSP violations or translate warnings after settle', async ({ page }) => {
